@@ -4,7 +4,7 @@ export const coreNamespaceEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_asset",
 		category: "Core Tool Namespaces",
-		description: "Asset tool namespace for list, search, info, references, export, and validation actions.",
+		description: "Asset tool namespace for listing, searching, inspecting, exporting, validating, duplicating, renaming, moving, deleting, saving, and folder-management actions.",
 	},
 	{
 		name: "manage_actor",

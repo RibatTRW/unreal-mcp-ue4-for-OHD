@@ -35,6 +35,79 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 				pythonDispatch(
 					editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
 				),
+			exists: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("exists", {
+						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+						asset_paths: params.asset_paths,
+					}),
+				),
+			duplicate: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("duplicate", {
+						source_asset_path: requiredStringParam(params, ["source_asset_path", "asset_path", "path"]),
+						destination_asset_path: optionalStringParam(params, ["destination_asset_path", "target_asset_path"]),
+						destination_path: optionalStringParam(params, ["destination_path"]),
+						new_name: optionalStringParam(params, ["new_name", "name"]),
+					}),
+				),
+			rename: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("rename", {
+						source_asset_path: requiredStringParam(params, ["source_asset_path", "asset_path", "path"]),
+						destination_asset_path: optionalStringParam(params, ["destination_asset_path", "target_asset_path"]),
+						destination_path: optionalStringParam(params, ["destination_path"]),
+						new_name: optionalStringParam(params, ["new_name", "name"]),
+					}),
+				),
+			move: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("move", {
+						source_asset_path: requiredStringParam(params, ["source_asset_path", "asset_path", "path"]),
+						destination_asset_path: optionalStringParam(params, ["destination_asset_path", "target_asset_path"]),
+						destination_path: optionalStringParam(params, ["destination_path"]),
+						new_name: optionalStringParam(params, ["new_name", "name"]),
+					}),
+				),
+			delete: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("delete", {
+						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+						asset_paths: params.asset_paths,
+					}),
+				),
+			save: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("save", {
+						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+						asset_paths: params.asset_paths,
+						only_if_is_dirty:
+							typeof params.only_if_is_dirty === "boolean"
+								? params.only_if_is_dirty
+								: undefined,
+					}),
+				),
+			create_folder: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("create_folder", {
+						directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
+					}),
+				),
+			list_folder: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("list_folder", {
+						directory_path:
+							optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
+						recursive:
+							typeof params.recursive === "boolean" ? params.recursive : undefined,
+					}),
+				),
+			delete_folder: (params) =>
+				pythonDispatch(
+					editorTools.UEAssetManagementTool("delete_folder", {
+						directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
+					}),
+				),
 			export: (params) =>
 				pythonDispatch(
 					editorTools.UEExportAsset(

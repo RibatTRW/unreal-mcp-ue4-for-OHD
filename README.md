@@ -91,6 +91,16 @@ npx unreal-mcp-ue4
 
 If you install from npm, the MCP server entry point is the published `unreal-mcp-ue4` binary instead of a local `dist/bin.js` path.
 
+#### Claude MCP registration with a global install
+
+If you installed the package globally, you can register it with Claude without referencing `node` or a local `dist/bin.js` path:
+
+```bash
+claude mcp add --scope user unreal-mcp-ue4 -- unreal-mcp-ue4
+```
+
+This tells Claude to launch the published `unreal-mcp-ue4` binary directly from your global npm install.
+
 ### 2. Enable the Unreal requirements
 
 In Unreal Editor:
@@ -437,7 +447,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tbody>
 	<tr>
 		<td width="18%"><code>manage_asset</code></td>
-		<td width="52%">Asset tool namespace for list, search, info, references, export, and validation actions.</td>
+		<td width="52%">Asset tool namespace for listing, searching, inspecting, exporting, validating, duplicating, renaming, moving, deleting, saving, and folder-management actions.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>

@@ -1,5 +1,14 @@
 import { editorPreludes, jsonArg, renderScript } from "./tools-base.js"
 
+export const UEAssetManagementTool = (
+	operation: string,
+	args: Record<string, unknown> = {},
+) =>
+	renderScript("./scripts/ue_asset_management_tools.py", {
+		operation: jsonArg(operation),
+		args: jsonArg(args),
+	})
+
 export const UEActorTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_actor_tools.py", {
 		operation: jsonArg(operation),
