@@ -135,10 +135,16 @@ def asset_exists(args):
 
 def duplicate_asset(args):
     source_asset_path = normalize_asset_reference_path(
-        args.get("source_asset_path") or args.get("asset_path") or args.get("path")
+        args.get("source_asset_path")
+        or args.get("source_path")
+        or args.get("asset_path")
+        or args.get("path")
     )
     if not source_asset_path:
-        return {"success": False, "message": "source_asset_path, asset_path, or path is required."}
+        return {
+            "success": False,
+            "message": "source_asset_path, source_path, asset_path, or path is required.",
+        }
 
     if not unreal.EditorAssetLibrary.does_asset_exist(source_asset_path):
         return {"success": False, "message": "Source asset does not exist: {0}".format(source_asset_path)}
@@ -169,10 +175,16 @@ def duplicate_asset(args):
 
 def rename_asset(args):
     source_asset_path = normalize_asset_reference_path(
-        args.get("source_asset_path") or args.get("asset_path") or args.get("path")
+        args.get("source_asset_path")
+        or args.get("source_path")
+        or args.get("asset_path")
+        or args.get("path")
     )
     if not source_asset_path:
-        return {"success": False, "message": "source_asset_path, asset_path, or path is required."}
+        return {
+            "success": False,
+            "message": "source_asset_path, source_path, asset_path, or path is required.",
+        }
 
     destination_asset_path = _resolve_destination_asset_path(
         args, source_asset_path, require_new_path=True
@@ -194,10 +206,16 @@ def rename_asset(args):
 
 def move_asset(args):
     source_asset_path = normalize_asset_reference_path(
-        args.get("source_asset_path") or args.get("asset_path") or args.get("path")
+        args.get("source_asset_path")
+        or args.get("source_path")
+        or args.get("asset_path")
+        or args.get("path")
     )
     if not source_asset_path:
-        return {"success": False, "message": "source_asset_path, asset_path, or path is required."}
+        return {
+            "success": False,
+            "message": "source_asset_path, source_path, asset_path, or path is required.",
+        }
 
     destination_path = args.get("destination_path")
     if not destination_path and not args.get("destination_asset_path"):

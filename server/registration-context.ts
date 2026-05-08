@@ -2,7 +2,11 @@ import { z } from "zod"
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import * as editorTools from "./editor/tools.js"
-import { createDispatchHelpers, NamespaceActionHandler, NamespaceDispatchResult } from "./registration-context-dispatch.js"
+import {
+	createDispatchHelpers,
+	NamespaceActionRegistration,
+	NamespaceDispatchResult,
+} from "./registration-context-dispatch.js"
 import { createRegistrationParamHelpers } from "./registration-context-params.js"
 import {
 	colorInputSchema,
@@ -43,7 +47,7 @@ export interface RegistrationContext {
 	registerToolNamespace: (
 		name: string,
 		description: string,
-		actions: Record<string, NamespaceActionHandler>,
+		actions: Record<string, NamespaceActionRegistration>,
 	) => void
 	registerZeroArgPythonTool: (
 		name: string,
@@ -100,6 +104,11 @@ export interface RegistrationContext {
 }
 
 export function createRegistrationContext(server: McpServer): RegistrationContext {
+	const rawServerRegisterTool = server.registerTool.bind(server) as (
+		name: string,
+		config: Record<string, unknown>,
+		cb: (...args: any[]) => unknown,
+	) => unknown
 	const rawServerTool = server.tool.bind(server) as (...args: any[]) => unknown
 
 	const textResponse = (text: string) => ({
@@ -108,6 +117,7 @@ export function createRegistrationContext(server: McpServer): RegistrationContex
 
 	const toolNamespaceRegistry = new Map<string, { description: string; supportedActions: string[] }>()
 	const dispatchHelpers = createDispatchHelpers({
+		rawServerRegisterTool,
 		rawServerTool,
 		recordSchema,
 		textResponse,

@@ -10,9 +10,20 @@ export type NamespaceActionHandler = (
 	params: Record<string, any>,
 ) => NamespaceDispatchResult | Promise<NamespaceDispatchResult>
 
+export interface NamespaceActionDefinition {
+	description?: string
+	handler: NamespaceActionHandler
+	paramsSchema?: z.ZodTypeAny
+}
+
+export type NamespaceActionRegistration =
+	| NamespaceActionDefinition
+	| NamespaceActionHandler
+
 type TextResponse = { content: Array<{ type: "text"; text: string }> }
 
 interface DispatchHelperOptions {
+	rawServerRegisterTool: (name: string, config: Record<string, unknown>, cb: (...args: any[]) => unknown) => unknown
 	rawServerTool: (...args: any[]) => unknown
 	recordSchema: z.ZodRecord<z.ZodString, z.ZodAny>
 	textResponse: (text: string) => TextResponse
@@ -20,11 +31,17 @@ interface DispatchHelperOptions {
 }
 
 export function createDispatchHelpers(options: DispatchHelperOptions) {
-	const { rawServerTool, recordSchema, textResponse, toolNamespaceRegistry } = options
+	const { rawServerRegisterTool, rawServerTool, recordSchema, textResponse, toolNamespaceRegistry } = options
 
 	const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
 	const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
 	const normalizeActionName = (action: string) => action.trim().toLowerCase()
+	const normalizeActionDefinition = (
+		actionRegistration: NamespaceActionRegistration,
+	): NamespaceActionDefinition =>
+		typeof actionRegistration === "function"
+			? { handler: actionRegistration }
+			: actionRegistration
 
 	const registerPythonTool = (
 		name: string,
@@ -64,29 +81,120 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		return textResponse(JSON.stringify(result.payload, null, 2))
 	}
 
+	const namespaceActionSchema = (supportedActions: string[]) =>
+		supportedActions.length === 1
+			? z.literal(supportedActions[0])
+			: z.enum(supportedActions as [string, string, ...string[]])
+
+	const namespaceParamsSchema = (
+		name: string,
+		supportedActions: string[],
+		normalizedActions: Record<string, NamespaceActionDefinition>,
+	) => {
+		const paramsSchemas = supportedActions.map((actionName) => {
+			const actionDefinition = normalizedActions[actionName]
+			return (
+				actionDefinition.paramsSchema ??
+				z.object({}).strict()
+			).describe(
+				actionDefinition.description
+					? `${name}.${actionName}: ${actionDefinition.description}`
+					: `Parameters for ${name}.${actionName}`,
+			)
+		})
+
+		return paramsSchemas.length === 1
+			? paramsSchemas[0]
+			: z.union(paramsSchemas as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]])
+	}
+
+	const validateNamespaceParams = async (
+		name: string,
+		action: string,
+		actionDefinition: NamespaceActionDefinition,
+		params: Record<string, any>,
+	) => {
+		if (!actionDefinition.paramsSchema) {
+			return { success: true as const, params }
+		}
+
+		const parseResult = await actionDefinition.paramsSchema.safeParseAsync(params)
+		if (parseResult.success) {
+			return { success: true as const, params: parseResult.data }
+		}
+
+		return {
+			success: false as const,
+			response: textResponse(
+				JSON.stringify(
+					{
+						success: false,
+						tool: name,
+						action,
+						message: `Invalid params for ${name}.${action}: ${parseResult.error.message}`,
+					},
+					null,
+					2,
+				),
+			),
+		}
+	}
+
 	const registerToolNamespace = (
 		name: string,
 		description: string,
-		actions: Record<string, NamespaceActionHandler>,
+		actions: Record<string, NamespaceActionRegistration>,
 	) => {
-		const supportedActions = Object.keys(actions).sort()
+		const normalizedActions = Object.fromEntries(
+			Object.entries(actions).map(([actionName, actionRegistration]) => [
+				normalizeActionName(actionName),
+				normalizeActionDefinition(actionRegistration),
+			]),
+		) as Record<string, NamespaceActionDefinition>
+		const supportedActions = Object.keys(normalizedActions).sort()
 		toolNamespaceRegistry.set(name, { description, supportedActions })
 
-		rawServerTool(
+		const inputSchema = z
+			.object({
+				action: namespaceActionSchema(supportedActions).describe(
+					`Action to execute inside tool namespace ${name}`,
+				),
+				params: namespaceParamsSchema(name, supportedActions, normalizedActions)
+					.optional()
+					.describe(
+						`Parameters for the selected ${name} action. Each union option describes one action's params.`,
+					),
+			})
+			.strict()
+
+		rawServerRegisterTool(
 			name,
-			description,
 			{
-				action: z.string().describe(`Action to execute inside tool namespace ${name}`),
-				params: recordSchema.optional().describe("Optional action parameter object"),
+				description,
+				inputSchema,
 			},
 			async ({ action, params }: { action: string; params?: Record<string, any> }) => {
 				const normalizedAction = normalizeActionName(action)
 
 				try {
-					const handler = actions[normalizedAction]
-					const result = handler
-						? await handler(params ?? {})
-						: unsupportedNamespaceAction(name, normalizedAction, supportedActions)
+					const actionDefinition = normalizedActions[normalizedAction]
+					if (!actionDefinition) {
+						return await runNamespaceDispatch(
+							unsupportedNamespaceAction(name, normalizedAction, supportedActions),
+						)
+					}
+
+					const validated = await validateNamespaceParams(
+						name,
+						normalizedAction,
+						actionDefinition,
+						params ?? {},
+					)
+					if (!validated.success) {
+						return validated.response
+					}
+
+					const result = await actionDefinition.handler(validated.params)
 
 					return await runNamespaceDispatch(result)
 				} catch (error) {

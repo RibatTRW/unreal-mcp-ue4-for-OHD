@@ -176,6 +176,7 @@ Official Copilot docs:
 ### Interface model
 
 - Prefer the `manage_*` namespace tools as the main MCP surface.
+- Namespace tools now expose action-specific input schemas through MCP, so clients can discover the expected `params` keys per action instead of relying only on trial and error.
 - Treat `manage_editor.project_info` as the canonical project summary entry point.
 - Treat `manage_editor.map_info` and `manage_level.world_outliner` as the canonical map and level read entry points.
 - Use direct tools only for a small set of low-level primitives such as Unreal session path discovery and actor create or update or delete flows.
@@ -288,7 +289,7 @@ npm run test:e2e -- --with-assets
 
 The package is prepared for npm publishing as a public package.
 
-The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, the current release is published consistently as `2026.4.1-1`.
+The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, `2026.5.8-1` follows this format.
 
 Recommended maintainer flow:
 

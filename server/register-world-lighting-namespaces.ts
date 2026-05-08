@@ -1,3 +1,10 @@
+import { z } from "zod"
+
+import {
+	actorNameShape,
+	requireAtLeastOneValue,
+	vector3TransformShape,
+} from "./namespace-action-schema-fragments.js"
 import { RegistrationContext } from "./registration-context.js"
 
 export function registerWorldLightingNamespaces(ctx: RegistrationContext) {
@@ -11,11 +18,17 @@ export function registerWorldLightingNamespaces(ctx: RegistrationContext) {
 		toVector3Array,
 	} = ctx
 
-	registerToolNamespace(
-		"manage_lighting",
-		ctx.toolDescription("manage_lighting"),
-		{
-			spawn_directional_light: (params) =>
+	const lightSpawnSchema = z
+		.object({
+			...actorNameShape,
+			...vector3TransformShape,
+		})
+		.strict()
+
+	registerToolNamespace("manage_lighting", ctx.toolDescription("manage_lighting"), {
+		spawn_directional_light: {
+			paramsSchema: lightSpawnSchema,
+			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEActorTool("spawn_actor", {
 						type: "DirectionalLight",
@@ -24,7 +37,10 @@ export function registerWorldLightingNamespaces(ctx: RegistrationContext) {
 						rotation: toRotatorArray(params.rotation),
 					}),
 				),
-			spawn_point_light: (params) =>
+		},
+		spawn_point_light: {
+			paramsSchema: lightSpawnSchema,
+			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEActorTool("spawn_actor", {
 						type: "PointLight",
@@ -33,7 +49,10 @@ export function registerWorldLightingNamespaces(ctx: RegistrationContext) {
 						rotation: toRotatorArray(params.rotation),
 					}),
 				),
-			spawn_spot_light: (params) =>
+		},
+		spawn_spot_light: {
+			paramsSchema: lightSpawnSchema,
+			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEActorTool("spawn_actor", {
 						type: "SpotLight",
@@ -42,7 +61,14 @@ export function registerWorldLightingNamespaces(ctx: RegistrationContext) {
 						rotation: toRotatorArray(params.rotation),
 					}),
 				),
-			transform_light: (params) =>
+		},
+		transform_light: {
+			paramsSchema: requireAtLeastOneValue(
+				z.object({ ...actorNameShape, ...vector3TransformShape }).strict(),
+				["name", "actor_name"],
+				"Provide name or actor_name.",
+			),
+			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEActorTool("set_actor_transform", {
 						name: actorNameParam(params),
@@ -51,7 +77,9 @@ export function registerWorldLightingNamespaces(ctx: RegistrationContext) {
 						scale: toVector3Array(params.scale),
 					}),
 				),
-			inspect_lighting: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		},
-	)
+		inspect_lighting: {
+			handler: () => pythonDispatch(editorTools.UEGetMapInfo()),
+		},
+	})
 }
