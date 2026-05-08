@@ -19,11 +19,7 @@ const hasMeaningfulValue = (value: unknown): boolean => {
 	return value !== undefined && value !== null
 }
 
-export function requireAtLeastOneValue<T extends z.ZodTypeAny>(
-	schema: T,
-	keys: string[],
-	message: string,
-) {
+export function requireAtLeastOneValue<T extends z.ZodTypeAny>(schema: T, keys: string[], message: string) {
 	return schema.superRefine((params, ctx) => {
 		const record = params && typeof params === "object" ? (params as Record<string, unknown>) : {}
 		if (keys.some((key) => hasMeaningfulValue(record[key]))) {
@@ -35,6 +31,20 @@ export function requireAtLeastOneValue<T extends z.ZodTypeAny>(
 			message,
 		})
 	})
+}
+
+export function strictObject<Shape extends z.ZodRawShape>(shape: Shape) {
+	return z.object(shape).strict()
+}
+
+export function requireValueGroups<T extends z.ZodTypeAny>(
+	schema: T,
+	groups: Array<{ keys: string[]; message: string }>,
+) {
+	return groups.reduce<z.ZodTypeAny>(
+		(currentSchema, group) => requireAtLeastOneValue(currentSchema, group.keys, group.message),
+		schema,
+	)
 }
 
 export const assetLookupShape = {
@@ -67,6 +77,22 @@ export const widgetBlueprintShape = {
 	widget_name: z.string().optional(),
 	blueprint_name: z.string().optional(),
 }
+
+export const widgetBlueprintKeys = ["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"]
+export const widgetBlueprintMessage = "Provide widget_blueprint, widget_blueprint_path, widget_name, or blueprint_name."
+
+export const widgetBlueprintAssetShape = {
+	widget_blueprint_path: z.string().optional(),
+	widget_blueprint: z.string().optional(),
+}
+export const widgetBlueprintAssetKeys = ["widget_blueprint_path", "widget_blueprint"]
+export const widgetBlueprintAssetMessage = "Provide widget_blueprint_path or widget_blueprint."
+
+export const widgetNameKeys = ["widget_name", "name"]
+export const widgetNameMessage = "Provide widget_name or name."
+
+export const childWidgetNameKeys = ["child_widget_name", "name"]
+export const childWidgetNameMessage = "Provide child_widget_name or name."
 
 export const sourceControlFileShape = {
 	file: z.string().optional(),

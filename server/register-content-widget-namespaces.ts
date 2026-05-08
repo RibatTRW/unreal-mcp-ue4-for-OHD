@@ -1,10 +1,21 @@
 import { z } from "zod"
 
 import {
+	childWidgetNameKeys,
+	childWidgetNameMessage,
 	materialColorShape,
 	requireAtLeastOneValue,
+	requireValueGroups,
+	strictObject,
+	widgetBlueprintAssetKeys,
+	widgetBlueprintAssetMessage,
+	widgetBlueprintAssetShape,
+	widgetBlueprintKeys,
+	widgetBlueprintMessage,
 	vector2PlacementShape,
 	widgetBlueprintShape,
+	widgetNameKeys,
+	widgetNameMessage,
 } from "./namespace-action-schema-fragments.js"
 import { RegistrationContext } from "./registration-context.js"
 
@@ -18,22 +29,47 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 		toColorArray,
 		toVector2Array,
 		toVector2Record,
+		vector2InputSchema,
 		widgetBlueprintParam,
 	} = ctx
+
+	const requireWidgetBlueprintSelection = (shape: z.ZodRawShape) =>
+		requireValueGroups(strictObject({ ...widgetBlueprintShape, ...shape }), [
+			{ keys: widgetBlueprintKeys, message: widgetBlueprintMessage },
+		])
+
+	const requireNamedWidgetBlueprintSelection = (shape: z.ZodRawShape, nameKeys: string[], nameMessage: string) =>
+		requireValueGroups(strictObject({ ...widgetBlueprintShape, ...shape }), [
+			{ keys: widgetBlueprintKeys, message: widgetBlueprintMessage },
+			{ keys: nameKeys, message: nameMessage },
+		])
+
+	const requireWidgetAssetAndName = (
+		shape: z.ZodRawShape,
+		nameKeys = widgetNameKeys,
+		nameMessage = widgetNameMessage,
+	) =>
+		requireValueGroups(strictObject({ ...widgetBlueprintAssetShape, ...shape }), [
+			{ keys: widgetBlueprintAssetKeys, message: widgetBlueprintAssetMessage },
+			{ keys: nameKeys, message: nameMessage },
+		])
+
+	const placementShape = {
+		position: vector2InputSchema.optional(),
+		z_order: z.number().optional(),
+	}
 
 	registerToolNamespace("manage_widget", ctx.toolDescription("manage_widget"), {
 		create_widget_blueprint: {
 			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						widget_name: z.string().optional(),
-						name: z.string().optional(),
-						parent_class: z.string().optional(),
-						path: z.string().optional(),
-					})
-					.strict(),
-				["widget_name", "name"],
-				"Provide widget_name or name.",
+				strictObject({
+					widget_name: z.string().optional(),
+					name: z.string().optional(),
+					parent_class: z.string().optional(),
+					path: z.string().optional(),
+				}),
+				widgetNameKeys,
+				widgetNameMessage,
 			),
 			handler: (params) =>
 				pythonDispatch(
@@ -45,22 +81,15 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		add_text_block: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							...widgetBlueprintShape,
-							text_block_name: z.string().optional(),
-							name: z.string().optional(),
-							text: z.string().optional(),
-							...vector2PlacementShape,
-							font_size: z.number().optional(),
-							...materialColorShape,
-						})
-						.strict(),
-					["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"],
-					"Provide widget_blueprint, widget_blueprint_path, widget_name, or blueprint_name.",
-				),
+			paramsSchema: requireNamedWidgetBlueprintSelection(
+				{
+					text_block_name: z.string().optional(),
+					name: z.string().optional(),
+					text: z.string().optional(),
+					...vector2PlacementShape,
+					font_size: z.number().optional(),
+					...materialColorShape,
+				},
 				["text_block_name", "name"],
 				"Provide text_block_name or name.",
 			),
@@ -70,41 +99,24 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 						widget_name: widgetBlueprintParam(params),
 						text_block_name: requiredStringParam(params, ["text_block_name", "name"]),
 						text: optionalStringParam(params, ["text"]),
-						position: toVector2Array(params.position as any),
-						size: toVector2Array(params.size as any),
+						position: toVector2Array(params.position),
+						size: toVector2Array(params.size),
 						font_size: params.font_size,
-						color: toColorArray(params.color as any),
+						color: toColorArray(params.color),
 					}),
 				),
 		},
 		add_button: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							...widgetBlueprintShape,
-							button_name: z.string().optional(),
-							name: z.string().optional(),
-							text: z.string().optional(),
-							...vector2PlacementShape,
-							font_size: z.number().optional(),
-							...materialColorShape,
-							background_color: z
-								.union([
-									z.object({
-										r: z.number(),
-										g: z.number(),
-										b: z.number(),
-										a: z.number().optional(),
-									}),
-									z.tuple([z.number(), z.number(), z.number(), z.number()]),
-								])
-								.optional(),
-						})
-						.strict(),
-					["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"],
-					"Provide widget_blueprint, widget_blueprint_path, widget_name, or blueprint_name.",
-				),
+			paramsSchema: requireNamedWidgetBlueprintSelection(
+				{
+					button_name: z.string().optional(),
+					name: z.string().optional(),
+					text: z.string().optional(),
+					...vector2PlacementShape,
+					font_size: z.number().optional(),
+					...materialColorShape,
+					background_color: ctx.colorInputSchema.optional(),
+				},
 				["button_name", "name"],
 				"Provide button_name or name.",
 			),
@@ -114,25 +126,18 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 						widget_name: widgetBlueprintParam(params),
 						button_name: requiredStringParam(params, ["button_name", "name"]),
 						text: optionalStringParam(params, ["text"]),
-						position: toVector2Array(params.position as any),
-						size: toVector2Array(params.size as any),
+						position: toVector2Array(params.position),
+						size: toVector2Array(params.size),
 						font_size: params.font_size,
-						color: toColorArray(params.color as any),
-						background_color: toColorArray(params.background_color as any),
+						color: toColorArray(params.color),
+						background_color: toColorArray(params.background_color),
 					}),
 				),
 		},
 		add_to_viewport: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...widgetBlueprintShape,
-						z_order: z.number().optional(),
-					})
-					.strict(),
-				["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"],
-				"Provide widget_blueprint, widget_blueprint_path, widget_name, or blueprint_name.",
-			),
+			paramsSchema: requireWidgetBlueprintSelection({
+				z_order: z.number().optional(),
+			}),
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEUMGTool("add_widget_to_viewport", {
@@ -142,28 +147,13 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		add_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							widget_class: z.string(),
-							widget_name: z.string().optional(),
-							name: z.string().optional(),
-							parent_widget_name: z.string().optional(),
-							position: z
-								.union([z.object({ x: z.number(), y: z.number() }), z.tuple([z.number(), z.number()])])
-								.optional(),
-							z_order: z.number().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["widget_name", "name"],
-				"Provide widget_name or name.",
-			),
+			paramsSchema: requireWidgetAssetAndName({
+				widget_class: z.string(),
+				widget_name: z.string().optional(),
+				name: z.string().optional(),
+				parent_widget_name: z.string().optional(),
+				...placementShape,
+			}),
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEUMGAddWidget(
@@ -177,22 +167,10 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		remove_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							widget_name: z.string().optional(),
-							name: z.string().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["widget_name", "name"],
-				"Provide widget_name or name.",
-			),
+			paramsSchema: requireWidgetAssetAndName({
+				widget_name: z.string().optional(),
+				name: z.string().optional(),
+			}),
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEUMGRemoveWidget(
@@ -202,25 +180,12 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		position_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							widget_name: z.string().optional(),
-							name: z.string().optional(),
-							position: z
-								.union([z.object({ x: z.number(), y: z.number() }), z.tuple([z.number(), z.number()])]),
-							z_order: z.number().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["widget_name", "name"],
-				"Provide widget_name or name.",
-			),
+			paramsSchema: requireWidgetAssetAndName({
+				widget_name: z.string().optional(),
+				name: z.string().optional(),
+				position: vector2InputSchema,
+				z_order: z.number().optional(),
+			}),
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEUMGSetWidgetPosition(
@@ -232,27 +197,12 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		reparent_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							widget_name: z.string().optional(),
-							name: z.string().optional(),
-							new_parent_widget_name: z.string(),
-							position: z
-								.union([z.object({ x: z.number(), y: z.number() }), z.tuple([z.number(), z.number()])])
-								.optional(),
-							z_order: z.number().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["widget_name", "name"],
-				"Provide widget_name or name.",
-			),
+			paramsSchema: requireWidgetAssetAndName({
+				widget_name: z.string().optional(),
+				name: z.string().optional(),
+				new_parent_widget_name: z.string(),
+				...placementShape,
+			}),
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEUMGReparentWidget(
@@ -265,27 +215,16 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		add_child_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							parent_widget_name: z.string(),
-							child_widget_class: z.string(),
-							child_widget_name: z.string().optional(),
-							name: z.string().optional(),
-							position: z
-								.union([z.object({ x: z.number(), y: z.number() }), z.tuple([z.number(), z.number()])])
-								.optional(),
-							z_order: z.number().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["child_widget_name", "name"],
-				"Provide child_widget_name or name.",
+			paramsSchema: requireWidgetAssetAndName(
+				{
+					parent_widget_name: z.string(),
+					child_widget_class: z.string(),
+					child_widget_name: z.string().optional(),
+					name: z.string().optional(),
+					...placementShape,
+				},
+				childWidgetNameKeys,
+				childWidgetNameMessage,
 			),
 			handler: (params) =>
 				pythonDispatch(
@@ -300,22 +239,14 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		remove_child_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							parent_widget_name: z.string(),
-							child_widget_name: z.string().optional(),
-							name: z.string().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["child_widget_name", "name"],
-				"Provide child_widget_name or name.",
+			paramsSchema: requireWidgetAssetAndName(
+				{
+					parent_widget_name: z.string(),
+					child_widget_name: z.string().optional(),
+					name: z.string().optional(),
+				},
+				childWidgetNameKeys,
+				childWidgetNameMessage,
 			),
 			handler: (params) =>
 				pythonDispatch(
@@ -327,25 +258,16 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				),
 		},
 		position_child_widget: {
-			paramsSchema: requireAtLeastOneValue(
-				requireAtLeastOneValue(
-					z
-						.object({
-							widget_blueprint_path: z.string().optional(),
-							widget_blueprint: z.string().optional(),
-							parent_widget_name: z.string(),
-							child_widget_name: z.string().optional(),
-							name: z.string().optional(),
-							position: z
-								.union([z.object({ x: z.number(), y: z.number() }), z.tuple([z.number(), z.number()])]),
-							z_order: z.number().optional(),
-						})
-						.strict(),
-					["widget_blueprint_path", "widget_blueprint"],
-					"Provide widget_blueprint_path or widget_blueprint.",
-				),
-				["child_widget_name", "name"],
-				"Provide child_widget_name or name.",
+			paramsSchema: requireWidgetAssetAndName(
+				{
+					parent_widget_name: z.string(),
+					child_widget_name: z.string().optional(),
+					name: z.string().optional(),
+					position: vector2InputSchema,
+					z_order: z.number().optional(),
+				},
+				childWidgetNameKeys,
+				childWidgetNameMessage,
 			),
 			handler: (params) =>
 				pythonDispatch(

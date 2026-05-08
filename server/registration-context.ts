@@ -49,48 +49,26 @@ export interface RegistrationContext {
 		description: string,
 		actions: Record<string, NamespaceActionRegistration>,
 	) => void
-	registerZeroArgPythonTool: (
-		name: string,
-		description: string,
-		buildCommand: () => string,
-	) => void
+	registerZeroArgPythonTool: (name: string, description: string, buildCommand: () => string) => void
 	requiredStringListParam: (params: Record<string, any>, keys: string[]) => string[]
 	requiredStringParam: (params: Record<string, any>, keys: string[]) => string
 	searchAssetsCommand: (params: Record<string, any>, defaultAssetClass?: string) => string
 	sourceControlFileListParam: (params: Record<string, any>) => string[]
 	sourceControlFileParam: (params: Record<string, any>) => string
-	sourceControlFilesCommand: (
-		files: string[],
-		singleOperation?: string,
-		multiOperation?: string,
-	) => string
+	sourceControlFilesCommand: (files: string[], singleOperation?: string, multiOperation?: string) => string
 	sourceControlPackageListParam: (params: Record<string, any>) => string[]
 	stringListSchema: z.ZodArray<z.ZodString, "many">
 	textResponse: (text: string) => { content: Array<{ type: "text"; text: string }> }
 	toolDescription: (name: string) => string
 	toolNamespaceRegistry: Map<string, { description: string; supportedActions: string[] }>
-	toColorArray: (
-		value?: { a?: number; b: number; g: number; r: number } | [number, number, number, number],
-	) => number[] | undefined
-	toColorRecord: (
-		value?: { a?: number; b: number; g: number; r: number } | [number, number, number, number],
-	) => { a: number; b: number; g: number; r: number } | undefined
-	toRotatorArray: (
-		value?: { pitch: number; roll: number; yaw: number } | [number, number, number],
-	) => number[] | undefined
-	toRotatorRecord: (
-		value?: { pitch: number; roll: number; yaw: number } | [number, number, number],
-	) => { pitch: number; roll: number; yaw: number } | undefined
-	toVector2Array: (value?: { x: number; y: number } | [number, number]) => number[] | undefined
-	toVector2Record: (
-		value?: { x: number; y: number } | [number, number],
-	) => { x: number; y: number } | undefined
-	toVector3Array: (
-		value?: { x: number; y: number; z: number } | [number, number, number],
-	) => number[] | undefined
-	toVector3Record: (
-		value?: { x: number; y: number; z: number } | [number, number, number],
-	) => { x: number; y: number; z: number } | undefined
+	toColorArray: (value?: unknown) => number[] | undefined
+	toColorRecord: (value?: unknown) => { a: number; b: number; g: number; r: number } | undefined
+	toRotatorArray: (value?: unknown) => number[] | undefined
+	toRotatorRecord: (value?: unknown) => { pitch: number; roll: number; yaw: number } | undefined
+	toVector2Array: (value?: unknown) => number[] | undefined
+	toVector2Record: (value?: unknown) => { x: number; y: number } | undefined
+	toVector3Array: (value?: unknown) => number[] | undefined
+	toVector3Record: (value?: unknown) => { x: number; y: number; z: number } | undefined
 	vector2InputSchema: z.ZodTypeAny
 	vector3InputSchema: z.ZodTypeAny
 	rotatorInputSchema: z.ZodTypeAny

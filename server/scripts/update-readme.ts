@@ -10,6 +10,8 @@ import {
 	type ToolCatalogEntry,
 } from "../tool-catalog.js"
 
+const categoryOrderSet = new Set<string>(categoryOrder)
+
 function formatTableCell(value?: string): string {
 	return value && value.trim() ? value.replace(/\|/g, "\\|") : "-"
 }
@@ -19,10 +21,7 @@ function escapeHtml(value?: string, emptyValue: string = "-"): string {
 		return emptyValue
 	}
 
-	return value
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
+	return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
 function summarizeDescription(description: string): string {
@@ -76,7 +75,7 @@ function generateToolsSections(tools: ToolCatalogEntry[]): string {
 		sections.push(`### ${category}\n\n${generateToolsTable(categoryTools)}`)
 	}
 
-	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category as any))
+	const uncategorizedTools = tools.filter((tool) => !categoryOrderSet.has(tool.category))
 	if (uncategorizedTools.length > 0) {
 		sections.push(`### Other Tools\n\n${generateToolsTable(uncategorizedTools)}`)
 	}
@@ -107,20 +106,13 @@ function replaceToolsSection(content: string, toolsSection: string): string {
 	const contentAfterHeader = content.slice(sectionStart + headerMatch[0].length)
 	const nextTopLevelHeaderIndex = contentAfterHeader.search(/\n##\s/)
 	const sectionEnd =
-		nextTopLevelHeaderIndex === -1
-			? content.length
-			: sectionStart + headerMatch[0].length + nextTopLevelHeaderIndex + 1
+		nextTopLevelHeaderIndex === -1 ? content.length : sectionStart + headerMatch[0].length + nextTopLevelHeaderIndex + 1
 
 	return content.slice(0, sectionStart) + toolsSection + content.slice(sectionEnd)
 }
 
 function insertToolsSection(content: string, toolsSection: string): string {
-	const insertMarkers = [
-		"## Contributing",
-		"## License",
-		"## ?諭?License",
-		"## ?姨?Contributing",
-	]
+	const insertMarkers = ["## Contributing", "## License", "## ?諭?License", "## ?姨?Contributing"]
 	const insertPoints = insertMarkers
 		.map((marker) => ({ found: content.indexOf(marker), marker }))
 		.filter((point) => point.found !== -1)

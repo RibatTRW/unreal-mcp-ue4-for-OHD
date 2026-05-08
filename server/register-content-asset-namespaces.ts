@@ -36,9 +36,7 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 		asset_info: {
 			paramsSchema: assetLookupSchema,
 			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
+				pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 		},
 	})
 
@@ -135,7 +133,7 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 						component_name: optionalStringParam(params, ["component_name"]),
 						material_path: optionalStringParam(params, ["material_path"]),
 						slot_index: params.slot_index,
-						color: toColorArray(params.color as any),
+						color: toColorArray(params.color),
 						parameter_name: optionalStringParam(params, ["parameter_name"]),
 						instance_name: optionalStringParam(params, ["instance_name"]),
 						instance_path: optionalStringParam(params, ["instance_path"]),
@@ -152,9 +150,7 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 		texture_info: {
 			paramsSchema: assetLookupSchema,
 			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
+				pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 		},
 		import_texture: {
 			paramsSchema: requireAtLeastOneValue(
@@ -179,14 +175,9 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 				pythonDispatch(
 					editorTools.UETextureTool("import_texture", {
 						source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
-						destination_path: optionalStringParam(params, [
-							"destination_path",
-							"content_path",
-							"path",
-						]),
+						destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
 						asset_name: optionalStringParam(params, ["asset_name", "name"]),
-						replace_existing:
-							typeof params.replace_existing === "boolean" ? params.replace_existing : true,
+						replace_existing: typeof params.replace_existing === "boolean" ? params.replace_existing : true,
 						save: typeof params.save === "boolean" ? params.save : true,
 					}),
 				),
@@ -208,8 +199,7 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEDataTool("search_data_assets", {
-						search_term:
-							optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
+						search_term: optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
 						include_engine: Boolean(params.include_engine),
 						limit: params.limit,
 					}),
@@ -218,9 +208,7 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 		asset_info: {
 			paramsSchema: assetLookupSchema,
 			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
+				pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 		},
 		create_data_asset: {
 			paramsSchema: requireAtLeastOneValue(

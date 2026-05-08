@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process"
 // https://github.com/modelcontextprotocol/inspector/blob/main/cli/scripts/make-executable.js
 /**
  * Cross-platform script to make a file executable
@@ -13,7 +12,7 @@ async function makeExecutable() {
 	try {
 		// On Unix-like systems (Linux, macOS), use chmod
 		if (platform() !== "win32") {
-			execSync(`chmod +x "${TARGET_FILE}"`)
+			await fs.chmod(TARGET_FILE, 0o755)
 			console.log("Made file executable with chmod")
 		} else {
 			// On Windows, no need to make files "executable" in the Unix sense

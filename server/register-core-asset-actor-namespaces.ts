@@ -53,6 +53,16 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 		asset_path: z.string().optional(),
 	}
 
+	const assetMutationPayload = (params: Record<string, any>) => ({
+		source_asset_path: requiredStringParam(params, ["source_asset_path", "source_path", "asset_path", "path"]),
+		destination_asset_path: optionalStringParam(params, ["destination_asset_path", "target_asset_path"]),
+		destination_path: optionalStringParam(params, ["destination_path"]),
+		new_name: optionalStringParam(params, ["new_name", "name"]),
+	})
+
+	const assetMutationHandler = (operation: "duplicate" | "rename" | "move") => (params: Record<string, any>) =>
+		pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params)))
+
 	registerToolNamespace("manage_asset", ctx.toolDescription("manage_asset"), {
 		list: {
 			paramsSchema: z
@@ -79,16 +89,12 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 		info: {
 			paramsSchema: assetLookupSchema,
 			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
+				pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 		},
 		references: {
 			paramsSchema: assetLookupSchema,
 			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
+				pythonDispatch(editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"]))),
 		},
 		exists: {
 			paramsSchema: requireAtLeastOneValue(
@@ -111,63 +117,15 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 		},
 		duplicate: {
 			paramsSchema: assetMutationParamsSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("duplicate", {
-						source_asset_path: requiredStringParam(params, [
-							"source_asset_path",
-							"source_path",
-							"asset_path",
-							"path",
-						]),
-						destination_asset_path: optionalStringParam(params, [
-							"destination_asset_path",
-							"target_asset_path",
-						]),
-						destination_path: optionalStringParam(params, ["destination_path"]),
-						new_name: optionalStringParam(params, ["new_name", "name"]),
-					}),
-				),
+			handler: assetMutationHandler("duplicate"),
 		},
 		rename: {
 			paramsSchema: assetMutationParamsSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("rename", {
-						source_asset_path: requiredStringParam(params, [
-							"source_asset_path",
-							"source_path",
-							"asset_path",
-							"path",
-						]),
-						destination_asset_path: optionalStringParam(params, [
-							"destination_asset_path",
-							"target_asset_path",
-						]),
-						destination_path: optionalStringParam(params, ["destination_path"]),
-						new_name: optionalStringParam(params, ["new_name", "name"]),
-					}),
-				),
+			handler: assetMutationHandler("rename"),
 		},
 		move: {
 			paramsSchema: assetMutationParamsSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("move", {
-						source_asset_path: requiredStringParam(params, [
-							"source_asset_path",
-							"source_path",
-							"asset_path",
-							"path",
-						]),
-						destination_asset_path: optionalStringParam(params, [
-							"destination_asset_path",
-							"target_asset_path",
-						]),
-						destination_path: optionalStringParam(params, ["destination_path"]),
-						new_name: optionalStringParam(params, ["new_name", "name"]),
-					}),
-				),
+			handler: assetMutationHandler("move"),
 		},
 		delete: {
 			paramsSchema: requireAtLeastOneValue(
@@ -205,10 +163,7 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 					editorTools.UEAssetManagementTool("save", {
 						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
 						asset_paths: params.asset_paths,
-						only_if_is_dirty:
-							typeof params.only_if_is_dirty === "boolean"
-								? params.only_if_is_dirty
-								: undefined,
+						only_if_is_dirty: typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
 					}),
 				),
 		},
@@ -243,10 +198,8 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEAssetManagementTool("list_folder", {
-						directory_path:
-							optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
-						recursive:
-							typeof params.recursive === "boolean" ? params.recursive : undefined,
+						directory_path: optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
+						recursive: typeof params.recursive === "boolean" ? params.recursive : undefined,
 					}),
 				),
 		},
@@ -354,9 +307,7 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 			handler: (params) =>
 				pythonDispatch(
 					editorTools.UEActorTool("spawn_actor", {
-						type:
-							optionalStringParam(params, ["type", "actor_type", "class_name"]) ??
-							"StaticMeshActor",
+						type: optionalStringParam(params, ["type", "actor_type", "class_name"]) ?? "StaticMeshActor",
 						name: optionalStringParam(params, ["name", "actor_name"]),
 						location: toVector3Array(params.location),
 						rotation: toRotatorArray(params.rotation),

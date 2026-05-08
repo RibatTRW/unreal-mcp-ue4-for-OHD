@@ -177,7 +177,7 @@ export function registerWorldEffectsSplineNamespaces(ctx: RegistrationContext) {
 						component_name: optionalStringParam(params, ["component_name"]),
 						material_path: optionalStringParam(params, ["material_path"]),
 						slot_index: params.slot_index,
-						color: toColorArray(params.color as any),
+						color: toColorArray(params.color),
 						parameter_name: optionalStringParam(params, ["parameter_name"]),
 						instance_name: optionalStringParam(params, ["instance_name"]),
 						instance_path: optionalStringParam(params, ["instance_path"]),

@@ -39,30 +39,29 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 - Unreal Engine `4.27.2`
 - Node.js `18+`
 - `npm`
-- An MCP client such as Codex, Claude Desktop, Cursor, or GitHub Copilot in a supported IDE
+- An MCP client such as Codex, Claude Code, Claude Desktop, Cursor, or GitHub Copilot in a supported IDE
 
-## Required Unreal Editor Setup
+## MCP Client Setup
 
-This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your UE4.27.2 project.
+This is the most important setup step: your MCP client must know how to launch `unreal-mcp-ue4`.
 
-### Required plugins
+### 1. Install the server
 
-- `Python Editor Script Plugin`
-- `Editor Scripting Utilities`
+Recommended global install:
 
-### Required project setting
+```bash
+npm install -g unreal-mcp-ue4
+```
 
-- `Edit -> Project Settings -> Python -> Enable Remote Execution`
+After the global install, use the published `unreal-mcp-ue4` binary in your client configuration.
 
-### Notes
+One-off invocation with `npx`:
 
-- UMG tooling works with editor modules that already ship with Unreal Editor. There is no extra UMG plugin from this repository to install.
-- Keep the target Unreal project open while using the MCP server or running tests.
-- If you change plugin or Python settings, restart the editor before testing again.
+```bash
+npx unreal-mcp-ue4
+```
 
-## Installation
-
-### 1. Clone and build the server
+Local source checkout:
 
 ```bash
 git clone https://github.com/conaman/unreal-mcp-ue4.git
@@ -71,37 +70,82 @@ npm install
 npm run build
 ```
 
-Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/editor/tools.js`.
+Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/editor/tools.js`. Use the `dist/bin.js` path in the local source checkout examples below.
 
-### 1a. Install from npm
+### 2. Register the server in your client
 
-Once the package is published on npm, you can install it directly instead of cloning the repository.
+Use the global examples when you installed with `npm install -g unreal-mcp-ue4`. Use the local source checkout examples when you are developing from a cloned repository.
 
-Global install:
+#### Claude
 
-```bash
-npm install -g unreal-mcp-ue4
-```
-
-One-off invocation with `npx`:
-
-```bash
-npx unreal-mcp-ue4
-```
-
-If you install from npm, the MCP server entry point is the published `unreal-mcp-ue4` binary instead of a local `dist/bin.js` path.
-
-#### Claude MCP registration with a global install
-
-If you installed the package globally, you can register it with Claude without referencing `node` or a local `dist/bin.js` path:
+Global npm install:
 
 ```bash
 claude mcp add --scope user unreal-mcp-ue4 -- unreal-mcp-ue4
 ```
 
-This tells Claude to launch the published `unreal-mcp-ue4` binary directly from your global npm install.
+Local source checkout:
 
-### 2. Enable the Unreal requirements
+```bash
+claude mcp add --scope user unreal-mcp-ue4 -- node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
+```
+
+#### Codex
+
+Global npm install:
+
+```bash
+codex mcp add unreal-ue4 -- unreal-mcp-ue4
+```
+
+Local source checkout:
+
+```bash
+codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
+```
+
+#### GitHub Copilot
+
+Create or update `.vscode/mcp.json`.
+
+Global npm install:
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "unreal-mcp-ue4",
+      "args": []
+    }
+  }
+}
+```
+
+Local source checkout:
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/unreal-mcp-ue4/dist/bin.js"
+      ]
+    }
+  }
+}
+```
+
+Then start the server from the MCP config UI and verify that `unreal-ue4` appears in the tools picker.
+
+Official Copilot docs:
+
+- [Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp)
+- [About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
+
+### 3. Enable Unreal Editor remote execution
+
+This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your UE4.27.2 project.
 
 In Unreal Editor:
 
@@ -114,62 +158,11 @@ In Unreal Editor:
 7. Enable `Enable Remote Execution`.
 8. Restart the editor again if needed.
 
-### 3. Configure your MCP client
+Notes:
 
-Most clients use a local `stdio` server command. The safest configuration is to point to an absolute `node` path and an absolute `dist/bin.js` path.
-
-Generic MCP client example:
-
-```json
-{
-  "mcpServers": {
-    "unreal-ue4": {
-      "command": "/absolute/path/to/node",
-      "args": [
-        "/absolute/path/to/unreal-mcp-ue4/dist/bin.js"
-      ]
-    }
-  }
-}
-```
-
-If `node` is already on your `PATH`, you can use `"command": "node"` instead.
-
-### Codex example
-
-```bash
-codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
-```
-
-If you installed the package globally from npm, you can point the client directly at the published executable:
-
-```bash
-codex mcp add unreal-ue4 -- unreal-mcp-ue4
-```
-
-### GitHub Copilot example
-
-For VS Code, create `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "unreal-ue4": {
-      "command": "node",
-      "args": [
-        "C:\\Users\\YourName\\dev\\unreal-mcp-ue4\\dist\\bin.js"
-      ]
-    }
-  }
-}
-```
-
-Then start the server from the MCP config UI and verify that `unreal-ue4` appears in the tools picker.
-
-Official Copilot docs:
-
-- [Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp)
-- [About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
+- UMG tooling works with editor modules that already ship with Unreal Editor. There is no extra UMG plugin from this repository to install.
+- Keep the target Unreal project open while using the MCP server or running tests.
+- If you change plugin or Python settings, restart the editor before testing again.
 
 ## Usage
 
@@ -186,7 +179,7 @@ Official Copilot docs:
 
 1. Open your UE4.27.2 project and wait for the editor to finish loading.
 2. Make sure the required plugins and `Enable Remote Execution` are enabled.
-3. Build the MCP server with `npm run build`.
+3. Install the MCP server globally with `npm install -g unreal-mcp-ue4`, or build your local checkout with `npm run build`.
 4. Start your MCP client or open a new session in the client that already references this server.
 5. Run a small read-only command first.
 
@@ -214,6 +207,14 @@ Useful first natural-language requests:
 - Run grouped tool namespaces that dispatch through `action` and `params`.
 
 ## Testing
+
+### No-Unreal smoke test
+
+Use this when you want to verify MCP startup, tool discovery, namespace action schemas, and action-specific parameter validation without launching Unreal Editor.
+
+```bash
+npm run test:no-unreal
+```
 
 ### Quick smoke test
 
@@ -268,6 +269,7 @@ Open PowerShell in the repository folder:
 ```powershell
 cd C:\dev\unreal-mcp-ue4
 npm install
+npm run test:no-unreal
 npm run test:e2e
 npm run test:e2e -- --with-assets
 ```
@@ -280,14 +282,15 @@ npm run test:e2e -- --with-assets
 
 ### Recommended test workflow
 
-1. Start with `npm run test:e2e`.
-2. If that passes, run `npm run test:e2e -- --with-assets`.
-3. After both pass, try the server once from your real MCP client.
-4. Use a separate Unreal test project before pointing the server at production content.
+1. Start with `npm run test:no-unreal`.
+2. If that passes, run `npm run test:e2e`.
+3. If the editor-backed smoke test passes, run `npm run test:e2e -- --with-assets`.
+4. After all smoke tests pass, try the server once from your real MCP client.
+5. Use a separate Unreal test project before pointing the server at production content.
 
 ## Publishing to npm
 
-The package is prepared for npm publishing as a public package.
+The package is published to npm as a public package.
 
 The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, `2026.5.8-1` follows this format.
 
@@ -309,15 +312,14 @@ npm run test:e2e -- --with-assets --skip-build
 4. Publish:
 
 ```bash
-npm publish
+npm publish --tag latest
 ```
 
 Notes:
 
 - `prepack` runs `npm run build`, so the published tarball always uses a fresh `dist`.
 - `npm run publish:check` verifies typecheck, rebuilds the package, and runs `npm pack --dry-run` so you can inspect the exact tarball contents before publishing.
-- The package name `unreal-mcp-ue4` is currently available on npm.
-- Because the unified date version uses a semver prerelease suffix, publish with an explicit dist-tag such as `npm publish --tag latest`.
+- Because the unified date version uses a semver prerelease suffix, publish with an explicit dist-tag such as `latest`.
 
 ## Troubleshooting
 
@@ -332,12 +334,15 @@ Notes:
 ### Connection or discovery problems on Windows
 
 - Allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall.
-- The bundled `unreal-remote-execution` package uses UDP multicast discovery on `239.0.0.1:6766` and a localhost command channel on `127.0.0.1:6776`.
+- The server uses UDP multicast discovery on `239.0.0.1:6766` and opens the command channel on port `6776`.
+- By default, the command bind address is the first non-internal IPv4 address found on the machine. Override it with `UNREAL_MCP_BIND_ADDRESS` or `UNREAL_MCP_COMMAND_ADDRESS` if Unreal cannot discover or connect to the MCP process.
 - If your client config uses JSON, escape backslashes or switch to forward slashes.
 
-### Client starts but cannot find `node`
+### Client starts but cannot find `unreal-mcp-ue4` or `node`
 
-- Use an absolute path to `node` or `node.exe` in the MCP config instead of relying on `PATH`.
+- For the recommended global install, make sure the npm global binary directory is on the MCP client's `PATH`.
+- If your client cannot inherit that `PATH`, use an absolute path to the global `unreal-mcp-ue4` executable.
+- If you are using the source-development config, use an absolute path to `node` or `node.exe` instead of relying on `PATH`.
 
 ### Some Blueprint graph or UMG binding commands are unavailable
 
@@ -354,7 +359,7 @@ Notes:
 - Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.27 Python environment.
 - The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
 
-The tool list below is generated from `server/index.ts` during build.
+The tool list below is generated from the TypeScript tool catalog during build.
 
 ## Available Tools
 

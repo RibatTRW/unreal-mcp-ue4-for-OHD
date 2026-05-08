@@ -34,91 +34,119 @@ export const worldBuildBaseSchema = {
 	prefix: z.string().optional().describe("Optional actor label prefix"),
 }
 
-export function toVector2Record(value: any) {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null && !Array.isArray(value)
+
+const numberAt = (values: unknown[], index: number, fallback: number) => Number(values[index] ?? fallback)
+
+const numberProp = (record: Record<string, unknown>, key: string, fallback: number) => Number(record[key] ?? fallback)
+
+export function toVector2Record(value?: unknown) {
 	if (!value) {
 		return undefined
 	}
 
 	if (Array.isArray(value)) {
-		return { x: Number(value[0] ?? 0), y: Number(value[1] ?? 0) }
+		return { x: numberAt(value, 0, 0), y: numberAt(value, 1, 0) }
 	}
 
-	return { x: Number(value.x ?? 0), y: Number(value.y ?? 0) }
-}
-
-export function toVector3Record(value: any) {
-	if (!value) {
+	if (!isRecord(value)) {
 		return undefined
 	}
 
-	if (Array.isArray(value)) {
-		return {
-			x: Number(value[0] ?? 0),
-			y: Number(value[1] ?? 0),
-			z: Number(value[2] ?? 0),
-		}
-	}
-
-	return {
-		x: Number(value.x ?? 0),
-		y: Number(value.y ?? 0),
-		z: Number(value.z ?? 0),
-	}
+	return { x: numberProp(value, "x", 0), y: numberProp(value, "y", 0) }
 }
 
-export function toRotatorRecord(value: any) {
+export function toVector3Record(value?: unknown) {
 	if (!value) {
 		return undefined
 	}
 
 	if (Array.isArray(value)) {
 		return {
-			pitch: Number(value[0] ?? 0),
-			yaw: Number(value[1] ?? 0),
-			roll: Number(value[2] ?? 0),
+			x: numberAt(value, 0, 0),
+			y: numberAt(value, 1, 0),
+			z: numberAt(value, 2, 0),
 		}
 	}
 
+	if (!isRecord(value)) {
+		return undefined
+	}
+
 	return {
-		pitch: Number(value.pitch ?? 0),
-		yaw: Number(value.yaw ?? 0),
-		roll: Number(value.roll ?? 0),
+		x: numberProp(value, "x", 0),
+		y: numberProp(value, "y", 0),
+		z: numberProp(value, "z", 0),
 	}
 }
 
-export function toVector2Array(value?: { x: number; y: number } | [number, number]) {
-	return !value ? undefined : Array.isArray(value) ? value : [value.x, value.y]
-}
-
-export function toVector3Array(
-	value?: { x: number; y: number; z: number } | [number, number, number],
-) {
-	return !value ? undefined : Array.isArray(value) ? value : [value.x, value.y, value.z]
-}
-
-export function toRotatorArray(
-	value?: { pitch: number; yaw: number; roll: number } | [number, number, number],
-) {
-	return !value ? undefined : Array.isArray(value) ? value : [value.pitch, value.yaw, value.roll]
-}
-
-export function toColorRecord(
-	value?: { r: number; g: number; b: number; a?: number } | [number, number, number, number],
-) {
+export function toRotatorRecord(value?: unknown) {
 	if (!value) {
 		return undefined
 	}
 
-	return Array.isArray(value)
-		? { r: value[0], g: value[1], b: value[2], a: value[3] ?? 1 }
-		: { r: value.r, g: value.g, b: value.b, a: value.a ?? 1 }
+	if (Array.isArray(value)) {
+		return {
+			pitch: numberAt(value, 0, 0),
+			yaw: numberAt(value, 1, 0),
+			roll: numberAt(value, 2, 0),
+		}
+	}
+
+	if (!isRecord(value)) {
+		return undefined
+	}
+
+	return {
+		pitch: numberProp(value, "pitch", 0),
+		yaw: numberProp(value, "yaw", 0),
+		roll: numberProp(value, "roll", 0),
+	}
 }
 
-export function toColorArray(
-	value?: { r: number; g: number; b: number; a?: number } | [number, number, number, number],
-) {
+export function toVector2Array(value?: unknown) {
+	const vector = toVector2Record(value)
+	return vector ? [vector.x, vector.y] : undefined
+}
+
+export function toVector3Array(value?: unknown) {
+	const vector = toVector3Record(value)
+	return vector ? [vector.x, vector.y, vector.z] : undefined
+}
+
+export function toRotatorArray(value?: unknown) {
+	const rotator = toRotatorRecord(value)
+	return rotator ? [rotator.pitch, rotator.yaw, rotator.roll] : undefined
+}
+
+export function toColorRecord(value?: unknown) {
+	if (!value) {
+		return undefined
+	}
+
+	if (Array.isArray(value)) {
+		return {
+			r: numberAt(value, 0, 0),
+			g: numberAt(value, 1, 0),
+			b: numberAt(value, 2, 0),
+			a: numberAt(value, 3, 1),
+		}
+	}
+
+	if (!isRecord(value)) {
+		return undefined
+	}
+
+	return {
+		r: numberProp(value, "r", 0),
+		g: numberProp(value, "g", 0),
+		b: numberProp(value, "b", 0),
+		a: numberProp(value, "a", 1),
+	}
+}
+
+export function toColorArray(value?: unknown) {
 	const colorRecord = toColorRecord(value)
-	return colorRecord
-		? [colorRecord.r, colorRecord.g, colorRecord.b, colorRecord.a]
-		: undefined
+	return colorRecord ? [colorRecord.r, colorRecord.g, colorRecord.b, colorRecord.a] : undefined
 }

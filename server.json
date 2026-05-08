@@ -8,12 +8,12 @@
     "url": "https://github.com/conaman/unreal-mcp-ue4",
     "source": "github"
   },
-  "version": "2026.5.8-2",
+  "version": "2026.5.9-1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "unreal-mcp-ue4",
-      "version": "2026.5.8-2",
+      "version": "2026.5.9-1",
       "transport": {
         "type": "stdio"
       }

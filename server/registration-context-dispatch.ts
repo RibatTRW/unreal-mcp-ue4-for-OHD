@@ -2,9 +2,7 @@ import { z } from "zod"
 
 import { tryRunCommand } from "./remote-execution.js"
 
-export type NamespaceDispatchResult =
-	| { kind: "python"; command: string }
-	| { kind: "direct"; payload: unknown }
+export type NamespaceDispatchResult = { kind: "python"; command: string } | { kind: "direct"; payload: unknown }
 
 export type NamespaceActionHandler = (
 	params: Record<string, any>,
@@ -16,9 +14,7 @@ export interface NamespaceActionDefinition {
 	paramsSchema?: z.ZodTypeAny
 }
 
-export type NamespaceActionRegistration =
-	| NamespaceActionDefinition
-	| NamespaceActionHandler
+export type NamespaceActionRegistration = NamespaceActionDefinition | NamespaceActionHandler
 
 type TextResponse = { content: Array<{ type: "text"; text: string }> }
 
@@ -36,12 +32,8 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 	const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
 	const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
 	const normalizeActionName = (action: string) => action.trim().toLowerCase()
-	const normalizeActionDefinition = (
-		actionRegistration: NamespaceActionRegistration,
-	): NamespaceActionDefinition =>
-		typeof actionRegistration === "function"
-			? { handler: actionRegistration }
-			: actionRegistration
+	const normalizeActionDefinition = (actionRegistration: NamespaceActionRegistration): NamespaceActionDefinition =>
+		typeof actionRegistration === "function" ? { handler: actionRegistration } : actionRegistration
 
 	const registerPythonTool = (
 		name: string,
@@ -49,16 +41,10 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		schema: Record<string, z.ZodTypeAny>,
 		buildCommand: (args: any) => string,
 	) => {
-		rawServerTool(name, description, schema, async (args: any) =>
-			textResponse(await tryRunCommand(buildCommand(args))),
-		)
+		rawServerTool(name, description, schema, async (args: any) => textResponse(await tryRunCommand(buildCommand(args))))
 	}
 
-	const registerZeroArgPythonTool = (
-		name: string,
-		description: string,
-		buildCommand: () => string,
-	) => {
+	const registerZeroArgPythonTool = (name: string, description: string, buildCommand: () => string) => {
 		rawServerTool(name, description, async () => textResponse(await tryRunCommand(buildCommand())))
 	}
 
@@ -93,10 +79,7 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 	) => {
 		const paramsSchemas = supportedActions.map((actionName) => {
 			const actionDefinition = normalizedActions[actionName]
-			return (
-				actionDefinition.paramsSchema ??
-				z.object({}).strict()
-			).describe(
+			return (actionDefinition.paramsSchema ?? z.object({}).strict()).describe(
 				actionDefinition.description
 					? `${name}.${actionName}: ${actionDefinition.description}`
 					: `Parameters for ${name}.${actionName}`,
@@ -156,13 +139,13 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 
 		const inputSchema = z
 			.object({
-				action: namespaceActionSchema(supportedActions).describe(
-					`Action to execute inside tool namespace ${name}`,
-				),
+				action: namespaceActionSchema(supportedActions).describe(`Action to execute inside tool namespace ${name}`),
 				params: namespaceParamsSchema(name, supportedActions, normalizedActions)
 					.optional()
 					.describe(
-						`Parameters for the selected ${name} action. Each union option describes one action's params.`,
+						`Parameters for the selected ${name} action. Supported actions: ${supportedActions
+							.map((actionName) => `${name}.${actionName}`)
+							.join(", ")}.`,
 					),
 			})
 			.strict()
@@ -179,17 +162,10 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 				try {
 					const actionDefinition = normalizedActions[normalizedAction]
 					if (!actionDefinition) {
-						return await runNamespaceDispatch(
-							unsupportedNamespaceAction(name, normalizedAction, supportedActions),
-						)
+						return await runNamespaceDispatch(unsupportedNamespaceAction(name, normalizedAction, supportedActions))
 					}
 
-					const validated = await validateNamespaceParams(
-						name,
-						normalizedAction,
-						actionDefinition,
-						params ?? {},
-					)
+					const validated = await validateNamespaceParams(name, normalizedAction, actionDefinition, params ?? {})
 					if (!validated.success) {
 						return validated.response
 					}
