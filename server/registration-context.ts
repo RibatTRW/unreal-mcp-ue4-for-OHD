@@ -29,6 +29,7 @@ import { toolDescription } from "./tool-catalog.js"
 
 export interface RegistrationContext {
 	actorNameParam: (params: Record<string, any>) => string
+	assetPathListParam: (params: Record<string, any>) => string | string[] | undefined
 	blueprintNameParam: (params: Record<string, any>) => string
 	colorInputSchema: z.ZodTypeAny
 	directDispatch: (payload: unknown) => NamespaceDispatchResult

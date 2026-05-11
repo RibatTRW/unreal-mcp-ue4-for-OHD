@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
 import process from "node:process"
@@ -107,6 +108,22 @@ async function main() {
 		fail(`Built MCP server entry not found at ${serverEntry}. Run "npm run build" first.`)
 	}
 
+	const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"))
+	const versionResult = spawnSync(process.execPath, [serverEntry, "--version"], {
+		cwd: repoRoot,
+		encoding: "utf8",
+		timeout: 5000,
+	})
+	if (versionResult.error) {
+		throw versionResult.error
+	}
+	assert(versionResult.status === 0, `--version exited with status ${versionResult.status}`)
+	assert(
+		versionResult.stdout.trim() === packageJson.version,
+		`--version printed ${JSON.stringify(versionResult.stdout.trim())}, expected ${packageJson.version}`,
+	)
+	logPass("Print MCP version from CLI", versionResult.stdout.trim())
+
 	const transport = new StdioClientTransport({
 		command: process.execPath,
 		args: [serverEntry],
@@ -154,6 +171,15 @@ async function main() {
 			`manage_widget input schema is too large for lazy client discovery (${widgetSchemaBytes} bytes)`,
 		)
 		logPass("Keep manage_widget schema discoverable", `${widgetSchemaBytes} bytes`)
+
+		const editorTool = toolByName.get("manage_editor")
+		assert(editorTool, "manage_editor namespace tool is missing")
+		const editorDescription = String(editorTool.description ?? "")
+		assert(
+			editorDescription.includes("start_pie") && editorDescription.includes("stop_pie"),
+			"manage_editor description should include PIE action names for lazy tool discovery",
+		)
+		logPass("Keep manage_editor discoverable for PIE actions")
 
 		const namespacesResult = await client.callTool({
 			name: "manage_tools",

@@ -71,7 +71,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	editor_umg_set_widget_position: {
 		status: "Partial",
-		note: "Only widgets attached to CanvasPanel slots can be repositioned.",
+		note: "Only widgets attached to CanvasPanel slots can be repositioned or resized.",
 	},
 	editor_umg_reparent_widget: {
 		status: "Partial",
@@ -83,11 +83,11 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	editor_umg_set_child_widget_position: {
 		status: "Partial",
-		note: "Only direct children attached to CanvasPanel slots can be repositioned.",
+		note: "Only direct children attached to CanvasPanel slots can be repositioned or resized.",
 	},
 	add_widget_to_viewport: {
 		status: "Partial",
-		note: "Requires an active PIE or game world and successful UserWidget instancing in the editor session.",
+		note: "Requires an active PIE or game world. start_pie_if_needed can request PIE, but UE4.27 may need a follow-up add_to_viewport retry after the game world is ready.",
 	},
 	manage_inspection: {
 		status: "Partial",
@@ -95,7 +95,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_editor: {
 		status: "Supported",
-		note: "Canonical namespace for project_info, map_info, world_outliner, PIE control, console_command, and run_python.",
+		note: "Canonical namespace for project_info, map_info, world_outliner, start_pie, stop_pie, is_pie_running, console_command, and run_python.",
 	},
 	manage_system: {
 		status: "Supported",
@@ -107,7 +107,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_widget: {
 		status: "Partial",
-		note: "create_widget_blueprint, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning if the root is another panel. add_to_viewport requires PIE.",
+		note: "create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.",
 	},
 	manage_texture: {
 		status: "Supported",

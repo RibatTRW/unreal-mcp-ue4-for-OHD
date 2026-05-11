@@ -74,19 +74,31 @@ export const blueprintNameShape = {
 export const widgetBlueprintShape = {
 	widget_blueprint: z.string().optional(),
 	widget_blueprint_path: z.string().optional(),
+	widget_path: z.string().optional(),
+	asset_path: z.string().optional(),
 	widget_name: z.string().optional(),
 	blueprint_name: z.string().optional(),
 }
 
-export const widgetBlueprintKeys = ["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"]
-export const widgetBlueprintMessage = "Provide widget_blueprint, widget_blueprint_path, widget_name, or blueprint_name."
+export const widgetBlueprintKeys = [
+	"widget_blueprint",
+	"widget_blueprint_path",
+	"widget_path",
+	"asset_path",
+	"widget_name",
+	"blueprint_name",
+]
+export const widgetBlueprintMessage =
+	"Provide widget_blueprint, widget_blueprint_path, widget_path, asset_path, widget_name, or blueprint_name."
 
 export const widgetBlueprintAssetShape = {
 	widget_blueprint_path: z.string().optional(),
 	widget_blueprint: z.string().optional(),
+	widget_path: z.string().optional(),
+	asset_path: z.string().optional(),
 }
-export const widgetBlueprintAssetKeys = ["widget_blueprint_path", "widget_blueprint"]
-export const widgetBlueprintAssetMessage = "Provide widget_blueprint_path or widget_blueprint."
+export const widgetBlueprintAssetKeys = ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]
+export const widgetBlueprintAssetMessage = "Provide widget_blueprint_path, widget_blueprint, widget_path, or asset_path."
 
 export const widgetNameKeys = ["widget_name", "name"]
 export const widgetNameMessage = "Provide widget_name or name."
@@ -176,8 +188,8 @@ export const blueprintNameSchema = requireAtLeastOneValue(
 
 export const widgetBlueprintSchema = requireAtLeastOneValue(
 	z.object(widgetBlueprintShape).strict(),
-	["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"],
-	"Provide widget_blueprint, widget_blueprint_path, widget_name, or blueprint_name.",
+	widgetBlueprintKeys,
+	widgetBlueprintMessage,
 )
 
 export const sourceControlFileSchema = requireAtLeastOneValue(

@@ -4,6 +4,15 @@ def create_umg_widget_blueprint(args):
     content_path = args.get("path") or "/Game/UI"
 
     asset_name, package_path = split_asset_name_and_path(widget_name, content_path)
+    asset_path = "{0}/{1}".format(package_path, asset_name)
+    if unreal.EditorAssetLibrary.does_asset_exist(asset_path):
+        return {
+            "success": False,
+            "message": "Widget blueprint asset already exists: {0}".format(asset_path),
+            "reason": "asset_already_exists",
+            "asset_path": asset_path,
+        }
+
     parent_class = resolve_class_reference(parent_class_name, ["UMG"])
     if not parent_class:
         return {
@@ -40,9 +49,9 @@ def create_umg_widget_blueprint(args):
         return {
             "success": False,
             "message": "Failed to create widget blueprint asset '{0}'".format(asset_name),
+            "asset_path": asset_path,
         }
 
-    asset_path = "{0}/{1}".format(package_path, asset_name)
     save_widget_blueprint(widget_blueprint)
     return {
         "success": True,

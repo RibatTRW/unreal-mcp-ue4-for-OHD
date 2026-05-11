@@ -4,6 +4,7 @@ def add_text_block_to_widget(args):
     text_value = args.get("text", "")
     position = args.get("position") or [0.0, 0.0]
     size = args.get("size") or [200.0, 50.0]
+    z_order = args.get("z_order")
     font_size = args.get("font_size")
     color_values = args.get("color")
 
@@ -13,7 +14,9 @@ def add_text_block_to_widget(args):
         root_widget = require_panel_widget(root_widget, get_widget_name(root_widget))
         text_block = create_widget_instance(widget_tree, "TextBlock", text_block_name)
         slot = add_widget_to_tree(widget_tree, text_block, root_widget)
-        set_canvas_panel_slot_layout(slot, position=position, size=size)
+        if z_order is None:
+            z_order = default_z_order_for_widget(text_block)
+        set_canvas_panel_slot_layout(slot, position=position, size=size, z_order=z_order)
         set_widget_text(text_block, text_value)
         set_widget_font_size(text_block, font_size)
         _try_set_widget_color(text_block, color_values)
@@ -27,6 +30,7 @@ def add_text_block_to_widget(args):
                 "text": text_value,
                 "position": {"x": float(position[0]), "y": float(position[1])},
                 "size": {"x": float(size[0]), "y": float(size[1])},
+                "style": get_widget_style_report(text_block),
             },
         }
     except Exception as exc:
@@ -39,6 +43,7 @@ def add_button_to_widget(args):
     text_value = args.get("text", "")
     position = args.get("position") or [0.0, 0.0]
     size = args.get("size") or [200.0, 50.0]
+    z_order = args.get("z_order")
     font_size = args.get("font_size")
     text_color = args.get("color")
     background_color = args.get("background_color")
@@ -50,8 +55,10 @@ def add_button_to_widget(args):
 
         button_widget = create_widget_instance(widget_tree, "Button", button_name)
         button_slot = add_widget_to_tree(widget_tree, button_widget, root_widget)
-        set_canvas_panel_slot_layout(button_slot, position=position, size=size)
-        _try_set_widget_color(button_widget, background_color)
+        if z_order is None:
+            z_order = default_z_order_for_widget(button_widget)
+        set_canvas_panel_slot_layout(button_slot, position=position, size=size, z_order=z_order)
+        _try_set_widget_background_color(button_widget, background_color)
 
         if text_value:
             text_block_name = "{0}_Text".format(button_name)
@@ -71,6 +78,7 @@ def add_button_to_widget(args):
                 "text": text_value,
                 "position": {"x": float(position[0]), "y": float(position[1])},
                 "size": {"x": float(size[0]), "y": float(size[1])},
+                "style": get_widget_style_report(button_widget),
             },
         }
     except Exception as exc:

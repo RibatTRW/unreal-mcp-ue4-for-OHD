@@ -37,6 +37,7 @@ const assetMutationParamsSchema = requireAtLeastOneValue(
 export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 	const {
 		actorNameParam,
+		assetPathListParam,
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
@@ -59,6 +60,7 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 		destination_path: optionalStringParam(params, ["destination_path"]),
 		new_name: optionalStringParam(params, ["new_name", "name"]),
 	})
+	const assetPathListInputSchema = z.union([z.string(), z.array(z.string())])
 
 	const assetMutationHandler = (operation: "duplicate" | "rename" | "move") => (params: Record<string, any>) =>
 		pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params)))
@@ -249,15 +251,15 @@ export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
 			paramsSchema: requireAtLeastOneValue(
 				z
 					.object({
-						asset_paths: z.string().optional(),
-						paths: z.string().optional(),
+						asset_paths: assetPathListInputSchema.optional(),
+						paths: assetPathListInputSchema.optional(),
 					})
 					.strict(),
 				["asset_paths", "paths"],
-				"Provide asset_paths or paths.",
+				"Provide asset_paths or paths as a string, comma-separated string, or string array.",
 			),
 			handler: (params) =>
-				pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
+				pythonDispatch(editorTools.UEValidateAssets(assetPathListParam(params))),
 		},
 	})
 

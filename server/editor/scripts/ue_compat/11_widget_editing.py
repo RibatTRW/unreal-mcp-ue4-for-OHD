@@ -50,6 +50,31 @@ def make_unique_widget_name(widget_tree, base_name):
     raise ValueError("Could not find a unique widget name for: {0}".format(normalized_name))
 
 
+def rename_widget_in_tree(widget_tree, widget, requested_name):
+    normalized_name = str(requested_name or "").strip()
+    if not widget or not normalized_name:
+        return False
+
+    if get_widget_name(widget) == normalized_name:
+        return False
+
+    target_name = make_unique_widget_name(widget_tree, normalized_name)
+    try:
+        widget.rename(target_name, widget_tree)
+        touch_editor_object(widget_tree)
+        touch_editor_object(widget)
+        return True
+    except Exception:
+        return False
+
+
+def default_z_order_for_widget(widget):
+    class_name = get_widget_class_name(widget).lower()
+    if any(token in class_name for token in ("button", "text", "checkbox", "slider")):
+        return 1
+    return 0
+
+
 def set_canvas_panel_slot_fill(slot):
     if not slot or not object_is_instance_of(slot, unreal.CanvasPanelSlot):
         return False
@@ -101,6 +126,7 @@ def ensure_canvas_root(widget_blueprint, root_widget_name=None, wrap_existing_ro
     current_root = get_root_widget(widget_tree)
 
     if current_root and object_is_instance_of(current_root, unreal.CanvasPanel):
+        renamed = rename_widget_in_tree(widget_tree, current_root, root_widget_name)
         if not property_root:
             set_object_property(widget_tree, "root_widget", current_root)
             touch_editor_object(widget_tree)
@@ -111,6 +137,7 @@ def ensure_canvas_root(widget_blueprint, root_widget_name=None, wrap_existing_ro
             "previous_root_widget": None,
             "created": False,
             "wrapped_existing_root": False,
+            "renamed_existing_root": renamed,
             "slot": None,
         }
 
@@ -146,6 +173,7 @@ def ensure_canvas_root(widget_blueprint, root_widget_name=None, wrap_existing_ro
         "previous_root_widget": current_root,
         "created": current_root is None,
         "wrapped_existing_root": current_root is not None,
+        "renamed_existing_root": False,
         "slot": slot,
     }
 
@@ -164,26 +192,22 @@ def get_canvas_panel_slot(widget):
     return None
 
 
-def set_widget_canvas_position(widget, position, z_order=None):
+def set_widget_canvas_layout(widget, position=None, size=None, z_order=None):
     slot = get_canvas_panel_slot(widget)
     if not slot:
         raise ValueError(
-            "Widget '{0}' is not attached to a CanvasPanel slot. Position changes are only supported for CanvasPanel children in UE4.27.".format(
+            "Widget '{0}' is not attached to a CanvasPanel slot. Layout changes are only supported for CanvasPanel children in UE4.27.".format(
                 get_widget_name(widget)
             )
         )
 
-    slot.set_position(
-        unreal.Vector2D(
-            x=float(position.get("x", 0.0)),
-            y=float(position.get("y", 0.0)),
-        )
-    )
-
-    if z_order is not None:
-        slot.set_z_order(int(z_order))
+    set_canvas_panel_slot_layout(slot, position=position, size=size, z_order=z_order)
 
     return slot
+
+
+def set_widget_canvas_position(widget, position, z_order=None):
+    return set_widget_canvas_layout(widget, position=position, z_order=z_order)
 
 
 def get_canvas_slot_layout(widget):

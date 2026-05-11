@@ -64,7 +64,7 @@ export async function runContentTextureExportScenarios(state) {
 			params: {
 				root_path: "/Game/MCP/Tests",
 				recursive: true,
-				limit: 50,
+				limit: 500,
 			},
 		})
 		assert(listedAssets.root_path === "/Game/MCP/Tests", "manage_asset list returned the wrong root path")

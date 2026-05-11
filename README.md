@@ -185,6 +185,7 @@ Notes:
 
 Useful first commands:
 
+- `unreal-mcp-ue4 --version` to print the MCP server package version without starting stdio transport.
 - `manage_editor` with `action: "project_info"`
 - `manage_editor` with `action: "map_info"`
 - `manage_level` with `action: "world_outliner"`
@@ -463,8 +464,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_editor</code></td>
-		<td width="52%">Editor tool namespace for Python execution, console commands, project inspection, map inspection, PIE control, screenshots, and camera control.</td>
-		<td width="30%">Canonical namespace for project_info, map_info, world_outliner, PIE control, console_command, and run_python.</td>
+		<td width="52%">Editor tool namespace for run_python, console_command, project_info, map_info, world_outliner, is_pie_running, start_pie, stop_pie, screenshot, and move_camera actions.</td>
+		<td width="30%">Canonical namespace for project_info, map_info, world_outliner, start_pie, stop_pie, is_pie_running, console_command, and run_python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_level</code></td>
@@ -606,8 +607,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_widget</code></td>
-		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use add_child_widget for typical nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.</td>
-		<td width="30%">create_widget_blueprint, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning if the root is another panel. add_to_viewport requires PIE.</td>
+		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree inspection, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use inspect_tree to verify designer contents, add_child_widget for nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.</td>
+		<td width="30%">create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.</td>
 	</tr>
 	</tbody>
 </table>

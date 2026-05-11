@@ -56,9 +56,9 @@ export const UESearchAssets = (
 
 export const UEGetWorldOutliner = () => renderScript("./scripts/ue_get_world_outliner.py", {})
 
-export const UEValidateAssets = (asset_paths?: string) =>
+export const UEValidateAssets = (asset_paths?: string | string[]) =>
 	renderScript("./scripts/ue_validate_assets.py", {
-		asset_paths: asset_paths || "",
+		asset_paths: jsonArg(asset_paths ?? ""),
 	})
 
 export const UECreateObject = (
@@ -120,6 +120,8 @@ export const UEUMGAddWidget = (
 	widget_name: string,
 	parent_widget_name?: string,
 	position?: { x: number; y: number },
+	size?: { x: number; y: number },
+	background_color?: number[],
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_add_widget.py", {
@@ -128,6 +130,8 @@ export const UEUMGAddWidget = (
 		widget_name: jsonArg(widget_name),
 		parent_widget_name: jsonArg(parent_widget_name),
 		position: jsonArg(position),
+		size: jsonArg(size),
+		background_color: jsonArg(background_color),
 		z_order: jsonArg(z_order),
 	})
 
@@ -140,13 +144,15 @@ export const UEUMGRemoveWidget = (widget_blueprint_path: string, widget_name: st
 export const UEUMGSetWidgetPosition = (
 	widget_blueprint_path: string,
 	widget_name: string,
-	position: { x: number; y: number },
+	position?: { x: number; y: number },
+	size?: { x: number; y: number },
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_set_widget_position.py", {
 		widget_blueprint_path: jsonArg(widget_blueprint_path),
 		widget_name: jsonArg(widget_name),
 		position: jsonArg(position),
+		size: jsonArg(size),
 		z_order: jsonArg(z_order),
 	})
 
@@ -155,6 +161,7 @@ export const UEUMGReparentWidget = (
 	widget_name: string,
 	new_parent_widget_name: string,
 	position?: { x: number; y: number },
+	size?: { x: number; y: number },
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_reparent_widget.py", {
@@ -162,6 +169,7 @@ export const UEUMGReparentWidget = (
 		widget_name: jsonArg(widget_name),
 		new_parent_widget_name: jsonArg(new_parent_widget_name),
 		position: jsonArg(position),
+		size: jsonArg(size),
 		z_order: jsonArg(z_order),
 	})
 
@@ -171,6 +179,11 @@ export const UEUMGAddChildWidget = (
 	child_widget_class: string,
 	child_widget_name: string,
 	position?: { x: number; y: number },
+	size?: { x: number; y: number },
+	text?: string,
+	font_size?: number,
+	color?: number[],
+	background_color?: number[],
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_add_child_widget.py", {
@@ -179,6 +192,11 @@ export const UEUMGAddChildWidget = (
 		child_widget_class: jsonArg(child_widget_class),
 		child_widget_name: jsonArg(child_widget_name),
 		position: jsonArg(position),
+		size: jsonArg(size),
+		text: jsonArg(text),
+		font_size: jsonArg(font_size),
+		color: jsonArg(color),
+		background_color: jsonArg(background_color),
 		z_order: jsonArg(z_order),
 	})
 
@@ -197,7 +215,8 @@ export const UEUMGSetChildWidgetPosition = (
 	widget_blueprint_path: string,
 	parent_widget_name: string,
 	child_widget_name: string,
-	position: { x: number; y: number },
+	position?: { x: number; y: number },
+	size?: { x: number; y: number },
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_set_child_widget_position.py", {
@@ -205,5 +224,6 @@ export const UEUMGSetChildWidgetPosition = (
 		parent_widget_name: jsonArg(parent_widget_name),
 		child_widget_name: jsonArg(child_widget_name),
 		position: jsonArg(position),
+		size: jsonArg(size),
 		z_order: jsonArg(z_order),
 	})

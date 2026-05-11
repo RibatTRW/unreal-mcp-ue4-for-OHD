@@ -101,24 +101,24 @@ export async function runCoreAssetReadScenarios(ctx) {
 	await runStep("Validate an asset through manage_system", async () => {
 		const validationResult = await callJsonTool("manage_system", {
 			action: "validate_assets",
-			params: { asset_paths: "/Engine/BasicShapes/Cube" },
+			params: { asset_paths: "/Engine/BasicShapes/Cube,/Engine/BasicShapes/Sphere" },
 		})
-		assert(validationResult.total_validated === 1, "manage_system validate_assets did not validate one asset")
+		assert(validationResult.total_validated === 2, "manage_system validate_assets did not parse comma-separated paths")
 		assert(
-			validationResult.validation_summary?.valid_count === 1,
-			"manage_system validate_assets did not mark the engine cube as valid",
+			validationResult.validation_summary?.valid_count === 2,
+			"manage_system validate_assets did not mark both engine assets as valid",
 		)
 	})
 
 	await runStep("Validate an asset through manage_asset", async () => {
 		const validationResult = await callJsonTool("manage_asset", {
 			action: "validate",
-			params: { asset_paths: "/Engine/BasicShapes/Cube" },
+			params: { asset_paths: ["/Engine/BasicShapes/Cube", "/Engine/BasicShapes/Sphere"] },
 		})
-		assert(validationResult.total_validated === 1, "manage_asset validate did not validate one asset")
+		assert(validationResult.total_validated === 2, "manage_asset validate did not accept an asset path array")
 		assert(
-			validationResult.validation_summary?.valid_count === 1,
-			"manage_asset validate did not mark the engine cube as valid",
+			validationResult.validation_summary?.valid_count === 2,
+			"manage_asset validate did not mark both engine assets as valid",
 		)
 	})
 }

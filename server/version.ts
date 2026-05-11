@@ -1,1 +1,1 @@
-export const projectVersion = "2026.5.12-2"
+export const projectVersion = "2026.5.12-3"

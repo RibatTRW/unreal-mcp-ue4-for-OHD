@@ -6,7 +6,8 @@ def set_child_widget_position(
     widget_blueprint_path: str,
     parent_widget_name: str,
     child_widget_name: str,
-    position: Dict[str, float],
+    position: Optional[Dict[str, float]] = None,
+    size: Optional[Dict[str, float]] = None,
     z_order: Optional[int] = None,
 ):
     try:
@@ -25,11 +26,11 @@ def set_child_widget_position(
                 )
             }
 
-        set_widget_canvas_position(child_widget, position, z_order)
+        set_widget_canvas_layout(child_widget, position=position, size=size, z_order=z_order)
 
         if not save_widget_blueprint(widget_blueprint):
             return {
-                "error": "Child widget position was updated but the widget blueprint could not be saved."
+                "error": "Child widget layout was updated but the widget blueprint could not be saved."
             }
 
         return {
@@ -50,6 +51,7 @@ def main():
     parent_widget_name = decode_template_json("""${parent_widget_name}""")
     child_widget_name = decode_template_json("""${child_widget_name}""")
     position = decode_template_json("""${position}""")
+    size = decode_template_json("""${size}""")
     z_order = decode_template_json("""${z_order}""")
 
     result = set_child_widget_position(
@@ -57,6 +59,7 @@ def main():
         parent_widget_name=parent_widget_name,
         child_widget_name=child_widget_name,
         position=position,
+        size=size,
         z_order=z_order,
     )
     print(json.dumps(result, indent=2))

@@ -1,6 +1,6 @@
 {
   "name": "unreal-mcp-ue4",
-  "version": "2026.5.12-2",
+  "version": "2026.5.12-3",
   "mcpName": "io.github.conaman/unreal-mcp-ue4",
   "description": "UE4.27-first MCP server for controlling the Unreal Editor through Unreal Python Remote Execution.",
   "main": "dist/index.js",

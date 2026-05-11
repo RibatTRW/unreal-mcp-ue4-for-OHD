@@ -7,8 +7,46 @@ def reparent_widget(
     widget_name: str,
     new_parent_widget_name: str,
     position: Optional[Dict[str, float]] = None,
+    size: Optional[Dict[str, float]] = None,
     z_order: Optional[int] = None,
 ):
+    widget_blueprint = None
+    widget_tree = None
+    widget = None
+    old_parent_widget = None
+    old_layout = None
+    reparented = False
+
+    def rollback_reparent():
+        if not widget or not old_parent_widget:
+            return False
+
+        try:
+            current_parent = widget.get_parent()
+        except Exception:
+            current_parent = None
+
+        try:
+            if current_parent:
+                current_parent.remove_child(widget)
+            else:
+                widget.remove_from_parent()
+        except Exception:
+            pass
+
+        try:
+            add_widget_to_tree(widget_tree, widget, old_parent_widget)
+            if old_layout:
+                set_widget_canvas_layout(
+                    widget,
+                    position=old_layout["position"],
+                    size=old_layout.get("size"),
+                    z_order=old_layout.get("z_order"),
+                )
+            return True
+        except Exception:
+            return False
+
     try:
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)
         widget_tree = get_widget_tree(widget_blueprint)
@@ -61,31 +99,36 @@ def reparent_widget(
 
         try:
             add_widget_to_tree(widget_tree, widget, new_parent_widget)
+            reparented = True
         except Exception as exc:
-            add_widget_to_tree(widget_tree, widget, old_parent_widget)
-            if old_layout:
-                set_widget_canvas_position(
-                    widget,
-                    old_layout["position"],
-                    old_layout.get("z_order"),
-                )
+            rollback_reparent()
+            reparented = False
             raise exc
 
-        if position is not None:
-            set_widget_canvas_position(widget, position, z_order)
-        elif old_layout is not None:
-            try:
-                set_widget_canvas_position(
-                    widget,
-                    old_layout["position"],
-                    old_layout.get("z_order"),
-                )
-            except Exception:
-                pass
+        try:
+            if position is not None or size is not None or z_order is not None:
+                set_widget_canvas_layout(widget, position=position, size=size, z_order=z_order)
+            elif old_layout is not None:
+                try:
+                    set_widget_canvas_layout(
+                        widget,
+                        position=old_layout["position"],
+                        size=old_layout.get("size"),
+                        z_order=old_layout.get("z_order"),
+                    )
+                except Exception:
+                    pass
+        except Exception as exc:
+            rollback_reparent()
+            reparented = False
+            raise exc
 
         if not save_widget_blueprint(widget_blueprint):
+            rollback_reparent()
+            reparented = False
+            save_widget_blueprint(widget_blueprint)
             return {
-                "error": "Widget was reparented but the widget blueprint could not be saved."
+                "error": "Widget was reparented but the widget blueprint could not be saved; rolled back the reparent."
             }
 
         return {
@@ -97,6 +140,12 @@ def reparent_widget(
             "layout": get_widget_slot_layout(widget),
         }
     except Exception as exc:
+        if reparented:
+            rollback_reparent()
+            try:
+                save_widget_blueprint(widget_blueprint)
+            except Exception:
+                pass
         return {"error": "Failed to reparent widget: {0}".format(str(exc))}
 
 
@@ -105,6 +154,7 @@ def main():
     widget_name = decode_template_json("""${widget_name}""")
     new_parent_widget_name = decode_template_json("""${new_parent_widget_name}""")
     position = decode_template_json("""${position}""")
+    size = decode_template_json("""${size}""")
     z_order = decode_template_json("""${z_order}""")
 
     result = reparent_widget(
@@ -112,6 +162,7 @@ def main():
         widget_name=widget_name,
         new_parent_widget_name=new_parent_widget_name,
         position=position,
+        size=size,
         z_order=z_order,
     )
     print(json.dumps(result, indent=2))

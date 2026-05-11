@@ -1,12 +1,24 @@
 #!/usr/bin/env node
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
-import { server, shutdownRemoteExecution } from "./"
+import { projectVersion } from "./version.js"
 
-const transport = new StdioServerTransport()
-server.connect(transport)
+const cliArgs = process.argv.slice(2)
+if (cliArgs.includes("--version") || cliArgs.includes("-v")) {
+	console.log(projectVersion)
+	process.exit(0)
+}
 
 let shutdownInProgress = false
+let shutdownRemoteExecution: (() => Promise<void>) | undefined
+
+async function main() {
+	const serverModule = await import("./")
+	shutdownRemoteExecution = serverModule.shutdownRemoteExecution
+
+	const transport = new StdioServerTransport()
+	await serverModule.server.connect(transport)
+}
 
 const shutdown = async () => {
 	if (shutdownInProgress) {
@@ -14,7 +26,9 @@ const shutdown = async () => {
 	}
 
 	shutdownInProgress = true
-	await shutdownRemoteExecution()
+	if (shutdownRemoteExecution) {
+		await shutdownRemoteExecution()
+	}
 }
 
 process.once("SIGINT", () => {
@@ -31,4 +45,10 @@ process.once("beforeExit", () => {
 
 process.once("exit", () => {
 	void shutdown()
+})
+
+void main().catch((error) => {
+	const message = error instanceof Error ? error.message : String(error)
+	console.error(`Failed to start unreal-mcp-ue4: ${message}`)
+	process.exit(1)
 })

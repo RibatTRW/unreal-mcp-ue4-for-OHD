@@ -1,6 +1,28 @@
 import * as editorTools from "./editor/tools.js"
 
 export function createRegistrationParamHelpers(tools: typeof editorTools) {
+	const stringOrStringArrayParam = (params: Record<string, any>, keys: string[]) => {
+		for (const key of keys) {
+			const value = params[key]
+			if (Array.isArray(value)) {
+				const normalizedValues = value
+					.filter((entry) => typeof entry === "string")
+					.map((entry) => entry.trim())
+					.filter(Boolean)
+
+				if (normalizedValues.length > 0) {
+					return normalizedValues
+				}
+			}
+
+			if (typeof value === "string" && value.trim()) {
+				return value.trim()
+			}
+		}
+
+		return undefined
+	}
+
 	const requiredStringParam = (params: Record<string, any>, keys: string[]) => {
 		for (const key of keys) {
 			const value = params[key]
@@ -54,6 +76,8 @@ export function createRegistrationParamHelpers(tools: typeof editorTools) {
 		throw new Error(`${keys[0]} is required`)
 	}
 
+	const assetPathListParam = (params: Record<string, any>) => stringOrStringArrayParam(params, ["asset_paths", "paths"])
+
 	const searchAssetsCommand = (params: Record<string, any>, defaultAssetClass?: string) =>
 		tools.UESearchAssets(
 			optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
@@ -72,6 +96,8 @@ export function createRegistrationParamHelpers(tools: typeof editorTools) {
 		requiredStringParam(params, [
 			"widget_blueprint",
 			"widget_blueprint_path",
+			"widget_path",
+			"asset_path",
 			"widget_name",
 			"blueprint_name",
 		])
@@ -116,6 +142,7 @@ export function createRegistrationParamHelpers(tools: typeof editorTools) {
 
 	return {
 		actorNameParam,
+		assetPathListParam,
 		blueprintNameParam,
 		optionalStringListParam,
 		optionalStringParam,

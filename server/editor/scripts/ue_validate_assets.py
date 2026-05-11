@@ -84,11 +84,20 @@ def parse_asset_paths(asset_paths_input: str):
         return None
 
     try:
+        parsed = decode_template_json(asset_paths_input)
+        if isinstance(parsed, list):
+            return parsed
+        if isinstance(parsed, str):
+            asset_paths_input = parsed
+    except Exception:
+        pass
+
+    try:
         parsed = json.loads(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
         if isinstance(parsed, str):
-            return parsed
+            asset_paths_input = parsed
     except Exception:
         pass
 
@@ -97,9 +106,20 @@ def parse_asset_paths(asset_paths_input: str):
         if isinstance(parsed, list):
             return parsed
         if isinstance(parsed, str):
-            return parsed
+            asset_paths_input = parsed
     except Exception:
         pass
+
+    if isinstance(asset_paths_input, str):
+        if "," in asset_paths_input:
+            return [
+                path.strip()
+                for path in asset_paths_input.split(",")
+                if path.strip()
+            ]
+        stripped = asset_paths_input.strip()
+        if stripped:
+            return stripped
 
     return asset_paths_input
 

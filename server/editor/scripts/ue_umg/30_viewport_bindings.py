@@ -1,3 +1,6 @@
+import time
+
+
 def bind_widget_event(args):
     widget_name = args.get("widget_name")
     widget_member_name = args.get("widget_member_name") or args.get("widget_component_name")
@@ -31,6 +34,11 @@ def bind_widget_event(args):
 def add_widget_to_viewport(args):
     widget_name = args.get("widget_name")
     z_order = int(args.get("z_order", 0))
+    start_pie_if_needed = bool(
+        args.get("start_pie_if_needed") or args.get("auto_start_pie")
+    )
+    timeout_seconds = float(args.get("timeout_seconds", 8.0))
+    poll_interval = float(args.get("poll_interval", 0.25))
 
     widget_blueprint, widget_path, widget_class = _resolve_widget_runtime_class(widget_name)
     if not widget_blueprint and not widget_class:
@@ -48,17 +56,28 @@ def add_widget_to_viewport(args):
             "message": "Could not resolve widget class for {0}".format(widget_name),
         }
 
-    game_world = None
-    try:
-        if hasattr(unreal.EditorLevelLibrary, "get_game_world"):
-            game_world = unreal.EditorLevelLibrary.get_game_world()
-    except Exception:
-        game_world = None
+    pie_status = None
+    game_world = _get_viewport_game_world()
+    if not game_world and start_pie_if_needed:
+        pie_status = _start_pie_for_viewport(timeout_seconds, poll_interval)
+        if pie_status.get("success") is False:
+            return pie_status
+        game_world = _get_viewport_game_world()
 
     if not game_world:
+        if pie_status:
+            return {
+                "success": False,
+                "message": "PIE start was requested, but the game world is not ready yet. Retry manage_widget.add_to_viewport after the editor advances a tick.",
+                "transition_pending": True,
+                "retry_recommended": True,
+                "retry_action": "add_to_viewport",
+                "pie_status": pie_status,
+            }
+
         return {
             "success": False,
-            "message": "A PIE or game world is required to add a widget to the viewport.",
+            "message": "A PIE or game world is required to add a widget to the viewport. Pass start_pie_if_needed: true to let this action start PIE first.",
         }
 
     widget_instance = None
@@ -94,7 +113,81 @@ def add_widget_to_viewport(args):
         "widget_blueprint": widget_path,
         "widget_class": get_object_name(widget_class),
         "z_order": z_order,
+        "started_pie": bool(pie_status and pie_status.get("requested")),
+        "pie_status": pie_status,
     }
+
+
+def _get_viewport_game_world():
+    try:
+        if hasattr(unreal.EditorLevelLibrary, "get_game_world"):
+            return unreal.EditorLevelLibrary.get_game_world()
+    except Exception:
+        return None
+    return None
+
+
+def _get_viewport_pie_worlds():
+    if not hasattr(unreal.EditorLevelLibrary, "get_pie_worlds"):
+        return []
+
+    try:
+        return list(unreal.EditorLevelLibrary.get_pie_worlds(False))
+    except TypeError:
+        return list(unreal.EditorLevelLibrary.get_pie_worlds())
+    except Exception:
+        return []
+
+
+def _get_viewport_pie_status():
+    game_world = _get_viewport_game_world()
+    pie_worlds = _get_viewport_pie_worlds()
+    return {
+        "success": True,
+        "is_pie_running": bool(game_world or pie_worlds),
+        "game_world_name": game_world.get_name() if game_world else None,
+        "pie_world_count": len(pie_worlds),
+        "pie_worlds": [world.get_name() for world in pie_worlds],
+    }
+
+
+def _start_pie_for_viewport(timeout_seconds, poll_interval):
+    status = _get_viewport_pie_status()
+    if status.get("game_world_name"):
+        status["already_running"] = True
+        return status
+
+    requested = False
+    if not status["is_pie_running"]:
+        starter = getattr(unreal.EditorLevelLibrary, "editor_play_simulate", None)
+        if not callable(starter):
+            return {
+                "success": False,
+                "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.27 Python environment.",
+            }
+
+        try:
+            starter()
+            requested = True
+        except Exception as exc:
+            return {"success": False, "message": str(exc)}
+
+    deadline = time.time() + max(0.1, timeout_seconds)
+    while time.time() <= deadline:
+        status = _get_viewport_pie_status()
+        if status.get("game_world_name"):
+            status["already_running"] = False
+            status["requested"] = requested
+            status["transition_pending"] = False
+            return status
+        time.sleep(max(0.01, poll_interval))
+
+    status = _get_viewport_pie_status()
+    status["requested"] = requested
+    status["transition_pending"] = not status.get("game_world_name")
+    if status["transition_pending"]:
+        status["message"] = "PIE start was requested, but no game world became available before the timeout."
+    return status
 
 
 def set_text_block_binding(args):

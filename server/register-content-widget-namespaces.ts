@@ -56,6 +56,7 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 
 	const placementShape = {
 		position: vector2InputSchema.optional(),
+		size: vector2InputSchema.optional(),
 		z_order: z.number().optional(),
 	}
 
@@ -68,16 +69,18 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 					strictObject({
 						widget_name: z.string().optional(),
 						name: z.string().optional(),
+						asset_path: z.string().optional(),
+						widget_path: z.string().optional(),
 						parent_class: z.string().optional(),
 						path: z.string().optional(),
 					}),
-					widgetNameKeys,
-					widgetNameMessage,
+					["widget_name", "name", "asset_path", "widget_path"],
+					"Provide widget_name, name, asset_path, or widget_path.",
 				),
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGTool("create_umg_widget_blueprint", {
-							widget_name: requiredStringParam(params, ["widget_name", "name"]),
+							widget_name: requiredStringParam(params, ["widget_name", "name", "asset_path", "widget_path"]),
 							parent_class: optionalStringParam(params, ["parent_class"]),
 							path: optionalStringParam(params, ["path"]),
 						}),
@@ -98,6 +101,15 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 						}),
 					),
 			},
+			inspect_tree: {
+				paramsSchema: requireWidgetBlueprintSelection({}),
+				handler: (params) =>
+					pythonDispatch(
+						editorTools.UEUMGTool("inspect_widget_tree", {
+							widget_name: widgetBlueprintParam(params),
+						}),
+					),
+			},
 			add_text_block: {
 				paramsSchema: requireNamedWidgetBlueprintSelection(
 					{
@@ -106,6 +118,7 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 						text: z.string().optional(),
 						...vector2PlacementShape,
 						font_size: z.number().optional(),
+						z_order: z.number().optional(),
 						...materialColorShape,
 					},
 					["text_block_name", "name"],
@@ -120,6 +133,7 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 							position: toVector2Array(params.position),
 							size: toVector2Array(params.size),
 							font_size: params.font_size,
+							z_order: params.z_order,
 							color: toColorArray(params.color),
 						}),
 					),
@@ -132,6 +146,7 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 						text: z.string().optional(),
 						...vector2PlacementShape,
 						font_size: z.number().optional(),
+						z_order: z.number().optional(),
 						...materialColorShape,
 						background_color: ctx.colorInputSchema.optional(),
 					},
@@ -147,6 +162,7 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 							position: toVector2Array(params.position),
 							size: toVector2Array(params.size),
 							font_size: params.font_size,
+							z_order: params.z_order,
 							color: toColorArray(params.color),
 							background_color: toColorArray(params.background_color),
 						}),
@@ -155,12 +171,20 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 			add_to_viewport: {
 				paramsSchema: requireWidgetBlueprintSelection({
 					z_order: z.number().optional(),
+					start_pie_if_needed: z.boolean().optional(),
+					auto_start_pie: z.boolean().optional(),
+					timeout_seconds: z.number().optional(),
+					poll_interval: z.number().optional(),
 				}),
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGTool("add_widget_to_viewport", {
 							widget_name: widgetBlueprintParam(params),
 							z_order: params.z_order,
+							start_pie_if_needed: params.start_pie_if_needed,
+							auto_start_pie: params.auto_start_pie,
+							timeout_seconds: params.timeout_seconds,
+							poll_interval: params.poll_interval,
 						}),
 					),
 			},
@@ -171,15 +195,18 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 					name: z.string().optional(),
 					parent_widget_name: z.string().optional(),
 					...placementShape,
+					background_color: ctx.colorInputSchema.optional(),
 				}),
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGAddWidget(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["widget_class"]),
 							requiredStringParam(params, ["widget_name", "name"]),
 							optionalStringParam(params, ["parent_widget_name"]),
 							toVector2Record(params.position),
+							toVector2Record(params.size),
+							toColorArray(params.background_color),
 							typeof params.z_order === "number" ? params.z_order : undefined,
 						),
 					),
@@ -192,24 +219,28 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGRemoveWidget(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["widget_name", "name"]),
 						),
 					),
 			},
 			position_widget: {
-				paramsSchema: requireWidgetAssetAndName({
-					widget_name: z.string().optional(),
-					name: z.string().optional(),
-					position: vector2InputSchema,
-					z_order: z.number().optional(),
-				}),
+				paramsSchema: requireAtLeastOneValue(
+					requireWidgetAssetAndName({
+						widget_name: z.string().optional(),
+						name: z.string().optional(),
+						...placementShape,
+					}),
+					["position", "size", "z_order"],
+					"Provide position, size, or z_order.",
+				),
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGSetWidgetPosition(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["widget_name", "name"]),
-							toVector2Record(params.position) ?? { x: 0, y: 0 },
+							toVector2Record(params.position),
+							toVector2Record(params.size),
 							typeof params.z_order === "number" ? params.z_order : undefined,
 						),
 					),
@@ -224,10 +255,11 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGReparentWidget(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["widget_name", "name"]),
 							requiredStringParam(params, ["new_parent_widget_name"]),
 							toVector2Record(params.position),
+							toVector2Record(params.size),
 							typeof params.z_order === "number" ? params.z_order : undefined,
 						),
 					),
@@ -239,7 +271,11 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 						child_widget_class: z.string(),
 						child_widget_name: z.string().optional(),
 						name: z.string().optional(),
+						text: z.string().optional(),
 						...placementShape,
+						font_size: z.number().optional(),
+						...materialColorShape,
+						background_color: ctx.colorInputSchema.optional(),
 					},
 					childWidgetNameKeys,
 					childWidgetNameMessage,
@@ -247,11 +283,16 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGAddChildWidget(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["parent_widget_name"]),
 							requiredStringParam(params, ["child_widget_class"]),
 							requiredStringParam(params, ["child_widget_name", "name"]),
 							toVector2Record(params.position),
+							toVector2Record(params.size),
+							optionalStringParam(params, ["text"]),
+							params.font_size,
+							toColorArray(params.color),
+							toColorArray(params.background_color),
 							typeof params.z_order === "number" ? params.z_order : undefined,
 						),
 					),
@@ -269,31 +310,35 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGRemoveChildWidget(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["parent_widget_name"]),
 							requiredStringParam(params, ["child_widget_name", "name"]),
 						),
 					),
 			},
 			position_child_widget: {
-				paramsSchema: requireWidgetAssetAndName(
-					{
-						parent_widget_name: z.string(),
-						child_widget_name: z.string().optional(),
-						name: z.string().optional(),
-						position: vector2InputSchema,
-						z_order: z.number().optional(),
-					},
-					childWidgetNameKeys,
-					childWidgetNameMessage,
+				paramsSchema: requireAtLeastOneValue(
+					requireWidgetAssetAndName(
+						{
+							parent_widget_name: z.string(),
+							child_widget_name: z.string().optional(),
+							name: z.string().optional(),
+							...placementShape,
+						},
+						childWidgetNameKeys,
+						childWidgetNameMessage,
+					),
+					["position", "size", "z_order"],
+					"Provide position, size, or z_order.",
 				),
 				handler: (params) =>
 					pythonDispatch(
 						editorTools.UEUMGSetChildWidgetPosition(
-							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint"]),
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
 							requiredStringParam(params, ["parent_widget_name"]),
 							requiredStringParam(params, ["child_widget_name", "name"]),
-							toVector2Record(params.position) ?? { x: 0, y: 0 },
+							toVector2Record(params.position),
+							toVector2Record(params.size),
 							typeof params.z_order === "number" ? params.z_order : undefined,
 						),
 					),

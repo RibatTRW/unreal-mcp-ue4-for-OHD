@@ -14,7 +14,7 @@ export const coreNamespaceEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_editor",
 		category: "Core Tool Namespaces",
-		description: "Editor tool namespace for Python execution, console commands, project inspection, map inspection, PIE control, screenshots, and camera control.",
+		description: "Editor tool namespace for run_python, console_command, project_info, map_info, world_outliner, is_pie_running, start_pie, stop_pie, screenshot, and move_camera actions.",
 	},
 	{
 		name: "manage_level",

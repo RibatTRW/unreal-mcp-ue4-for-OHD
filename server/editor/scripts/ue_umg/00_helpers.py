@@ -10,16 +10,6 @@ def _format_widget_authoring_error(exc):
     return {"success": False, "message": message}
 
 
-def _linear_color_from_list(color_values, default=None):
-    values = color_values or default or [1.0, 1.0, 1.0, 1.0]
-    return unreal.LinearColor(
-        r=float(values[0]),
-        g=float(values[1]),
-        b=float(values[2]),
-        a=float(values[3]),
-    )
-
-
 def _load_widget_blueprint(widget_name):
     widget_blueprint = load_blueprint_asset(widget_name, allow_widget=True)
     if not get_object_class_name(widget_blueprint).endswith("WidgetBlueprint"):
@@ -125,6 +115,7 @@ def ensure_canvas_root_for_widget(args):
             else None,
             "created": bool(root_result["created"]),
             "wrapped_existing_root": bool(root_result["wrapped_existing_root"]),
+            "renamed_existing_root": bool(root_result.get("renamed_existing_root")),
             "wrapped_root_layout": get_widget_slot_layout(previous_root_widget)
             if root_result["wrapped_existing_root"]
             else None,
@@ -133,22 +124,89 @@ def ensure_canvas_root_for_widget(args):
         return _format_widget_authoring_error(exc)
 
 
-def _try_set_widget_color(widget, color_values):
-    if color_values is None:
-        return False
-
-    linear_color = _linear_color_from_list(color_values)
-
-    for method_name in ("set_color_and_opacity", "set_foreground_color"):
+def _get_widget_text_value(widget):
+    for method_name in ("get_text", "get_accessible_text"):
         method = getattr(widget, method_name, None)
         if callable(method):
             try:
-                method(linear_color)
-                return True
+                text_value = method()
+                if text_value is not None:
+                    return str(text_value)
             except Exception:
-                continue
+                pass
 
-    return False
+    text_value = get_editor_property_value(widget, "text")
+    if text_value is not None:
+        return str(text_value)
+
+    return None
+
+
+def _describe_widget_tree_entry(widget_tree, widget):
+    parent_widget = find_widget_parent(widget_tree, widget)
+    children = get_panel_children(widget)
+    entry = {
+        "name": get_widget_name(widget),
+        "class": get_widget_class_name(widget),
+        "parent": get_widget_name(parent_widget) if parent_widget else None,
+        "children": [get_widget_name(child_widget) for child_widget in children],
+        "layout": get_widget_slot_layout(widget),
+    }
+
+    text_value = _get_widget_text_value(widget)
+    if text_value is not None:
+        entry["text"] = text_value
+
+    style = get_widget_style_report(widget)
+    if style:
+        entry["style"] = style
+
+    return entry
+
+
+def inspect_widget_tree(args):
+    widget_name = args.get("widget_name")
+
+    try:
+        widget_blueprint = _load_widget_blueprint(widget_name)
+        widget_tree = get_widget_tree(widget_blueprint)
+        root_widget = get_root_widget(widget_tree)
+
+        widgets = []
+        seen_widget_names = set()
+
+        for widget in iter_widget_tree_widgets(widget_tree):
+            widget_entry = _describe_widget_tree_entry(widget_tree, widget)
+            widgets.append(widget_entry)
+            seen_widget_names.add(widget_entry["name"])
+
+        if root_widget and get_widget_name(root_widget) not in seen_widget_names:
+            widgets.append(_describe_widget_tree_entry(widget_tree, root_widget))
+
+        widgets.sort(key=lambda entry: entry["name"])
+
+        return {
+            "success": True,
+            "widget_blueprint": get_asset_package_name(widget_blueprint),
+            "root_widget": {
+                "name": get_widget_name(root_widget),
+                "class": get_widget_class_name(root_widget),
+            }
+            if root_widget
+            else None,
+            "widget_count": len(widgets),
+            "widgets": widgets,
+        }
+    except Exception as exc:
+        return _format_widget_authoring_error(exc)
+
+
+def _try_set_widget_color(widget, color_values):
+    return apply_widget_color(widget, color_values, role="foreground")
+
+
+def _try_set_widget_background_color(widget, color_values):
+    return apply_widget_color(widget, color_values, role="background")
 
 
 def _apply_delegate_binding(widget_blueprint, object_name, property_name, function_name=None, source_property=None):
