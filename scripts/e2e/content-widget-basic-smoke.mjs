@@ -22,6 +22,21 @@ export async function runContentWidgetBasicScenarios(state) {
 		)
 	})
 
+	await runStep("Ensure the Widget Blueprint has a Canvas root", async () => {
+		const rootResult = await callJsonTool("manage_widget", {
+			action: "ensure_canvas_root",
+			params: {
+				widget_name: widgetPath,
+				root_widget_name: "SmokeRootCanvas",
+			},
+		})
+		assert(rootResult.root_widget?.class === "CanvasPanel", "ensure_canvas_root did not report a CanvasPanel root")
+		assert(
+			rootResult.wrapped_existing_root === false,
+			"Fresh Widget Blueprint should not require wrapping an existing non-Canvas root",
+		)
+	})
+
 	await runStep("Add a TextBlock to the Widget Blueprint", async () => {
 		try {
 			const textResult = await callJsonTool("manage_widget", {
