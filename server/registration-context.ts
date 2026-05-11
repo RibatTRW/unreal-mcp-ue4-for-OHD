@@ -48,6 +48,7 @@ export interface RegistrationContext {
 		name: string,
 		description: string,
 		actions: Record<string, NamespaceActionRegistration>,
+		options?: { compactParamsSchema?: boolean },
 	) => void
 	registerZeroArgPythonTool: (name: string, description: string, buildCommand: () => string) => void
 	requiredStringListParam: (params: Record<string, any>, keys: string[]) => string[]

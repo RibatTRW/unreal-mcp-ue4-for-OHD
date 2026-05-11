@@ -15,6 +15,9 @@ export interface NamespaceActionDefinition {
 }
 
 export type NamespaceActionRegistration = NamespaceActionDefinition | NamespaceActionHandler
+export interface ToolNamespaceRegistrationOptions {
+	compactParamsSchema?: boolean
+}
 
 type TextResponse = { content: Array<{ type: "text"; text: string }> }
 
@@ -76,7 +79,16 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		name: string,
 		supportedActions: string[],
 		normalizedActions: Record<string, NamespaceActionDefinition>,
+		options: ToolNamespaceRegistrationOptions = {},
 	) => {
+		if (options.compactParamsSchema) {
+			return recordSchema.describe(
+				`Parameters for the selected ${name} action. Runtime validation is action-specific. Supported actions: ${supportedActions
+					.map((actionName) => `${name}.${actionName}`)
+					.join(", ")}.`,
+			)
+		}
+
 		const paramsSchemas = supportedActions.map((actionName) => {
 			const actionDefinition = normalizedActions[actionName]
 			return (actionDefinition.paramsSchema ?? z.object({}).strict()).describe(
@@ -127,6 +139,7 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		name: string,
 		description: string,
 		actions: Record<string, NamespaceActionRegistration>,
+		options: ToolNamespaceRegistrationOptions = {},
 	) => {
 		const normalizedActions = Object.fromEntries(
 			Object.entries(actions).map(([actionName, actionRegistration]) => [
@@ -140,7 +153,7 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		const inputSchema = z
 			.object({
 				action: namespaceActionSchema(supportedActions).describe(`Action to execute inside tool namespace ${name}`),
-				params: namespaceParamsSchema(name, supportedActions, normalizedActions)
+				params: namespaceParamsSchema(name, supportedActions, normalizedActions, options)
 					.optional()
 					.describe(
 						`Parameters for the selected ${name} action. Supported actions: ${supportedActions

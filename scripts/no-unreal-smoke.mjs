@@ -146,6 +146,15 @@ async function main() {
 		assert(namespaceTools.length >= 20, `Expected at least 20 namespaces, found ${namespaceTools.length}`)
 		logPass("List registered MCP tools", `${tools.length} tools, ${namespaceTools.length} namespaces`)
 
+		const widgetTool = toolByName.get("manage_widget")
+		assert(widgetTool, "manage_widget namespace tool is missing")
+		const widgetSchemaBytes = JSON.stringify(widgetTool.inputSchema ?? {}).length
+		assert(
+			widgetSchemaBytes < 4000,
+			`manage_widget input schema is too large for lazy client discovery (${widgetSchemaBytes} bytes)`,
+		)
+		logPass("Keep manage_widget schema discoverable", `${widgetSchemaBytes} bytes`)
+
 		const namespacesResult = await client.callTool({
 			name: "manage_tools",
 			arguments: { action: "list_namespaces" },
