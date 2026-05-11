@@ -131,6 +131,8 @@ export const searchAssetsShape = {
 	asset_class: z.string().optional(),
 	class_name: z.string().optional(),
 	class: z.string().optional(),
+	include_engine: z.boolean().optional(),
+	limit: z.number().optional(),
 }
 
 export const vector3TransformShape = {

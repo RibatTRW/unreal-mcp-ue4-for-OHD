@@ -65,9 +65,9 @@ export async function runWorldLevelStructureSmallScenarios(ctx, state) {
 			params: {
 				prefix: levelStructureBridgePrefix,
 				location: { x: 1100, y: 480, z: 0 },
-				span_length: 320,
+				segment_length: 320,
 				width: 120,
-				deck_thickness: 20,
+				thickness: 20,
 				rail_height: 45,
 			},
 		})

@@ -14,7 +14,7 @@ export async function runWorldLevelScenarios(ctx, state) {
 			params: {
 				prefix: levelPrefix,
 				location: { x: 700, y: 320, z: 0 },
-				length: 260,
+				segment_length: 260,
 				height: 160,
 				thickness: 30,
 			},

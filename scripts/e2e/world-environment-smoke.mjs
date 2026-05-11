@@ -34,9 +34,8 @@ export async function runWorldEnvironmentScenarios(ctx, state) {
 			params: {
 				prefix: environmentPyramidPrefix,
 				location: { x: 1380, y: 520, z: 0 },
-				base_size: 260,
 				levels: 4,
-				level_height: 36,
+				block_size: 130,
 			},
 		})
 		assert(pyramidResult.structure === "create_pyramid", "manage_environment create_pyramid returned the wrong structure")

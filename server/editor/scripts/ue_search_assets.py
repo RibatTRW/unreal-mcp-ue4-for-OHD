@@ -3,19 +3,26 @@ import json
 
 
 def search_assets(
-    search_term: str, asset_class: Optional[str] = None
+    search_term: str,
+    asset_class: Optional[str] = None,
+    include_engine: Optional[bool] = None,
+    limit: Optional[int] = None,
 ) -> Dict[str, Any]:
     asset_registry = unreal.AssetRegistryHelpers.get_asset_registry()
     all_assets = asset_registry.get_all_assets()
 
     matching_assets = []
-    search_term_lower = search_term.lower()
+    search_term_lower = str(search_term or "").lower()
     asset_class_filter = asset_class.strip().lower() if asset_class else None
+    should_include_engine = True if include_engine is None else bool(include_engine)
 
     for asset in all_assets:
         asset_name = str(asset.asset_name)
         package_path = str(asset.package_path)
         asset_class_name = get_asset_class_name(asset)
+
+        if not should_include_engine and package_path.startswith("/Engine"):
+            continue
 
         name_match = search_term_lower in asset_name.lower()
         path_match = search_term_lower in package_path.lower()
@@ -43,16 +50,28 @@ def search_assets(
 
     matching_assets.sort(key=relevance_score, reverse=True)
 
+    normalized_limit = 50
+    if limit is not None:
+        try:
+            normalized_limit = max(0, int(limit))
+        except Exception:
+            normalized_limit = 50
+
     return {
         "search_term": search_term,
         "asset_class_filter": asset_class_filter,
+        "include_engine": should_include_engine,
         "total_matches": len(matching_assets),
-        "assets": matching_assets[:50],
+        "assets": matching_assets[:normalized_limit],
     }
 
 
 def main():
-    result = search_assets("${search_term}", "${asset_class}")
+    search_term = decode_template_json("""${search_term}""")
+    asset_class = decode_template_json("""${asset_class}""")
+    include_engine = decode_template_json("""${include_engine}""")
+    limit = decode_template_json("""${limit}""")
+    result = search_assets(search_term, asset_class, include_engine, limit)
     print(json.dumps(result, indent=2))
 
 

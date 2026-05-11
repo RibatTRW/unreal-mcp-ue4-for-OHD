@@ -41,10 +41,17 @@ export const UEGetProjectInfo = () => renderScript("./scripts/ue_get_project_inf
 
 export const UEGetMapInfo = () => renderScript("./scripts/ue_get_map_info.py", {})
 
-export const UESearchAssets = (search_term: string, asset_class?: string) =>
+export const UESearchAssets = (
+	search_term: string,
+	asset_class?: string,
+	include_engine?: boolean,
+	limit?: number,
+) =>
 	renderScript("./scripts/ue_search_assets.py", {
-		search_term,
-		asset_class: asset_class || "",
+		search_term: jsonArg(search_term),
+		asset_class: jsonArg(asset_class || ""),
+		include_engine: jsonArg(include_engine),
+		limit: jsonArg(limit),
 	})
 
 export const UEGetWorldOutliner = () => renderScript("./scripts/ue_get_world_outliner.py", {})

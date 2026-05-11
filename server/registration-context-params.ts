@@ -58,6 +58,8 @@ export function createRegistrationParamHelpers(tools: typeof editorTools) {
 		tools.UESearchAssets(
 			optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
 			optionalStringParam(params, ["asset_class", "class_name", "class"]) ?? defaultAssetClass,
+			params.include_engine,
+			params.limit,
 		)
 
 	const actorNameParam = (params: Record<string, any>) =>
