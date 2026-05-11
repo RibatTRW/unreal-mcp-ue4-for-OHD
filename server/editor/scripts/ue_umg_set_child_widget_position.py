@@ -37,7 +37,7 @@ def set_child_widget_position(
             "widget_blueprint_path": widget_blueprint_path,
             "parent_widget_name": parent_widget_name,
             "child_widget_name": child_widget_name,
-            "layout": get_canvas_slot_layout(child_widget),
+            "layout": get_widget_slot_layout(child_widget),
         }
     except Exception as exc:
         return {

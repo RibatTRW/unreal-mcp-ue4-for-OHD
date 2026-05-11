@@ -39,6 +39,6 @@ export const contentEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_widget",
 		category: "Content & Authoring Tool Namespaces",
-		description: "Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. Use add_child_widget for typical nested layout work under an existing root such as CanvasPanel_0; add_widget without parent_widget_name is only for assigning a new root widget.",
+		description: "Widget tool namespace for UMG Blueprint creation, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use add_child_widget for typical nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.",
 	},
 ]

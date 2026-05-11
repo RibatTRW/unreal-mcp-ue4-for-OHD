@@ -40,7 +40,7 @@ def add_widget(
             "class": get_widget_class_name(new_widget),
             "parent_widget_name": parent_widget_name,
             "is_root_widget": parent_widget is None,
-            "layout": get_canvas_slot_layout(new_widget),
+            "layout": get_widget_slot_layout(new_widget),
         }
     except Exception as exc:
         return {"error": "Failed to add widget: {0}".format(str(exc))}

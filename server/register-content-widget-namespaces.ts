@@ -80,6 +80,21 @@ export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
 					}),
 				),
 		},
+		ensure_canvas_root: {
+			paramsSchema: requireWidgetBlueprintSelection({
+				root_widget_name: z.string().optional(),
+				root_name: z.string().optional(),
+				wrap_existing_root: z.boolean().optional(),
+			}),
+			handler: (params) =>
+				pythonDispatch(
+					editorTools.UEUMGTool("ensure_canvas_root", {
+						widget_name: widgetBlueprintParam(params),
+						root_widget_name: optionalStringParam(params, ["root_widget_name", "root_name"]),
+						wrap_existing_root: params.wrap_existing_root !== false,
+					}),
+				),
+		},
 		add_text_block: {
 			paramsSchema: requireNamedWidgetBlueprintSelection(
 				{

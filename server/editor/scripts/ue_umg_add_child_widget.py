@@ -37,7 +37,7 @@ def add_child_widget(
             "parent_widget_name": parent_widget_name,
             "child_widget_name": get_widget_name(child_widget),
             "class": get_widget_class_name(child_widget),
-            "layout": get_canvas_slot_layout(child_widget),
+            "layout": get_widget_slot_layout(child_widget),
         }
     except Exception as exc:
         return {"error": "Failed to add child widget: {0}".format(str(exc))}

@@ -35,6 +35,121 @@ def add_widget_to_tree(widget_tree, widget, parent_widget=None):
     return slot
 
 
+def make_unique_widget_name(widget_tree, base_name):
+    normalized_name = str(base_name or "RootCanvas").strip() or "RootCanvas"
+    if not find_widget_in_tree(widget_tree, normalized_name):
+        return normalized_name
+
+    index = 1
+    while index < 1000:
+        candidate_name = "{0}_{1}".format(normalized_name, index)
+        if not find_widget_in_tree(widget_tree, candidate_name):
+            return candidate_name
+        index += 1
+
+    raise ValueError("Could not find a unique widget name for: {0}".format(normalized_name))
+
+
+def set_canvas_panel_slot_fill(slot):
+    if not slot or not object_is_instance_of(slot, unreal.CanvasPanelSlot):
+        return False
+
+    changed = False
+
+    try:
+        if hasattr(slot, "set_anchors") and hasattr(unreal, "Anchors"):
+            anchors = unreal.Anchors()
+            set_object_property(anchors, "minimum", unreal.Vector2D(x=0.0, y=0.0))
+            set_object_property(anchors, "maximum", unreal.Vector2D(x=1.0, y=1.0))
+            slot.set_anchors(anchors)
+            changed = True
+    except Exception:
+        pass
+
+    try:
+        if hasattr(slot, "set_offsets") and hasattr(unreal, "Margin"):
+            offsets = unreal.Margin()
+            set_object_property(offsets, "left", 0.0)
+            set_object_property(offsets, "top", 0.0)
+            set_object_property(offsets, "right", 0.0)
+            set_object_property(offsets, "bottom", 0.0)
+            slot.set_offsets(offsets)
+            changed = True
+    except Exception:
+        pass
+
+    try:
+        if hasattr(slot, "set_alignment"):
+            slot.set_alignment(unreal.Vector2D(x=0.0, y=0.0))
+            changed = True
+    except Exception:
+        pass
+
+    try:
+        if hasattr(slot, "set_auto_size"):
+            slot.set_auto_size(False)
+            changed = True
+    except Exception:
+        pass
+
+    return changed
+
+
+def ensure_canvas_root(widget_blueprint, root_widget_name=None, wrap_existing_root=True):
+    widget_tree = get_widget_tree(widget_blueprint)
+    property_root = get_editor_property_value(widget_tree, "root_widget")
+    current_root = get_root_widget(widget_tree)
+
+    if current_root and object_is_instance_of(current_root, unreal.CanvasPanel):
+        if not property_root:
+            set_object_property(widget_tree, "root_widget", current_root)
+            touch_editor_object(widget_tree)
+            touch_editor_object(current_root)
+        return {
+            "widget_tree": widget_tree,
+            "root_widget": current_root,
+            "previous_root_widget": None,
+            "created": False,
+            "wrapped_existing_root": False,
+            "slot": None,
+        }
+
+    if current_root and not wrap_existing_root:
+        raise ValueError(
+            "Widget root '{0}' is not a CanvasPanel. Pass wrap_existing_root=true to wrap it in a new CanvasPanel root.".format(
+                get_widget_name(current_root)
+            )
+        )
+
+    canvas_name = make_unique_widget_name(widget_tree, root_widget_name or "RootCanvas")
+    canvas_root = create_widget_instance(widget_tree, "CanvasPanel", canvas_name)
+
+    if not set_object_property(widget_tree, "root_widget", canvas_root):
+        raise RuntimeError("Failed to assign CanvasPanel as widget root")
+
+    slot = None
+    if current_root:
+        try:
+            slot = add_widget_to_tree(widget_tree, current_root, canvas_root)
+            set_canvas_panel_slot_fill(slot)
+        except Exception:
+            set_object_property(widget_tree, "root_widget", current_root)
+            raise
+
+    touch_editor_object(widget_tree)
+    touch_editor_object(canvas_root)
+    touch_editor_object(current_root)
+
+    return {
+        "widget_tree": widget_tree,
+        "root_widget": canvas_root,
+        "previous_root_widget": current_root,
+        "created": current_root is None,
+        "wrapped_existing_root": current_root is not None,
+        "slot": slot,
+    }
+
+
 def get_canvas_panel_slot(widget):
     slot = get_editor_property_value(widget, "slot")
     if not slot:
@@ -84,6 +199,24 @@ def get_canvas_slot_layout(widget):
         "size": {"x": size.x, "y": size.y},
         "z_order": slot.get_z_order(),
     }
+
+
+def get_widget_slot_layout(widget):
+    slot = get_editor_property_value(widget, "slot")
+    if not slot:
+        return None
+
+    layout = {
+        "slot_class": get_object_class_name(slot),
+        "supports_canvas_position": False,
+    }
+
+    canvas_layout = get_canvas_slot_layout(widget)
+    if canvas_layout:
+        layout.update(canvas_layout)
+        layout["supports_canvas_position"] = True
+
+    return layout
 
 
 def remove_widget_from_blueprint_tree(widget_tree, widget):

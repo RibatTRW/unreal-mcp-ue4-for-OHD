@@ -67,7 +67,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	editor_umg_add_widget: {
 		status: "Partial",
-		note: "Widget tree edits work, but nested UserWidget subclasses are not supported and positioning is reliable only on CanvasPanel children.",
+		note: "Widget tree edits work for native PanelWidget parents, but nested UserWidget subclasses are not supported and absolute positioning still requires CanvasPanel slots.",
 	},
 	editor_umg_set_widget_position: {
 		status: "Partial",
@@ -75,11 +75,11 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	editor_umg_reparent_widget: {
 		status: "Partial",
-		note: "Cannot reparent the current root widget, and CanvasPanel slot positioning rules still apply after reparenting.",
+		note: "Cannot directly reparent the current root widget; use manage_widget.ensure_canvas_root to wrap a non-Canvas root when CanvasPanel positioning is required.",
 	},
 	editor_umg_add_child_widget: {
 		status: "Partial",
-		note: "Supports native widget classes; nested UserWidget subclasses are not supported, and positioning is reliable only on CanvasPanel children.",
+		note: "Supports native widget classes under any PanelWidget parent; nested UserWidget subclasses are not supported, and absolute positioning requires CanvasPanel slots.",
 	},
 	editor_umg_set_child_widget_position: {
 		status: "Partial",
@@ -107,7 +107,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_widget: {
 		status: "Partial",
-		note: "create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
+		note: "create_widget_blueprint, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning if the root is another panel. add_to_viewport requires PIE.",
 	},
 	manage_texture: {
 		status: "Supported",

@@ -87,14 +87,50 @@ def _resolve_widget_runtime_class(widget_name):
 
 
 def _ensure_root_canvas(widget_blueprint):
-    widget_tree = get_widget_tree(widget_blueprint)
-    root_widget = get_root_widget(widget_tree)
-    if root_widget:
-        return widget_tree, root_widget
+    root_result = ensure_canvas_root(widget_blueprint, wrap_existing_root=True)
+    return root_result["widget_tree"], root_result["root_widget"]
 
-    root_widget = create_widget_instance(widget_tree, "CanvasPanel", "RootCanvas")
-    add_widget_to_tree(widget_tree, root_widget, None)
-    return widget_tree, root_widget
+
+def ensure_canvas_root_for_widget(args):
+    widget_name = args.get("widget_name")
+    root_widget_name = args.get("root_widget_name")
+    wrap_existing_root = args.get("wrap_existing_root")
+    if wrap_existing_root is None:
+        wrap_existing_root = True
+
+    try:
+        widget_blueprint = _load_widget_blueprint(widget_name)
+        root_result = ensure_canvas_root(
+            widget_blueprint,
+            root_widget_name=root_widget_name,
+            wrap_existing_root=bool(wrap_existing_root),
+        )
+        save_widget_blueprint(widget_blueprint)
+
+        root_widget = root_result["root_widget"]
+        previous_root_widget = root_result["previous_root_widget"]
+
+        return {
+            "success": True,
+            "widget_blueprint": get_asset_package_name(widget_blueprint),
+            "root_widget": {
+                "name": get_widget_name(root_widget),
+                "class": get_widget_class_name(root_widget),
+            },
+            "previous_root_widget": {
+                "name": get_widget_name(previous_root_widget),
+                "class": get_widget_class_name(previous_root_widget),
+            }
+            if previous_root_widget
+            else None,
+            "created": bool(root_result["created"]),
+            "wrapped_existing_root": bool(root_result["wrapped_existing_root"]),
+            "wrapped_root_layout": get_widget_slot_layout(previous_root_widget)
+            if root_result["wrapped_existing_root"]
+            else None,
+        }
+    except Exception as exc:
+        return _format_widget_authoring_error(exc)
 
 
 def _try_set_widget_color(widget, color_values):

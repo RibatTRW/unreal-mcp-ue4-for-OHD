@@ -94,7 +94,7 @@ def reparent_widget(
             "widget_name": widget_name,
             "old_parent_widget_name": get_widget_name(old_parent_widget),
             "new_parent_widget_name": new_parent_widget_name,
-            "layout": get_canvas_slot_layout(widget),
+            "layout": get_widget_slot_layout(widget),
         }
     except Exception as exc:
         return {"error": "Failed to reparent widget: {0}".format(str(exc))}

@@ -27,7 +27,7 @@ def set_widget_position(
             "success": True,
             "widget_blueprint_path": widget_blueprint_path,
             "widget_name": widget_name,
-            "layout": get_canvas_slot_layout(widget),
+            "layout": get_widget_slot_layout(widget),
         }
     except Exception as exc:
         return {"error": "Failed to set widget position: {0}".format(str(exc))}

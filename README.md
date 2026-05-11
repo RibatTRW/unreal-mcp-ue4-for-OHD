@@ -353,9 +353,9 @@ Notes:
 ## Notes and Limitations
 
 - World-building and structure-generation tools use UE4.27-friendly preset builders based on engine basic-shape assets.
-- Common UMG widget-tree editing works well with CanvasPanel-based layouts, but delegate binding helpers remain unavailable in stock UE4.27 Python.
-- UMG positioning currently targets `CanvasPanel` slots in UE4.27.
-- Reparenting the current root widget and editing named-slot content are not currently handled.
+- Common UMG widget-tree editing works with native `PanelWidget` parents, but delegate binding helpers remain unavailable in stock UE4.27 Python.
+- UMG absolute positioning targets `CanvasPanel` slots in UE4.27. Use `manage_widget.ensure_canvas_root` when a Widget Blueprint has a non-Canvas root but needs CanvasPanel-style positioning.
+- Directly reparenting the current root widget and editing named-slot content are not currently handled.
 - Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.27 Python environment.
 - The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
 
@@ -606,8 +606,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_widget</code></td>
-		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. Use add_child_widget for typical nested layout work under an existing root such as CanvasPanel_0; add_widget without parent_widget_name is only for assigning a new root widget.</td>
-		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
+		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use add_child_widget for typical nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.</td>
+		<td width="30%">create_widget_blueprint, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning if the root is another panel. add_to_viewport requires PIE.</td>
 	</tr>
 	</tbody>
 </table>
