@@ -105,6 +105,10 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 		status: "Partial",
 		note: "Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.27 Python.",
 	},
+	manage_sequence: {
+		status: "Partial",
+		note: "Advanced binding, track, section, key, camera-cut, playback-range, and speed-track analysis actions require the UE4.27 SequencerScripting plugin in the target project.",
+	},
 	manage_widget: {
 		status: "Partial",
 		note: "create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.",

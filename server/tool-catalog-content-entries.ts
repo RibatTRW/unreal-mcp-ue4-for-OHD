@@ -29,7 +29,7 @@ export const contentEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_sequence",
 		category: "Content & Authoring Tool Namespaces",
-		description: "Sequence tool namespace for creating, searching, and inspecting LevelSequence assets.",
+		description: "Sequence tool namespace for creating, searching, inspecting, and editing LevelSequence assets, including bindings, tracks, sections, keys, camera cuts, playback ranges, and speed-track time calculations.",
 	},
 	{
 		name: "manage_audio",

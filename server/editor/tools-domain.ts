@@ -75,6 +75,12 @@ export const UEContentFactoryTool = (operation: string, args: Record<string, unk
 		args: jsonArg(args),
 	}, editorPreludes.contentFactory)
 
+export const UESequenceTool = (operation: string, args: Record<string, unknown> = {}) =>
+	renderScript("./scripts/ue_sequence_tools.py", {
+		operation: jsonArg(operation),
+		args: jsonArg(args),
+	}, editorPreludes.sequence)
+
 export const UEWorldBuildingTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_world_building_tools.py", {
 		operation: jsonArg(operation),

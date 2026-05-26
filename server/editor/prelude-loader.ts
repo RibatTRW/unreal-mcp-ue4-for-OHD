@@ -28,6 +28,7 @@ export const editorPreludes = {
 	data: buildOrderedPrelude("./scripts/ue_data"),
 	material: buildOrderedPrelude("./scripts/ue_material"),
 	sourceControl: buildOrderedPrelude("./scripts/ue_source_control"),
+	sequence: buildOrderedPrelude("./scripts/ue_sequence"),
 	umg: buildOrderedPrelude("./scripts/ue_umg"),
 	worldBuilding: buildOrderedPrelude("./scripts/ue_world_building"),
 }

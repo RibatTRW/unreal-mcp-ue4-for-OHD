@@ -153,10 +153,11 @@ In Unreal Editor:
 2. Go to `Edit -> Plugins`.
 3. Enable `Python Editor Script Plugin`.
 4. Enable `Editor Scripting Utilities`.
-5. Restart the editor if prompted.
-6. Go to `Edit -> Project Settings -> Python`.
-7. Enable `Enable Remote Execution`.
-8. Restart the editor again if needed.
+5. Enable `SequencerScripting` if you want to use advanced `manage_sequence` actions such as actor binding, track or key edits, camera cuts, playback ranges, and speed-track analysis.
+6. Restart the editor if prompted.
+7. Go to `Edit -> Project Settings -> Python`.
+8. Enable `Enable Remote Execution`.
+9. Restart the editor again if needed.
 
 Notes:
 
@@ -597,8 +598,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sequence</code></td>
-		<td width="52%">Sequence tool namespace for creating, searching, and inspecting LevelSequence assets.</td>
-		<td width="30%">&nbsp;</td>
+		<td width="52%">Sequence tool namespace for creating, searching, inspecting, and editing LevelSequence assets, including bindings, tracks, sections, keys, camera cuts, playback ranges, and speed-track time calculations.</td>
+		<td width="30%">Advanced binding, track, section, key, camera-cut, playback-range, and speed-track analysis actions require the UE4.27 SequencerScripting plugin in the target project.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_audio</code></td>
