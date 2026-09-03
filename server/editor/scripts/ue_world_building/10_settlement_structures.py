@@ -11,7 +11,7 @@ def create_wall(args):
         args.get("segment_length", 300.0),
         args.get("height", 300.0),
         args.get("thickness", 50.0),
-        axis=str(args.get("axis") or "x").lower(),
+        axis=unreal_text(args.get("axis") or "x").lower(),
         material_path=args.get("material_path"),
     )
 

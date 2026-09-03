@@ -123,7 +123,7 @@ def tint_material_interface(
                 material_interface
             )
             for discovered_name in discovered_names or []:
-                discovered_name = str(discovered_name)
+                discovered_name = unreal_text(discovered_name)
                 if discovered_name and discovered_name not in parameter_candidates:
                     parameter_candidates.append(discovered_name)
         except Exception:

@@ -47,7 +47,7 @@ _BASIC_SHAPE_ASSET_PATHS = {
 
 
 def load_basic_shape_mesh(shape_name="cube"):
-    mesh_path = _BASIC_SHAPE_ASSET_PATHS.get(str(shape_name or "cube").lower())
+    mesh_path = _BASIC_SHAPE_ASSET_PATHS.get(unreal_text(shape_name or "cube").lower())
     if not mesh_path:
         raise ValueError("Unsupported basic shape: {0}".format(shape_name))
 

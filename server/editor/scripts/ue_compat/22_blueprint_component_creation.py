@@ -13,7 +13,7 @@ def add_component_template_to_blueprint(
             "Blueprint generated class is not available for component template creation."
         )
 
-    template_name = str(component_name or "").strip()
+    template_name = unreal_text(component_name or "").strip()
     if not template_name:
         raise ValueError("component_name is required")
 

@@ -27,12 +27,6 @@ export const UEBlueprintAnalysisTool = (operation: string, args: Record<string, 
 		args: jsonArg(args),
 	})
 
-export const UEBlueprintGraphTool = (operation: string, args: Record<string, unknown> = {}) =>
-	renderScript("./scripts/ue_blueprint_graph_tools.py", {
-		operation: jsonArg(operation),
-		args: jsonArg(args),
-	}, editorPreludes.blueprintGraph)
-
 export const UEProjectTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_project_tools.py", {
 		operation: jsonArg(operation),

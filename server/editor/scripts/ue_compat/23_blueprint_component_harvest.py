@@ -12,7 +12,7 @@ def add_component_to_blueprint_via_harvest(
             "KismetEditorUtilities.add_components_to_blueprint is not available in this UE4.25 Python environment."
         )
 
-    template_name = str(component_name or "").strip()
+    template_name = unreal_text(component_name or "").strip()
     if not template_name:
         raise ValueError("component_name is required")
 

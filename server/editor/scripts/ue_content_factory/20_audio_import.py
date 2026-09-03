@@ -1,5 +1,5 @@
 def import_audio(args):
-    source_file = str(
+    source_file = unreal_text(
         args.get("source_file") or args.get("file_path") or args.get("local_path") or ""
     ).strip()
     destination_path = args.get("destination_path") or args.get("content_path") or "/Game/ImportedAudio"
@@ -7,7 +7,7 @@ def import_audio(args):
     replace_existing = bool(args.get("replace_existing", True))
     save_asset = bool(args.get("save", True))
     auto_create_cue = bool(args.get("auto_create_cue", True))
-    cue_suffix = str(args.get("cue_suffix") or "_Cue").strip()
+    cue_suffix = unreal_text(args.get("cue_suffix") or "_Cue").strip()
 
     if not source_file:
         return {
@@ -53,7 +53,7 @@ def import_audio(args):
         return {"success": False, "message": unreal_text(exc)}
 
     imported_object_paths = [
-        normalize_asset_reference_path(str(imported_path))
+        normalize_asset_reference_path(unreal_text(imported_path))
         for imported_path in (
             get_editor_property_value(import_task, "imported_object_paths", []) or []
         )

@@ -13,7 +13,7 @@ def add_component_to_blueprint(args):
     except Exception as exc:
         return {"success": False, "message": unreal_text(exc)}
 
-    blueprint_asset_path = get_asset_package_name(blueprint) or str(blueprint_name)
+    blueprint_asset_path = get_asset_package_name(blueprint) or unreal_text(blueprint_name)
 
     component_class = resolve_component_class(component_type)
     if not component_class:

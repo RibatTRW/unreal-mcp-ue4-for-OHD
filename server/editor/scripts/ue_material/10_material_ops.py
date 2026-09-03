@@ -1,5 +1,5 @@
 def get_available_materials(args):
-    search_term = str(args.get("search_term") or "").strip().lower()
+    search_term = unreal_text(args.get("search_term") or "").strip().lower()
     include_engine = bool(args.get("include_engine", True))
     limit = int(args.get("limit", 100))
 
@@ -75,7 +75,7 @@ def apply_material_to_blueprint(args):
     resolved_component_name = (
         get_scs_node_name(component_node)
         or get_object_name(component_template)
-        or str(component_name or "")
+        or unreal_text(component_name or "")
     )
 
     return {

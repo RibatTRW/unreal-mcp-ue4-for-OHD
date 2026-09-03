@@ -22,7 +22,7 @@ def resolve_actor_class(object_class, class_mappings=None):
 
 
 def get_property_name_candidates(prop_name):
-    normalized_name = str(prop_name or "").strip()
+    normalized_name = unreal_text(prop_name or "").strip()
     if not normalized_name:
         return []
 

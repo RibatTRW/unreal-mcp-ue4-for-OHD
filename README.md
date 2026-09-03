@@ -501,7 +501,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_source_control</code></td>
 		<td width="52%">Source-control tool namespace for provider inspection and file or package source-control operations.</td>
-		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.</td>
+		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider, returning success:false with unavailable:'source_control_no_provider' when none is enabled.</td>
 	</tr>
 	</tbody>
 </table>

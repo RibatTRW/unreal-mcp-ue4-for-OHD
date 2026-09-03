@@ -22,12 +22,12 @@ def get_actor_summary(actor):
     }
 
     try:
-        actor_summary["folder_path"] = str(actor.get_folder_path())
+        actor_summary["folder_path"] = unreal_text(actor.get_folder_path())
     except Exception:
         actor_summary["folder_path"] = ""
 
     try:
-        actor_summary["tags"] = [str(tag) for tag in list(actor.tags)]
+        actor_summary["tags"] = [unreal_text(tag) for tag in list(actor.tags)]
     except Exception:
         actor_summary["tags"] = []
 
@@ -103,12 +103,12 @@ def set_widget_text(widget, text_value):
 
     if hasattr(widget, "set_text"):
         try:
-            widget.set_text(str(text_value))
+            widget.set_text(unreal_text(text_value))
             return True
         except Exception:
             pass
 
-    return set_object_property(widget, "text", str(text_value))
+    return set_object_property(widget, "text", unreal_text(text_value))
 
 
 def set_widget_font_size(widget, font_size):
@@ -325,5 +325,5 @@ def get_widget_style_report(widget):
 
 
 def sanitize_asset_name(name, fallback="GeneratedAsset"):
-    sanitized = re.sub(r"[^A-Za-z0-9_]+", "_", str(name or "")).strip("_")
+    sanitized = re.sub(r"[^A-Za-z0-9_]+", "_", unreal_text(name or "")).strip("_")
     return sanitized or fallback

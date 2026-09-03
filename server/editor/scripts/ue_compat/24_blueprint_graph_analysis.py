@@ -16,7 +16,7 @@ def serialize_graph_node(node, graph_name=None):
         pin_data.append(
             {
                 "name": get_pin_name(pin),
-                "direction": str(get_editor_property_value(pin, "direction", "")),
+                "direction": unreal_text(get_editor_property_value(pin, "direction", "")),
                 "default_value": get_editor_property_value(pin, "default_value", ""),
                 "linked_to": linked_nodes,
             }
@@ -48,9 +48,9 @@ def serialize_pin_type(pin_type):
     container_type = get_editor_property_value(pin_type, "container_type")
 
     result = {
-        "pin_category": str(pin_category or ""),
-        "pin_subcategory": str(pin_subcategory or ""),
-        "container_type": str(container_type or ""),
+        "pin_category": unreal_text(pin_category or ""),
+        "pin_subcategory": unreal_text(pin_subcategory or ""),
+        "container_type": unreal_text(container_type or ""),
         "is_reference": bool(get_editor_property_value(pin_type, "is_reference", False)),
         "is_const": bool(get_editor_property_value(pin_type, "is_const", False)),
         "is_weak_pointer": bool(
@@ -68,15 +68,15 @@ def serialize_pin_type(pin_type):
 
 
 def serialize_blueprint_variable_desc(variable_desc):
-    var_name = str(get_editor_property_value(variable_desc, "var_name", ""))
-    friendly_name = str(
+    var_name = unreal_text(get_editor_property_value(variable_desc, "var_name", ""))
+    friendly_name = unreal_text(
         get_editor_property_value(variable_desc, "friendly_name", var_name)
     )
-    category_name = str(
+    category_name = unreal_text(
         get_editor_property_value(variable_desc, "category", "Default")
     )
     default_value = get_editor_property_value(variable_desc, "default_value")
-    tooltip = str(get_editor_property_value(variable_desc, "tooltip", "") or "")
+    tooltip = unreal_text(get_editor_property_value(variable_desc, "tooltip", "") or "")
     replication_condition = get_editor_property_value(
         variable_desc, "replication_condition"
     )
@@ -90,8 +90,8 @@ def serialize_blueprint_variable_desc(variable_desc):
         "default_value": default_value,
         "pin_type": serialize_pin_type(get_editor_property_value(variable_desc, "var_type")),
         "property_flags": int(get_editor_property_value(variable_desc, "property_flags", 0) or 0),
-        "replication_condition": str(replication_condition or ""),
-        "rep_notify_func": str(replication_notify or ""),
+        "replication_condition": unreal_text(replication_condition or ""),
+        "rep_notify_func": unreal_text(replication_notify or ""),
     }
 
 

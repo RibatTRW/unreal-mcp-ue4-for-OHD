@@ -85,8 +85,8 @@ def find_blueprint_component_template(blueprint, component_name):
 
 
 def component_name_matches(candidate_name, component_name):
-    candidate_name = str(candidate_name or "")
-    component_name = str(component_name or "")
+    candidate_name = unreal_text(candidate_name or "")
+    component_name = unreal_text(component_name or "")
 
     if not candidate_name or not component_name:
         return False

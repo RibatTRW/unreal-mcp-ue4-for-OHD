@@ -28,13 +28,13 @@ def get_default_scene_root_node(scs):
 
 def get_scs_node_name(node):
     try:
-        return str(node.get_variable_name())
+        return unreal_text(node.get_variable_name())
     except Exception:
         pass
 
     variable_name = get_editor_property_value(node, "internal_variable_name")
     if variable_name:
-        return str(variable_name)
+        return unreal_text(variable_name)
 
     component_template = get_editor_property_value(node, "component_template")
     if component_template:
@@ -98,7 +98,7 @@ def get_component_template(blueprint, component_name):
 
     component_candidates = get_blueprint_component_candidates(blueprint)
     fuzzy_matches = []
-    requested_name_lower = str(component_name or "").lower()
+    requested_name_lower = unreal_text(component_name or "").lower()
     for component_node, candidate in component_candidates:
         candidate_name_lower = get_object_name(candidate).lower()
         if (

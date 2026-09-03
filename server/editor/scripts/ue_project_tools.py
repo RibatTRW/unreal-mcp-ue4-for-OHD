@@ -4,7 +4,7 @@ import os
 
 
 def _parse_key_spec(key_spec):
-    tokens = [token.strip() for token in str(key_spec or "").split("+") if token.strip()]
+    tokens = [token.strip() for token in unreal_text(key_spec or "").split("+") if token.strip()]
     if not tokens:
         raise ValueError("Key is required")
 
@@ -88,7 +88,7 @@ def _insert_mapping_line(config_text, mapping_line):
 def create_input_mapping(args):
     mapping_name = args.get("mapping_name") or args.get("action_name")
     key_spec = args.get("key")
-    input_type = str(args.get("input_type") or "Action").strip().lower()
+    input_type = unreal_text(args.get("input_type") or "Action").strip().lower()
     scale = float(args.get("scale", 1.0))
 
     if not mapping_name:
@@ -126,7 +126,7 @@ def create_input_mapping(args):
             "success": True,
             "message": "Input mapping already exists",
             "mapping_line": mapping_line,
-            "config_path": str(config_path),
+            "config_path": unreal_text(config_path),
         }
 
     updated_text = _insert_mapping_line(config_text, mapping_line)
@@ -160,7 +160,7 @@ def create_input_mapping(args):
         "modifiers": modifiers,
         "scale": scale,
         "mapping_line": mapping_line,
-        "config_path": str(config_path),
+        "config_path": unreal_text(config_path),
     }
 
 

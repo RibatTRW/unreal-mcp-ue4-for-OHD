@@ -36,7 +36,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 		sourceControlProviderDependentTools.map((name) => [
 			name,
 			{
-				status: "Supported" as const,
+				status: "Partial" as const,
 				note: sourceControlProviderNote,
 			},
 		]),
@@ -127,7 +127,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_source_control: {
 		status: "Supported",
-		note: "provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.",
+		note: "provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider, returning success:false with unavailable:'source_control_no_provider' when none is enabled.",
 	},
 }
 

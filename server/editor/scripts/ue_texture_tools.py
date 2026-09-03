@@ -31,7 +31,7 @@ def _load_texture_asset(asset_identifier):
 
 
 def import_texture(args):
-    source_file = str(
+    source_file = unreal_text(
         args.get("source_file") or args.get("file_path") or args.get("local_path") or ""
     ).strip()
     destination_path = args.get("destination_path") or args.get("content_path") or "/Game/Imported"
@@ -95,7 +95,7 @@ def import_texture(args):
 
     texture_asset = None
     for imported_path in imported_object_paths:
-        texture_asset = _load_texture_asset(str(imported_path))
+        texture_asset = _load_texture_asset(unreal_text(imported_path))
         if texture_asset:
             break
 

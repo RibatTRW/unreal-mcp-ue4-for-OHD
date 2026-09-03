@@ -49,7 +49,7 @@ CHANNEL_CLASS_ALIASES = {
 
 
 def _clean_identifier(value):
-    return re.sub(r"[^a-z0-9]", "", str(value or "").lower())
+    return re.sub(r"[^a-z0-9]", "", unreal_text(value or "").lower())
 
 
 def sequence_support_status(args=None):
@@ -114,10 +114,10 @@ def text_to_string(value):
         return ""
     try:
         if hasattr(value, "to_string"):
-            return str(value.to_string())
+            return unreal_text(value.to_string())
     except Exception:
         pass
-    return str(value)
+    return unreal_text(value)
 
 
 def object_path(value):
@@ -134,14 +134,14 @@ def guid_to_string(guid):
         try:
             method = getattr(guid, method_name, None)
             if method:
-                return str(method())
+                return unreal_text(method())
         except Exception:
             pass
-    return str(guid)
+    return unreal_text(guid)
 
 
 def normalize_guid(value):
-    return re.sub(r"[^a-f0-9]", "", str(value or "").lower())
+    return re.sub(r"[^a-f0-9]", "", unreal_text(value or "").lower())
 
 
 def frame_number_value(value):
@@ -208,7 +208,7 @@ def get_tick_resolution(sequence):
 
 
 def time_unit_enum(time_unit):
-    value = str(time_unit or "display_rate").lower()
+    value = unreal_text(time_unit or "display_rate").lower()
     sequence_time_unit = getattr(unreal, "SequenceTimeUnit", None)
     if sequence_time_unit and "tick" in value:
         return sequence_time_unit.TICK_RESOLUTION
@@ -218,7 +218,7 @@ def time_unit_enum(time_unit):
 
 
 def frame_number_for_time(sequence, args, default_key="frame"):
-    unit_value = str(args.get("time_unit") or "display_rate").lower()
+    unit_value = unreal_text(args.get("time_unit") or "display_rate").lower()
     if args.get("time_seconds") is not None:
         rate = get_tick_resolution(sequence) if "tick" in unit_value else get_display_rate(sequence)
         return unreal.FrameNumber(seconds_to_frame(float(args.get("time_seconds")), rate))
@@ -276,7 +276,7 @@ def resolve_channel_class(channel_type):
     if not channel_type:
         return None
 
-    raw = str(channel_type).strip()
+    raw = unreal_text(channel_type).strip()
     cleaned = _clean_identifier(raw)
     candidates = []
     alias = CHANNEL_CLASS_ALIASES.get(raw.lower()) or CHANNEL_CLASS_ALIASES.get(cleaned)
@@ -446,7 +446,7 @@ def key_summary(sequence, key):
         try:
             method = getattr(key, method_name, None)
             if method:
-                result[output_key] = str(method())
+                result[output_key] = unreal_text(method())
         except Exception:
             pass
     return result
@@ -503,8 +503,8 @@ def track_summary(sequence, track, include_sections=True, include_channels=False
         "class": class_name(track),
     }
     try:
-        result["property_name"] = str(track.get_property_name())
-        result["property_path"] = str(track.get_property_path())
+        result["property_name"] = unreal_text(track.get_property_name())
+        result["property_path"] = unreal_text(track.get_property_path())
     except Exception:
         pass
 
@@ -702,7 +702,7 @@ def find_binding_by_args(sequence, args, required=True):
                 if hasattr(binding, "get_display_name")
                 else "",
             ]
-            if str(binding_name).lower() in [name.lower() for name in candidate_names]:
+            if unreal_text(binding_name).lower() in [name.lower() for name in candidate_names]:
                 return binding
         if target_actor and binding_matches_object(sequence, binding, target_actor):
             return binding
@@ -728,7 +728,7 @@ def bind_actor(args):
     binding = sequence.add_possessable(actor)
     if args.get("binding_name"):
         try:
-            binding.set_name(str(args.get("binding_name")))
+            binding.set_name(unreal_text(args.get("binding_name")))
         except Exception:
             pass
     saved = save_sequence_asset(sequence, args)
@@ -747,12 +747,12 @@ def bind_actor(args):
 
 
 def track_scope_from_args(args):
-    scope = str(args.get("scope") or "").lower()
+    scope = unreal_text(args.get("scope") or "").lower()
     if args.get("master") is True or scope == "master":
         return "master"
     if args.get("binding_id") or args.get("binding_name") or args.get("actor_name") or args.get("actor_path"):
         return "binding"
-    track_type = str(args.get("track_type") or "").lower()
+    track_type = unreal_text(args.get("track_type") or "").lower()
     if "camera" in track_type or "slomo" in track_type or "shot" in track_type or "sub" in track_type:
         return "master"
     return "binding"
@@ -772,14 +772,14 @@ def add_track(args):
 
     if args.get("display_name") and hasattr(track, "set_display_name"):
         try:
-            track.set_display_name(str(args.get("display_name")))
+            track.set_display_name(unreal_text(args.get("display_name")))
         except Exception:
             pass
 
     property_name = args.get("property_name")
     property_path = args.get("property_path") or property_name
     if property_name and hasattr(track, "set_property_name_and_path"):
-        track.set_property_name_and_path(str(property_name), str(property_path))
+        track.set_property_name_and_path(unreal_text(property_name), unreal_text(property_path))
 
     section = None
     if bool(args.get("add_section", False)):
@@ -814,7 +814,7 @@ def candidate_tracks_for_args(sequence, args):
         tracks = [track for track in tracks if class_is_child_of(track.get_class(), track_class)]
 
     if args.get("track_name"):
-        needle = str(args.get("track_name")).lower()
+        needle = unreal_text(args.get("track_name")).lower()
         filtered = []
         for track in tracks:
             names = [
@@ -872,7 +872,7 @@ def find_channel_by_args(section, args):
         channels = list(section.get_channels())
 
     if args.get("channel_name"):
-        needle = str(args.get("channel_name")).lower()
+        needle = unreal_text(args.get("channel_name")).lower()
         channels = [
             channel
             for channel in channels
@@ -898,7 +898,7 @@ def coerce_key_value(channel, value):
     if "float" in channel_class:
         return float(value)
     if "string" in channel_class:
-        return str(value)
+        return unreal_text(value)
     return value
 
 
@@ -1160,7 +1160,7 @@ def calculate_playback_time(args):
     else:
         raise ValueError("target_seconds, target_frame, end_seconds, or end_frame is required")
 
-    mode = str(args.get("integration_mode") or "linear").lower()
+    mode = unreal_text(args.get("integration_mode") or "linear").lower()
     if mode not in ("linear", "constant"):
         mode = "linear"
 

@@ -9,7 +9,7 @@ def _provider_info(args):
 
 
 def _query_state(args):
-    file_value = str(args.get("file") or "").strip()
+    file_value = unreal_text(args.get("file") or "").strip()
     if not file_value:
         return {"success": False, "message": "file is required"}
 

@@ -1,5 +1,5 @@
 def _property_candidates(prop_name):
-    raw_name = str(prop_name or "").strip()
+    raw_name = unreal_text(prop_name or "").strip()
     if not raw_name:
         return []
 

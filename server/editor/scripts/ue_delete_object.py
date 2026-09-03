@@ -62,7 +62,7 @@ def main():
         if isinstance(actor_names, list):
             result = delete_multiple_objects(actor_names)
         else:
-            result = delete_object(str(actor_names))
+            result = delete_object(unreal_text(actor_names))
     except Exception:
         result = delete_object(actor_names_input)
 

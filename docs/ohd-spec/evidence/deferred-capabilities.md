@@ -21,18 +21,13 @@ by live `run_python` probes against the OHD kit (UE 4.25.4, Python 2.7.14).
 
 ## Advanced sequencer actions (deferred pending plugin enable + probe)
 
-- Surface: `manage_sequence` advanced binding, track, section, key,
-  camera-cut, playback-range, and speed-track analysis actions (Partial).
-- Reason: the kit ships SequencerScripting OFF, and the scripting symbols
-  (`MovieSceneObjectBindingSpace`, `MovieSceneScriptingFloatChannel`) are
-  absent from the live snapshot (see `compat-4.25.md`).
-- Revisit: enable SequencerScripting in the kit, then probe per SPEC
-  section 6 before exposing these actions.
+- Covered by `compat-4.25.md` (SequencerScripting ships OFF; scripting
+  symbols absent from the live snapshot). No change here beyond that record.
 
 ## Source-control mutations without a provider (defined fallback, not deferred)
 
 - Surface: the 14 provider-dependent mutation tools plus
-  `revert_and_reload_packages` (Supported).
+  `revert_and_reload_packages` (Partial).
 - Defined no-provider behavior (SPEC section 3): with no provider enabled,
   mutations return `success:false` with
   `unavailable:'source_control_no_provider'` and the provider snapshot

@@ -36,7 +36,7 @@ def add_widget_to_tree(widget_tree, widget, parent_widget=None):
 
 
 def make_unique_widget_name(widget_tree, base_name):
-    normalized_name = str(base_name or "RootCanvas").strip() or "RootCanvas"
+    normalized_name = unreal_text(base_name or "RootCanvas").strip() or "RootCanvas"
     if not find_widget_in_tree(widget_tree, normalized_name):
         return normalized_name
 
@@ -51,7 +51,7 @@ def make_unique_widget_name(widget_tree, base_name):
 
 
 def rename_widget_in_tree(widget_tree, widget, requested_name):
-    normalized_name = str(requested_name or "").strip()
+    normalized_name = unreal_text(requested_name or "").strip()
     if not widget or not normalized_name:
         return False
 

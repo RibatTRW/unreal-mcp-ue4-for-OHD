@@ -36,16 +36,9 @@ const checks = [
 		pattern: /execute_console_command\(\s*None\s*,\s*['"](quit|disconnect|exit)/i,
 	},
 	{
-		name: "ascii-only str() on exception values (use unreal_text)",
-		pattern: /\bstr\(\s*exc?\s*\)/,
-	},
-	{
-		name: "ascii-only str() on class-name values (use unreal_text)",
-		pattern: /\bstr\(\s*\w*class_name\b/,
-	},
-	{
-		name: "ascii-only str() on asset/export path params (use unreal_text)",
-		pattern: /\bstr\(\s*(asset_path|destination_path|encoded_value)\b/,
+		name: "bare str() coerces with ascii on py2 (use unreal_text)",
+		pattern: /\bstr\(/,
+		allow: [/\bstr\(\s*\)/, /\.decode\(/],
 	},
 	{
 		name: "isinstance with bare str misses unicode on py2 (use _string_types)",
@@ -82,6 +75,9 @@ for (const file of files) {
 
 		for (const check of checks) {
 			if (check.pattern.test(line)) {
+				if (check.allow && check.allow.some((allowed) => allowed.test(line))) {
+					continue
+				}
 				problems.push(
 					`${path.relative(repoRoot, file)}:${index + 1}: ${check.name}: ${stripped.slice(0, 120)}`,
 				)
