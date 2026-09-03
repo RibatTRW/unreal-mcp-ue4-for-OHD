@@ -15,7 +15,7 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		project_info: ["No params. Returns the active project summary."],
 		map_info: ["No params. Returns the current map summary."],
 		world_outliner: ["No params. Lists actors in the current editor world."],
-		run_python: ["Required: code. Use this for UE4.27 Python debugging or gaps not wrapped by a stable action."],
+		run_python: ["Required: code. Use this for UE4.25 Python debugging or gaps not wrapped by a stable action. All code must be Python 2.7-compatible."],
 		console_command: [
 			"Required: command. Console output is not captured reliably; use run_python when stdout is required.",
 		],

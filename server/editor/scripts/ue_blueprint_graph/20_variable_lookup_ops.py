@@ -25,7 +25,7 @@ def add_blueprint_variable(args):
     if not variable_desc_class:
         return {
             "success": False,
-            "message": "BPVariableDescription is not exposed in this UE4.27 Python environment.",
+            "message": "BPVariableDescription is not exposed in this UE4.25 Python environment.",
         }
 
     try:
@@ -83,7 +83,7 @@ def add_blueprint_get_self_component_reference(args):
         if not try_set_member_reference(variable_reference, component_name, self_context=True):
             return {
                 "success": False,
-                "message": "UE4.27 Python could not configure component reference nodes in this environment.",
+                "message": "UE4.25 Python could not configure component reference nodes in this environment.",
             }
 
         set_object_property(node, "variable_reference", variable_reference)

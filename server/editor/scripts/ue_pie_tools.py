@@ -50,7 +50,7 @@ def start_pie(args):
     if not callable(starter):
         return {
             "success": False,
-            "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.27 Python environment.",
+            "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.25 Python environment.",
         }
 
     try:
@@ -92,7 +92,7 @@ def stop_pie(args):
     if not callable(stopper):
         return {
             "success": False,
-            "message": "EditorLevelLibrary.editor_end_play is not exposed in this UE4.27 Python environment.",
+            "message": "EditorLevelLibrary.editor_end_play is not exposed in this UE4.25 Python environment.",
         }
 
     try:

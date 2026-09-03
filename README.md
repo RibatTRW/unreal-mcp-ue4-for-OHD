@@ -1,15 +1,15 @@
-# unreal-mcp-ue4
-> UE4.27.2-focused MCP server for Unreal Engine using Unreal Python Remote Execution
+# unreal-mcp-ue4-for-OHD
+> UE4.25.4-focused MCP server for Operation Harsh Doorstop modding using Unreal Python Remote Execution
 
 [![npm version](https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm)](https://www.npmjs.com/package/unreal-mcp-ue4)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-published-2ea44f)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.conaman/unreal-mcp-ue4)
 [![GitHub release](https://img.shields.io/github/v/release/conaman/unreal-mcp-ue4?label=release)](https://github.com/conaman/unreal-mcp-ue4/releases/latest)
 
-`unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first.
+`unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first. This fork retargets that server to UE4.25.4 for the Operation Harsh Doorstop mod kit (OHDCore Mod Kit): same transport and tool surface, version pins, docs links, and Python-dialect constraints adjusted for the kit's embedded Python 2.7.
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
-> This project is still under active development, so bugs, rough edges, and UE4.27-specific limitations may still surface.
+> This project is still under active development, so bugs, rough edges, and UE4.25-specific limitations may still surface.
 >
 > Published package: [`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4)  
 > Registry name: `io.github.conaman/unreal-mcp-ue4`
@@ -19,14 +19,15 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 - No custom Unreal C++ plugin from this repository is required.
 - The server talks to the editor through Unreal's built-in Python Remote Execution path.
 - The tool surface is organized into granular tools and higher-level tool namespaces.
-- UE5-only editor scripting features are not reintroduced; UE4.27-safe operations work normally, while unreliable graph or binding flows are either excluded from the MCP surface or return a clear message instead of silently failing.
+- UE5-only editor scripting features are not reintroduced; UE4.25-safe operations work normally, while unreliable graph or binding flows are either excluded from the MCP surface or return a clear message instead of silently failing.
+- All Python sent to the OHD editor must be Python 2.7-compatible (the kit embeds Python 2.7.14): no f-strings, `print()` single-argument form, no `pathlib`-era idioms.
 
 ## Origin
 
 - Original inspiration and starting point: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
-- The current codebase has gone through extensive UE4.27-focused refactoring, architecture changes, and tool expansion.
+- The current codebase has gone through extensive UE4.27-focused refactoring, architecture changes, and tool expansion; this fork retargets it to UE4.25.4 for OHD modding.
 - In practice, the shared idea is still visible, but the implementation, scope, and supported workflows now reflect a separate UE4-first project.
-- Unreal Python API reference: [Unreal Engine Python API 4.27](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)
+- Unreal Python API reference: [Unreal Engine Python API 4.25](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.25)
 
 ## Safety
 
@@ -36,7 +37,7 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 
 ## Requirements
 
-- Unreal Engine `4.27.2`
+- Unreal Engine `4.25.4` (OHDCore Mod Kit: `HDEngine/` engine tree, game project `HDGame/HarshDoorstop/HarshDoorstop.uproject`, launched via `LaunchEditor.bat`)
 - Node.js `18+`
 - `npm`
 - An MCP client such as Codex, Claude Code, Claude Desktop, Cursor, or GitHub Copilot in a supported IDE
@@ -145,18 +146,18 @@ Official Copilot docs:
 
 ### 3. Enable Unreal Editor remote execution
 
-This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your UE4.27.2 project.
+This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your OHDCore Mod Kit project (verified live against the kit).
 
-In Unreal Editor:
+In the OHD editor (launched via `LaunchEditor.bat`):
 
-1. Open the target UE4.27.2 project.
+1. Open the HarshDoorstop project (`HDGame/HarshDoorstop/HarshDoorstop.uproject`).
 2. Go to `Edit -> Plugins`.
-3. Enable `Python Editor Script Plugin`.
-4. Enable `Editor Scripting Utilities`.
-5. Enable `SequencerScripting` if you want to use advanced `manage_sequence` actions such as actor binding, track or key edits, camera cuts, playback ranges, and speed-track analysis.
+3. Enable `Python Editor Script Plugin` (ships disabled in the kit).
+4. `Editor Scripting Utilities` is already enabled for the project — no action needed.
+5. Enable `SequencerScripting` if you want to use advanced `manage_sequence` actions such as actor binding, track or key edits, camera cuts, playback ranges, and speed-track analysis (it ships disabled in the kit).
 6. Restart the editor if prompted.
-7. Go to `Edit -> Project Settings -> Python`.
-8. Enable `Enable Remote Execution`.
+7. Go to `Edit -> Project Settings -> Plugins -> Python`.
+8. Enable `Enable Remote Execution`. Endpoint `239.0.0.1:6766`, bind `0.0.0.0` — and raise Multicast TTL from the kit default `0` to `1`.
 9. Restart the editor again if needed.
 
 Notes:
@@ -164,6 +165,7 @@ Notes:
 - UMG tooling works with editor modules that already ship with Unreal Editor. There is no extra UMG plugin from this repository to install.
 - Keep the target Unreal project open while using the MCP server or running tests.
 - If you change plugin or Python settings, restart the editor before testing again.
+- Do mod experiments in a throwaway content-only mod (Create Mod in the editor); never edit shipped `Plugins/*`, `HDAssets`, or engine content.
 
 ## Usage
 
@@ -174,11 +176,11 @@ Notes:
 - Treat `manage_editor.project_info` as the canonical project summary entry point.
 - Treat `manage_editor.map_info` and `manage_level.world_outliner` as the canonical map and level read entry points.
 - Use direct tools only for a small set of low-level primitives such as Unreal session path discovery and actor create or update or delete flows.
-- Use `manage_editor.run_python` as an escape hatch for debugging, rapid prototyping, and UE4.27 API gaps that are not yet wrapped as stable tools.
+- Use `manage_editor.run_python` as an escape hatch for debugging, rapid prototyping, and UE4.25 API gaps that are not yet wrapped as stable tools. All code must be Python 2.7-compatible.
 
 ### Recommended first-run flow
 
-1. Open your UE4.27.2 project and wait for the editor to finish loading.
+1. Open your OHDCore Mod Kit project and wait for the editor to finish loading.
 2. Make sure the required plugins and `Enable Remote Execution` are enabled.
 3. Install the MCP server globally with `npm install -g unreal-mcp-ue4`, or build your local checkout with `npm run build`.
 4. Start your MCP client or open a new session in the client that already references this server.
@@ -204,8 +206,8 @@ Useful first natural-language requests:
 - Spawn, inspect, move, and delete actors in the current level.
 - Search assets and inspect references or metadata.
 - Create common UE4 data assets such as `DataAsset` and `StringTable` assets.
-- Create and edit Blueprint assets where UE4.27 Python exposes the necessary editor APIs.
-- Create and edit Widget Blueprint trees with UE4.27-safe UMG helpers.
+- Create and edit Blueprint assets where UE4.25 Python exposes the necessary editor APIs.
+- Create and edit Widget Blueprint trees with UE4.25-safe UMG helpers.
 - Run grouped tool namespaces that dispatch through `action` and `params`.
 
 ## Testing
@@ -305,7 +307,7 @@ Recommended maintainer flow:
 npm run publish:check
 ```
 
-3. If you have a running UE4.27 editor test environment available, also run:
+3. If you have a running OHD (UE4.25) editor test environment available, also run:
 
 ```bash
 npm run test:e2e -- --with-assets --skip-build
@@ -349,23 +351,23 @@ Notes:
 ### Some Blueprint graph or UMG binding commands are unavailable
 
 - Widget Blueprint creation and common widget-tree editing work in this fork; the main UMG gaps are delegate binding helpers and runtime-dependent viewport flows.
-- Blueprint asset creation, component editing, compilation, and high-level asset summaries work; graph inspection, graph pin wiring, and variable or function metadata helpers are intentionally excluded because stock UE4.27 Python does not expose the required Blueprint metadata reliably.
+- Blueprint asset creation, component editing, compilation, and high-level asset summaries work; graph inspection, graph pin wiring, and variable or function metadata helpers are intentionally excluded because stock UE4.25 Python does not expose the required Blueprint metadata reliably.
 - Capability areas that are not reliable enough to keep in the MCP surface are listed under `Excluded Capability Areas` in the tool section.
 
 ## Notes and Limitations
 
-- World-building and structure-generation tools use UE4.27-friendly preset builders based on engine basic-shape assets.
-- Common UMG widget-tree editing works with native `PanelWidget` parents, but delegate binding helpers remain unavailable in stock UE4.27 Python.
-- UMG absolute positioning targets `CanvasPanel` slots in UE4.27. Use `manage_widget.ensure_canvas_root` when a Widget Blueprint has a non-Canvas root but needs CanvasPanel-style positioning.
+- World-building and structure-generation tools use UE4.25-friendly preset builders based on engine basic-shape assets.
+- Common UMG widget-tree editing works with native `PanelWidget` parents, but delegate binding helpers remain unavailable in stock UE4.25 Python.
+- UMG absolute positioning targets `CanvasPanel` slots in UE4.25. Use `manage_widget.ensure_canvas_root` when a Widget Blueprint has a non-Canvas root but needs CanvasPanel-style positioning.
 - Directly reparenting the current root widget and editing named-slot content are not currently handled.
-- Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.27 Python environment.
+- Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.25 Python environment.
 - The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
 
 The tool list below is generated from the TypeScript tool catalog during build.
 
 ## Available Tools
 
-Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
+Notes call out important requirements or UE4.25 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
 The recommended public surface is the `manage_*` namespace layer. Prefer `manage_editor.project_info`, `manage_editor.map_info`, and `manage_level.world_outliner` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
 
@@ -481,7 +483,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_inspection</code></td>
 		<td width="52%">Inspection tool namespace for asset, actor, map, and basic Blueprint summary actions.</td>
-		<td width="30%">Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.27 Python.</td>
+		<td width="30%">Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.25 Python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_tools</code></td>
@@ -594,12 +596,12 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_blueprint</code></td>
 		<td width="52%">Blueprint tool namespace for Blueprint creation, component editing, compilation, and basic Blueprint summary actions.</td>
-		<td width="30%">Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.27 Python.</td>
+		<td width="30%">Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.25 Python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sequence</code></td>
 		<td width="52%">Sequence tool namespace for creating, searching, inspecting, and editing LevelSequence assets, including bindings, tracks, sections, keys, camera cuts, playback ranges, and speed-track time calculations.</td>
-		<td width="30%">Advanced binding, track, section, key, camera-cut, playback-range, and speed-track analysis actions require the UE4.27 SequencerScripting plugin in the target project.</td>
+		<td width="30%">Advanced binding, track, section, key, camera-cut, playback-range, and speed-track analysis actions require the UE4.25 SequencerScripting plugin in the target project.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_audio</code></td>
@@ -655,17 +657,17 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 
 ### Excluded Capability Areas
 
-These capability areas are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+These capability areas are intentionally not exposed through the MCP surface in this UE4.25 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
 
 | Capability Area | Effect on MCP Surface | Why It Is Excluded |
 |-----------------|-----------------------|---------------------|
-| Blueprint event-graph event insertion | Related event-node and input-action helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup. |
-| Blueprint graph inspection and node search | Graph-analysis, graph-inspection, and node-search helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose Blueprint graph arrays such as UbergraphPages or FunctionGraphs reliably enough for deterministic inspection. |
-| Low-level Blueprint graph node creation | Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose stable low-level graph node creation or member-reference wiring. |
-| Blueprint function-call node authoring | Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface. | The current UE4.27 Python environment does not expose reliable function-call node reference setup. |
-| Blueprint variable and function metadata inspection | Variable-detail and function-detail helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose NewVariables or FunctionGraphs reliably enough for deterministic inspection. |
-| Blueprint variable authoring | Variable-creation helpers are excluded from the MCP surface. | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
-| UMG delegate-binding authoring | Widget event-binding and text-binding helpers are excluded from the MCP surface. | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
+| Blueprint event-graph event insertion | Related event-node and input-action helpers are excluded from the MCP surface. | The current UE4.25 Python environment does not expose reliable event graph access or K2 event reference setup. |
+| Blueprint graph inspection and node search | Graph-analysis, graph-inspection, and node-search helpers are excluded from the MCP surface. | The current UE4.25 Python environment does not expose Blueprint graph arrays such as UbergraphPages or FunctionGraphs reliably enough for deterministic inspection. |
+| Low-level Blueprint graph node creation | Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface. | The current UE4.25 Python environment does not expose stable low-level graph node creation or member-reference wiring. |
+| Blueprint function-call node authoring | Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface. | The current UE4.25 Python environment does not expose reliable function-call node reference setup. |
+| Blueprint variable and function metadata inspection | Variable-detail and function-detail helpers are excluded from the MCP surface. | The current UE4.25 Python environment does not expose NewVariables or FunctionGraphs reliably enough for deterministic inspection. |
+| Blueprint variable authoring | Variable-creation helpers are excluded from the MCP surface. | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.25 Python environment. |
+| UMG delegate-binding authoring | Widget event-binding and text-binding helpers are excluded from the MCP surface. | DelegateEditorBinding is not exposed in the current UE4.25 Python environment. |
 
 ## License
 

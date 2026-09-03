@@ -35,7 +35,7 @@ def create_widget_instance(widget_tree, widget_class, widget_name):
 
     if class_is_child_of(resolved_class, unreal.UserWidget):
         raise ValueError(
-            "UserWidget subclasses are not supported for nested widget creation in this UE4.27 tool. Use native widget classes such as CanvasPanel, Border, Button, TextBlock, or Image."
+            "UserWidget subclasses are not supported for nested widget creation in this UE4.25 tool. Use native widget classes such as CanvasPanel, Border, Button, TextBlock, or Image."
         )
 
     if find_widget_in_tree(widget_tree, widget_name):

@@ -82,7 +82,7 @@ def sequence_support_status(args=None):
         "missing_optional": missing_optional,
         "message": "Sequencer scripting is available."
         if not missing_required
-        else "Enable the SequencerScripting plugin in the UE4.27 project to use advanced manage_sequence actions.",
+        else "Enable the SequencerScripting plugin in the UE4.25 project to use advanced manage_sequence actions.",
     }
 
 
@@ -943,7 +943,7 @@ def make_camera_binding_id(sequence, binding):
             return sequence.make_binding_id(binding, unreal.MovieSceneObjectBindingSpace.LOCAL)
         except Exception:
             return sequence.make_binding_id(binding)
-    raise RuntimeError("Cannot create camera binding ID in this UE4.27 Python environment.")
+    raise RuntimeError("Cannot create camera binding ID in this UE4.25 Python environment.")
 
 
 def add_camera_cut(args):

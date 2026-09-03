@@ -6,7 +6,7 @@ def add_component_node_to_blueprint_via_graph_fallback(
     construction_graph = get_blueprint_construction_graph(blueprint)
     if not construction_graph:
         raise ValueError(
-            "Blueprint does not expose a UserConstructionScript graph in this UE4.27 Python environment."
+            "Blueprint does not expose a UserConstructionScript graph in this UE4.25 Python environment."
         )
 
     generated_class = get_blueprint_generated_class(blueprint)

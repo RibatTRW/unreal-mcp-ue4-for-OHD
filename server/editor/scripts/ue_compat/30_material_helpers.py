@@ -35,7 +35,7 @@ def create_material_instance_constant(
 
     if material_instance_class is None or material_factory_class is None:
         raise ValueError(
-            "MaterialInstanceConstant asset creation is not exposed in this UE4.27 Python environment."
+            "MaterialInstanceConstant asset creation is not exposed in this UE4.25 Python environment."
         )
 
     instance_asset_name = sanitize_asset_name(
@@ -135,7 +135,7 @@ def tint_material_interface(
         or not hasattr(material_library, "update_material_instance")
     ):
         raise ValueError(
-            "MaterialEditingLibrary vector parameter editing is not exposed in this UE4.27 Python environment."
+            "MaterialEditingLibrary vector parameter editing is not exposed in this UE4.25 Python environment."
         )
 
     color_value = as_linear_color(color_values)

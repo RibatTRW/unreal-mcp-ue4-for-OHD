@@ -35,7 +35,7 @@ def import_audio(args):
     if not task_class or not helpers_class:
         return {
             "success": False,
-            "message": "Audio import tasks are not exposed in this UE4.27 Python environment.",
+            "message": "Audio import tasks are not exposed in this UE4.25 Python environment.",
         }
 
     try:
@@ -86,7 +86,7 @@ def import_audio(args):
         if not cue_factory_class or not sound_cue_class:
             return {
                 "success": False,
-                "message": "SoundCueFactoryNew is not exposed in this UE4.27 Python environment.",
+                "message": "SoundCueFactoryNew is not exposed in this UE4.25 Python environment.",
                 "sound_wave_path": get_asset_package_name(sound_wave_asset)
                 or expected_sound_wave_path,
             }

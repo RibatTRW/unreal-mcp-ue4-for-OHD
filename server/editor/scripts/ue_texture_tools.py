@@ -65,7 +65,7 @@ def import_texture(args):
     if not task_class or not helpers_class:
         return {
             "success": False,
-            "message": "Asset import tasks are not exposed in this UE4.27 Python environment.",
+            "message": "Asset import tasks are not exposed in this UE4.25 Python environment.",
         }
 
     try:

@@ -30,7 +30,7 @@ def _resolve_source_control_helper():
             continue
 
     raise RuntimeError(
-        "SourceControlHelpers is not exposed in this UE4.27 Python environment."
+        "SourceControlHelpers is not exposed in this UE4.25 Python environment."
     )
 
 

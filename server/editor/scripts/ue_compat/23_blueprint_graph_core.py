@@ -45,7 +45,7 @@ def create_graph_node(graph, node_class_path, node_position=None):
 
     if not hasattr(graph, "create_node"):
         raise ValueError(
-            "Graph node creation is not exposed in this UE4.27 Python environment."
+            "Graph node creation is not exposed in this UE4.25 Python environment."
         )
 
     node = graph.create_node(node_class)

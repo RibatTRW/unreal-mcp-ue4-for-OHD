@@ -132,7 +132,7 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 
 		return (
 			error instanceof Error &&
-			error.message.includes("Widget blueprint does not expose an editable widget tree in UE4.27 Python.")
+			error.message.includes("Widget blueprint does not expose an editable widget tree in UE4.25 Python.")
 		)
 	}
 

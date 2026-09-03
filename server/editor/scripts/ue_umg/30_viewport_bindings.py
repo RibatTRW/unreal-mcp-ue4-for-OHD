@@ -100,7 +100,7 @@ def add_widget_to_viewport(args):
     if widget_instance is None or not hasattr(widget_instance, "add_to_viewport"):
         return {
             "success": False,
-            "message": "Could not instantiate a UserWidget in this UE4.27 Python environment.",
+            "message": "Could not instantiate a UserWidget in this UE4.25 Python environment.",
         }
 
     try:
@@ -163,7 +163,7 @@ def _start_pie_for_viewport(timeout_seconds, poll_interval):
         if not callable(starter):
             return {
                 "success": False,
-                "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.27 Python environment.",
+                "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.25 Python environment.",
             }
 
         try:

@@ -196,7 +196,7 @@ def set_widget_canvas_layout(widget, position=None, size=None, z_order=None):
     slot = get_canvas_panel_slot(widget)
     if not slot:
         raise ValueError(
-            "Widget '{0}' is not attached to a CanvasPanel slot. Layout changes are only supported for CanvasPanel children in UE4.27.".format(
+            "Widget '{0}' is not attached to a CanvasPanel slot. Layout changes are only supported for CanvasPanel children in UE4.25.".format(
                 get_widget_name(widget)
             )
         )

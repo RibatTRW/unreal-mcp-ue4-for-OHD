@@ -37,7 +37,7 @@ def add_blueprint_event_node(args):
         ):
             return {
                 "success": False,
-                "message": "UE4.27 Python could not configure K2Node_Event references in this environment.",
+                "message": "UE4.25 Python could not configure K2Node_Event references in this environment.",
             }
 
         set_object_property(node, "event_reference", event_reference)

@@ -9,7 +9,7 @@ def add_component_to_blueprint_via_harvest(
 ):
     if not supports_kismet_component_harvest():
         raise ValueError(
-            "KismetEditorUtilities.add_components_to_blueprint is not available in this UE4.27 Python environment."
+            "KismetEditorUtilities.add_components_to_blueprint is not available in this UE4.25 Python environment."
         )
 
     template_name = str(component_name or "").strip()

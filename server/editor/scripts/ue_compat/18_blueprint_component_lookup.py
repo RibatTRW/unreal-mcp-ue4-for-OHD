@@ -23,7 +23,7 @@ def get_simple_construction_script(blueprint):
 
     if not scs:
         raise ValueError(
-            "Blueprint '{0}' does not expose a SimpleConstructionScript in UE4.27 Python.".format(
+            "Blueprint '{0}' does not expose a SimpleConstructionScript in UE4.25 Python.".format(
                 get_object_name(blueprint)
             )
         )

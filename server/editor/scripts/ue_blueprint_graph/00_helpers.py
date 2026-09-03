@@ -9,7 +9,7 @@ def _load_blueprint_and_graph(blueprint_name, graph_name=None):
     graph = get_blueprint_event_graph(blueprint)
     if not graph:
         raise ValueError(
-            "Blueprint does not expose an event graph in this UE4.27 environment."
+            "Blueprint does not expose an event graph in this UE4.25 environment."
         )
 
     return blueprint, graph
@@ -32,7 +32,7 @@ def _build_pin_type(variable_type_name):
     pin_type_class = getattr(unreal, "EdGraphPinType", None)
     if not pin_type_class:
         raise ValueError(
-            "EdGraphPinType is not exposed in this UE4.27 Python environment."
+            "EdGraphPinType is not exposed in this UE4.25 Python environment."
         )
 
     pin_type = pin_type_class()

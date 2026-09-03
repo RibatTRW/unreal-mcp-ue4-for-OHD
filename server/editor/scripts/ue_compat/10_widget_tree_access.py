@@ -18,7 +18,7 @@ def get_widget_tree(widget_blueprint):
                 continue
 
     raise ValueError(
-        "Widget blueprint does not expose an editable widget tree in UE4.27 Python."
+        "Widget blueprint does not expose an editable widget tree in UE4.25 Python."
     )
 
 
