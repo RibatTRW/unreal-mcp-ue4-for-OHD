@@ -52,19 +52,55 @@ def delete_multiple_objects(actor_names):
         return {"error": "Failed to delete multiple objects: {0}".format(unreal_text(e))}
 
 
+def normalize_actor_names(decoded_value):
+    """Explicit single/multi-shape normalization for the delete call site.
+
+    The codec decodes exactly one value; the shapes callers send (a single
+    name, or a JSON list of names in one string, as the old literal_eval
+    path accepted) are normalized here, in the open. Returns None when
+    there is nothing to delete.
+    """
+    if decoded_value is None:
+        return None
+
+    if isinstance(decoded_value, list):
+        return decoded_value
+
+    if isinstance(decoded_value, _string_types):
+        stripped = decoded_value.strip()
+        if not stripped:
+            return None
+        if stripped.startswith("["):
+            try:
+                parsed = json.loads(stripped)
+                if isinstance(parsed, list):
+                    return parsed
+            except Exception:
+                pass
+        return stripped
+
+    return decoded_value
+
+
 def main():
-    actor_names_input = "${actor_names}"
-
+    # actor_names arrives via the one codec (jsonArg on the TS side,
+    # decode_template_arg here): base64(JSON) inside triple quotes.
     try:
-        import ast
+        actor_names = normalize_actor_names(
+            decode_template_arg("actor_names", """${actor_names}""")
+        )
+    except ArgDecodeError as exc:
+        print(json.dumps(arg_decode_failure(exc.arg_name), indent=2))
+        return
 
-        actor_names = ast.literal_eval(actor_names_input)
-        if isinstance(actor_names, list):
-            result = delete_multiple_objects(actor_names)
-        else:
-            result = delete_object(unreal_text(actor_names))
-    except Exception:
-        result = delete_object(actor_names_input)
+    if isinstance(actor_names, list):
+        result = delete_multiple_objects(actor_names)
+    elif isinstance(actor_names, _string_types):
+        result = delete_object(actor_names)
+    elif actor_names is None:
+        result = {"error": "actor_names is required"}
+    else:
+        result = delete_object(unreal_text(actor_names))
 
     print(json.dumps(result, indent=2))
 

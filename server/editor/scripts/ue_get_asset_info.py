@@ -47,7 +47,13 @@ def get_lod_info(asset_object):
 
 
 def main():
-    asset_info = get_asset_info("${asset_path}")
+    try:
+        asset_path = decode_template_arg("asset_path", """${asset_path}""")
+    except ArgDecodeError as exc:
+        print(json.dumps(arg_decode_failure(exc.arg_name), ensure_ascii=True))
+        return
+
+    asset_info = get_asset_info(asset_path)
     print(json.dumps(asset_info, ensure_ascii=True))
 
 

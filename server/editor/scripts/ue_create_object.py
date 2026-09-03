@@ -119,31 +119,19 @@ def create_object(
         return {"error": "Failed to create object: {0}".format(unreal_text(e))}
 
 
-def parse_value(value_str):
-    import json as parse_json
-
-    if value_str and value_str != "null" and value_str.strip():
-        try:
-            return parse_json.loads(value_str)
-        except Exception:
-            return None
-    return None
-
-
 def main():
-    # These are template variables from the js side
-    object_class = "${object_class}"
-    object_name = "${object_name}"
-
-    location_str = """${location}"""
-    rotation_str = """${rotation}"""
-    scale_str = """${scale}"""
-    properties_str = """${properties}"""
-
-    location = parse_value(location_str)
-    rotation = parse_value(rotation_str)
-    scale = parse_value(scale_str)
-    properties = parse_value(properties_str)
+    # All template variables arrive via the one codec (jsonArg on the TS
+    # side, decode_template_arg here): base64(JSON) inside triple quotes.
+    try:
+        object_class = decode_template_arg("object_class", """${object_class}""")
+        object_name = decode_template_arg("object_name", """${object_name}""")
+        location = decode_template_arg("location", """${location}""")
+        rotation = decode_template_arg("rotation", """${rotation}""")
+        scale = decode_template_arg("scale", """${scale}""")
+        properties = decode_template_arg("properties", """${properties}""")
+    except ArgDecodeError as exc:
+        print(json.dumps(arg_decode_failure(exc.arg_name), indent=2))
+        return
 
     result = create_object(
         object_class=object_class,
