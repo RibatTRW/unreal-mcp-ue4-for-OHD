@@ -38,9 +38,6 @@ def _pie_status(_args=None):
 
 
 def start_pie(args):
-    timeout_seconds = float(args.get("timeout_seconds", 8.0))
-    poll_interval = float(args.get("poll_interval", 0.25))
-
     status = _pie_status()
     if status["is_pie_running"]:
         status["already_running"] = True
@@ -58,23 +55,19 @@ def start_pie(args):
     except Exception as exc:
         return {"success": False, "message": str(exc)}
 
-    deadline = time.time() + max(0.1, timeout_seconds)
-    while time.time() <= deadline:
-        status = _pie_status()
-        if status["is_pie_running"]:
-            status["already_running"] = False
-            status["requested"] = True
-            status["transition_pending"] = False
-            return status
-        time.sleep(max(0.01, poll_interval))
-
+    # Fire-and-forget by design (run 8 diagnosis): the previous 10s
+    # time.sleep poll ran on the game thread that PIE startup itself
+    # needs to tick, which wedged the editor for 10+ minutes on a heavy
+    # map. The harness observes readiness with separate is_pie_running
+    # calls (pollPieStatus), so never block here.
     status = _pie_status()
     status["requested"] = True
+    status["already_running"] = False
     status["transition_pending"] = not status["is_pie_running"]
     if status["transition_pending"]:
         status["message"] = (
-            "PIE start was requested, but the editor needs an additional tick before "
-            "get_pie_status reports a running session."
+            "PIE start was requested; poll is_pie_running until it reports "
+            "a running session."
         )
     return status
 
@@ -89,16 +82,32 @@ def stop_pie(args):
         return status
 
     stopper = getattr(unreal.EditorLevelLibrary, "editor_end_play", None)
-    if not callable(stopper):
-        return {
-            "success": False,
-            "message": "EditorLevelLibrary.editor_end_play is not exposed in this UE4.25 Python environment.",
-        }
-
-    try:
-        stopper()
-    except Exception as exc:
-        return {"success": False, "message": str(exc)}
+    if callable(stopper):
+        try:
+            stopper()
+        except Exception as exc:
+            return {"success": False, "message": str(exc)}
+    else:
+        # This 4.25 build exposes no editor_end_play: end the session
+        # with a console quit against the live game world. The quit
+        # lands asynchronously (observed delay up to ~60s); the caller
+        # keeps polling. NEVER send quit/disconnect/exit with a None
+        # world: engine teardown asserts InWorld and hard-crashes the
+        # editor (run 17).
+        game_world = _get_game_world()
+        if game_world is None:
+            return {
+                "success": False,
+                "message": (
+                    "Cannot stop PIE: editor_end_play is not exposed and no "
+                    "game world is available for a console quit. Stop the "
+                    "session in the editor UI."
+                ),
+            }
+        try:
+            unreal.SystemLibrary.execute_console_command(game_world, "quit")
+        except Exception as exc:
+            return {"success": False, "message": str(exc)}
 
     deadline = time.time() + max(0.1, timeout_seconds)
     while time.time() <= deadline:

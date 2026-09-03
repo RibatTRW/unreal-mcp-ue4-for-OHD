@@ -53,7 +53,9 @@ export async function runContentPieRuntimeScenarios(state) {
 			params: { timeout_seconds: 10, poll_interval: 0.25 },
 		})
 		assert(pieStop.success === true, "manage_editor stop_pie did not acknowledge the request")
-		const pieStatus = await pollPieStatus(false)
+		// Console-quit stops land asynchronously (observed delay up to
+		// ~60s), so poll well beyond the default ~10s window.
+		const pieStatus = await pollPieStatus(false, 120, 500)
 		assert(pieStatus?.is_pie_running === false, "manage_editor stop_pie did not stop the PIE session")
 	})
 
@@ -100,7 +102,9 @@ export async function runContentPieRuntimeScenarios(state) {
 			params: { timeout_seconds: 10, poll_interval: 0.25 },
 		})
 		assert(pieStop.success === true, "manage_editor stop_pie did not acknowledge the auto-start cleanup request")
-		const pieStatus = await pollPieStatus(false)
+		// Console-quit stops land asynchronously (observed delay up to
+		// ~60s), so poll well beyond the default ~10s window.
+		const pieStatus = await pollPieStatus(false, 120, 500)
 		assert(pieStatus?.is_pie_running === false, "manage_editor stop_pie did not stop auto-started PIE")
 	})
 }

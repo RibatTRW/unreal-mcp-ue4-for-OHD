@@ -32,6 +32,10 @@ const checks = [
 		pattern: /makedirs\([^)]*\bexist_ok\b/,
 	},
 	{
+		name: "bare-context session teardown crashes the editor (pass a world or use stop_pie)",
+		pattern: /execute_console_command\(\s*None\s*,\s*['"](quit|disconnect|exit)/i,
+	},
+	{
 		name: "ascii-only str() on registry values (use unreal_text)",
 		pattern: /\bstr\(\s*asset\w*\./,
 	},
