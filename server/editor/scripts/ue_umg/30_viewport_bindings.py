@@ -93,7 +93,7 @@ def add_widget_to_viewport(args):
 
     if widget_instance is None:
         try:
-            widget_instance = unreal.new_object(get_UClass(widget_class), outer=game_world)
+            widget_instance = new_object_compat(get_UClass(widget_class), game_world)
         except Exception:
             widget_instance = None
 

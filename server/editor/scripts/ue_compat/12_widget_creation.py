@@ -45,13 +45,13 @@ def create_widget_instance(widget_tree, widget_class, widget_name):
 
     try:
         if hasattr(resolved_class, "static_class"):
-            return resolved_class(outer=widget_tree, name=widget_name)
+            return resolved_class(widget_tree, widget_name)
     except Exception as exc:
         constructor_error = exc
 
     try:
-        return unreal.new_object(
-            get_UClass(resolved_class), outer=widget_tree, name=widget_name
+        return new_object_compat(
+            get_UClass(resolved_class), widget_tree, widget_name
         )
     except Exception as exc:
         if constructor_error:

@@ -23,7 +23,7 @@ class resolver with `find_class` as fallback), generic
 | `find_class` | `03_object_property_helpers` | `load_class` primary already; `find_class` is the guarded fallback | None — covered |
 | `BlueprintEditorLibrary` | `try_compile_blueprint` (`11_widget_editing`, + persistence/component helpers) | `hasattr`-guarded; compile becomes silent no-op, saves still occur | Document; probe whether save-without-compile suffices in OHD |
 | `KismetEditorUtilities` | compile fallback; `add_components_to_blueprint` (`18`, `23`) | Guarded; clean "not available" errors | Component authoring limited; probe SCS-based alternative |
-| `new_object` | widget creation (`12`, `30`), component harvest/graph fallback (`23`, `24`), asset persistence (`20`) | All call sites inside try/except → clean errors, no crashes | Creation flows limited; probe factory/`AssetTools` path in 4.25 |
+| `new_object` | widget creation (`12`, `30`), component harvest/graph fallback (`23`, `24`), asset persistence (`20`) | Absent (probed live: hasattr False). Replacement probed live: positional UClass call `Class(outer, name)` works; `Outer=`/`Name=` kwargs rejected; SCS/`BlueprintEditorUtils`/`KismetEditorUtilities` also absent, so the template path is the only route | Fixed: `new_object_compat()` in `00_core` (factory-first on 4.27+, class-call fallback); all 5 call sites routed through it |
 | `AttachmentTransformRules` | `23_blueprint_component_harvest` | Counterpart `AttachmentRule` exists; member names unverified | Probe member names (`KeepRelative`?) |
 | `MovieSceneObjectBindingSpace`, `MovieSceneScriptingFloatChannel` | `00_sequence_helpers` (advanced sequence) | SequencerScripting ships OFF in the kit anyway | Deferred pending plugin enable + probe |
 

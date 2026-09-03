@@ -55,6 +55,50 @@ def unreal_text(value):
         return _text_type()
 
 
+def new_object_compat(object_class, outer, name=None):
+    """Create a UObject without depending on the new_object factory.
+
+    The OHD kit's Python has no such factory (probed live: hasattr is
+    False); calling the UClass positionally performs the same
+    NewObject(Outer, Class, Name) — probed working, while Outer=/Name=
+    kwargs are rejected as invalid. On engines WITH the factory (4.27+),
+    its known signatures are tried first so behavior there is unchanged.
+    Returns the created object or None.
+    """
+    new_object = getattr(unreal, "new_object", None)
+    if callable(new_object):
+        if name is None:
+            signature_attempts = [lambda: new_object(object_class, outer)]
+        else:
+            signature_attempts = [
+                lambda: new_object(object_class, outer=outer, name=name),
+                lambda: new_object(object_class, outer, name),
+            ]
+        for signature_attempt in signature_attempts:
+            try:
+                created_object = signature_attempt()
+                if created_object:
+                    return created_object
+            except Exception:
+                pass
+
+    if name is None:
+        try:
+            return object_class(outer)
+        except Exception:
+            return None
+
+    try:
+        return object_class(outer, name)
+    except Exception:
+        pass
+
+    try:
+        return object_class(outer)
+    except Exception:
+        return None
+
+
 def decode_template_json(encoded_value):
     if encoded_value is None:
         return None

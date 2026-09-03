@@ -26,7 +26,7 @@ def add_component_to_blueprint_via_harvest(
 
     component_template = None
     try:
-        component_template = unreal.new_object(component_class, temp_actor, template_name)
+        component_template = new_object_compat(component_class, temp_actor, template_name)
 
         if not component_template:
             raise RuntimeError(
