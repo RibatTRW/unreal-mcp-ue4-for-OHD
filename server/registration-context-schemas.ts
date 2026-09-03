@@ -28,6 +28,28 @@ export const colorInputSchema = z.union([
 export const recordSchema = z.record(z.any())
 export const stringListSchema = z.array(z.string().min(1)).min(1)
 
+export interface RegistrationSchemas {
+	colorInputSchema: z.ZodTypeAny
+	recordSchema: z.ZodRecord<z.ZodString, z.ZodAny>
+	rotatorInputSchema: z.ZodTypeAny
+	stringListSchema: z.ZodArray<z.ZodString, "many">
+	vector2InputSchema: z.ZodTypeAny
+	vector3InputSchema: z.ZodTypeAny
+	worldBuildBaseSchema: {
+		location: z.ZodTypeAny
+		material_path: z.ZodTypeAny
+		prefix: z.ZodTypeAny
+	}
+	toColorArray: (value?: unknown) => number[] | undefined
+	toColorRecord: (value?: unknown) => { a: number; b: number; g: number; r: number } | undefined
+	toRotatorArray: (value?: unknown) => number[] | undefined
+	toRotatorRecord: (value?: unknown) => { pitch: number; roll: number; yaw: number } | undefined
+	toVector2Array: (value?: unknown) => number[] | undefined
+	toVector2Record: (value?: unknown) => { x: number; y: number } | undefined
+	toVector3Array: (value?: unknown) => number[] | undefined
+	toVector3Record: (value?: unknown) => { x: number; y: number; z: number } | undefined
+}
+
 export const worldBuildBaseSchema = {
 	location: vector3InputSchema.optional().describe("Optional world location"),
 	material_path: z.string().optional().describe("Optional material path to apply"),
@@ -149,4 +171,24 @@ export function toColorRecord(value?: unknown) {
 export function toColorArray(value?: unknown) {
 	const colorRecord = toColorRecord(value)
 	return colorRecord ? [colorRecord.r, colorRecord.g, colorRecord.b, colorRecord.a] : undefined
+}
+
+export function createRegistrationSchemaHelpers(): RegistrationSchemas {
+	return {
+		colorInputSchema,
+		recordSchema,
+		rotatorInputSchema,
+		stringListSchema,
+		vector2InputSchema,
+		vector3InputSchema,
+		worldBuildBaseSchema,
+		toColorArray,
+		toColorRecord,
+		toRotatorArray,
+		toRotatorRecord,
+		toVector2Array,
+		toVector2Record,
+		toVector3Array,
+		toVector3Record,
+	}
 }

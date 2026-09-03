@@ -8,9 +8,9 @@ import {
 	sourceControlPackagesSchema,
 	sourceControlPackagesShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
 
-export function registerCoreSourceControlNamespaces(ctx: RegistrationContext) {
+export function registerCoreSourceControlNamespaces(ctx: RegistrationParams & RegistrationDispatch) {
 	const {
 		editorTools,
 		pythonDispatch,

@@ -17,9 +17,15 @@ import {
 	widgetNameKeys,
 	widgetNameMessage,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
-export function registerContentWidgetNamespaces(ctx: RegistrationContext) {
+export function registerContentWidgetNamespaces(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+) {
 	const {
 		editorTools,
 		optionalStringParam,

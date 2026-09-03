@@ -9,9 +9,13 @@ import {
 	requireAtLeastOneValue,
 	searchAssetsShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
-export function registerContentAssetNamespaces(ctx: RegistrationContext) {
+export function registerContentAssetNamespaces(ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch) {
 	const {
 		actorNameParam,
 		blueprintNameParam,

@@ -1,8 +1,14 @@
 import { z } from "zod"
 
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
-export function registerWorldBuildingNamespaces(ctx: RegistrationContext) {
+export function registerWorldBuildingNamespaces(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+) {
 	const { editorTools, pythonDispatch, registerToolNamespace, worldBuildBaseSchema, worldBuildCommand } = ctx
 
 	const worldSchema = (shape: z.ZodRawShape) =>

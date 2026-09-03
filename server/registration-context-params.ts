@@ -1,6 +1,28 @@
 import * as editorTools from "./editor/tools.js"
+import type { RegistrationSchemas } from "./registration-context-schemas.js"
 
-export function createRegistrationParamHelpers(tools: typeof editorTools) {
+export interface RegistrationParams {
+	actorNameParam: (params: Record<string, any>) => string
+	assetPathListParam: (params: Record<string, any>) => string | string[] | undefined
+	blueprintNameParam: (params: Record<string, any>) => string
+	optionalStringListParam: (params: Record<string, any>, keys: string[]) => string[] | undefined
+	optionalStringParam: (params: Record<string, any>, keys: string[]) => string | undefined
+	requiredStringListParam: (params: Record<string, any>, keys: string[]) => string[]
+	requiredStringParam: (params: Record<string, any>, keys: string[]) => string
+	searchAssetsCommand: (params: Record<string, any>, defaultAssetClass?: string) => string
+	sourceControlFileListParam: (params: Record<string, any>) => string[]
+	sourceControlFileParam: (params: Record<string, any>) => string
+	sourceControlFilesCommand: (files: string[], singleOperation?: string, multiOperation?: string) => string
+	sourceControlPackageListParam: (params: Record<string, any>) => string[]
+	widgetBlueprintParam: (params: Record<string, any>) => string
+	worldBuildCommand: (operation: string, params: Record<string, any>) => string
+}
+
+export function createRegistrationParamHelpers(
+	tools: typeof editorTools,
+	codecs: Pick<RegistrationSchemas, "toVector3Array">,
+): RegistrationParams {
+	const { toVector3Array } = codecs
 	const stringOrStringArrayParam = (params: Record<string, any>, keys: string[]) => {
 		for (const key of keys) {
 			const value = params[key]
@@ -140,6 +162,12 @@ export function createRegistrationParamHelpers(tools: typeof editorTools) {
 		return tools.UESourceControlTool(multiOperation ?? singleOperation!, { files })
 	}
 
+	const worldBuildCommand = (operation: string, params: Record<string, any>) =>
+		tools.UEWorldBuildingTool(operation, {
+			...params,
+			location: toVector3Array(params.location),
+		})
+
 	return {
 		actorNameParam,
 		assetPathListParam,
@@ -154,5 +182,6 @@ export function createRegistrationParamHelpers(tools: typeof editorTools) {
 		sourceControlFilesCommand,
 		sourceControlPackageListParam,
 		widgetBlueprintParam,
+		worldBuildCommand,
 	}
 }

@@ -8,7 +8,11 @@ import {
 	requireAtLeastOneValue,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
 const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	manage_editor: {
@@ -77,7 +81,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	},
 }
 
-export function registerCoreEditorSystemNamespaces(ctx: RegistrationContext) {
+export function registerCoreEditorSystemNamespaces(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+) {
 	const {
 		actorNameParam,
 		assetPathListParam,

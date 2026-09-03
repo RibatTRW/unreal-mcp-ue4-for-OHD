@@ -1,9 +1,9 @@
 import { z } from "zod"
 
 import { discoverPath } from "./remote-execution.js"
-import { RegistrationContext } from "./registration-context.js"
+import { RegistrationDispatch } from "./registration-context.js"
 
-export function registerDirectTools(ctx: RegistrationContext) {
+export function registerDirectTools(ctx: RegistrationDispatch) {
 	const { editorTools, rawServerTool, registerPythonTool, textResponse, toolDescription } = ctx
 
 	rawServerTool("get_unreal_engine_path", toolDescription("get_unreal_engine_path"), async () => {
