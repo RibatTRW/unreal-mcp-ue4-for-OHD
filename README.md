@@ -1021,6 +1021,9 @@ These capability areas are intentionally not exposed through the MCP surface in 
 
 ## Roadmap
 
+- [ ] Improve Code Architecture
+- [ ] Add Dsh Harness Support
+- [ ] Add a agent.md so agents can install it easily 
 - [ ] Add GitHub Actions CI (then a Tests badge plus required status checks become possible)
 - [ ] Cut a first fork release (no tags exist yet)
 - [ ] Decide registry identity: keep `io.github.conaman/unreal-mcp-ue4` or rename to the fork
