@@ -1,5 +1,5 @@
 def _format_widget_authoring_error(exc):
-    message = str(exc)
+    message = unreal_text(exc)
     if "editable widget tree in UE4.25 Python" in message:
         return {
             "success": False,
@@ -45,7 +45,7 @@ def _resolve_widget_runtime_class(widget_name):
     resolved_paths = []
     seen_paths = set()
     for candidate_path in candidate_paths:
-        normalized_path = str(candidate_path or "").strip()
+        normalized_path = unreal_text(candidate_path or "").strip()
         if not normalized_path or normalized_path in seen_paths:
             continue
         seen_paths.add(normalized_path)
@@ -73,7 +73,7 @@ def _resolve_widget_runtime_class(widget_name):
         except Exception:
             pass
 
-    return widget_blueprint, widget_path or str(widget_name or ""), None
+    return widget_blueprint, widget_path or unreal_text(widget_name or ""), None
 
 
 def _ensure_root_canvas(widget_blueprint):
@@ -131,13 +131,13 @@ def _get_widget_text_value(widget):
             try:
                 text_value = method()
                 if text_value is not None:
-                    return str(text_value)
+                    return unreal_text(text_value)
             except Exception:
                 pass
 
     text_value = get_editor_property_value(widget, "text")
     if text_value is not None:
-        return str(text_value)
+        return unreal_text(text_value)
 
     return None
 
@@ -228,8 +228,8 @@ def _apply_delegate_binding(widget_blueprint, object_name, property_name, functi
 
     filtered_bindings = []
     for existing_binding in bindings:
-        existing_object_name = str(get_editor_property_value(existing_binding, "object_name", ""))
-        existing_property_name = str(get_editor_property_value(existing_binding, "property_name", ""))
+        existing_object_name = unreal_text(get_editor_property_value(existing_binding, "object_name", ""))
+        existing_property_name = unreal_text(get_editor_property_value(existing_binding, "property_name", ""))
         if existing_object_name == object_name and existing_property_name == property_name:
             continue
         filtered_bindings.append(existing_binding)

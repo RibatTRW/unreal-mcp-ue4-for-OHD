@@ -2,7 +2,7 @@ import json
 
 
 def _normalize_content_path(path_value, default_path="/Game"):
-    normalized = str(path_value or "").strip()
+    normalized = unreal_text(path_value or "").strip()
     if not normalized:
         normalized = default_path
 
@@ -25,7 +25,7 @@ def _asset_summary(asset):
 
 
 def _resolve_destination_asset_path(args, source_asset_path, require_new_path=False):
-    explicit_destination = str(
+    explicit_destination = unreal_text(
         args.get("destination_asset_path")
         or args.get("target_asset_path")
         or args.get("asset_path")
@@ -39,7 +39,7 @@ def _resolve_destination_asset_path(args, source_asset_path, require_new_path=Fa
     source_directory = source_package.rsplit("/", 1)[0] if "/" in source_package else "/Game"
 
     destination_path = args.get("destination_path") or args.get("path")
-    new_name = str(args.get("new_name") or args.get("name") or "").strip()
+    new_name = unreal_text(args.get("new_name") or args.get("name") or "").strip()
 
     if require_new_path and not destination_path and not new_name:
         raise ValueError(
@@ -57,7 +57,7 @@ def _collect_asset_paths(args):
         normalized_paths = [
             normalize_asset_reference_path(asset_path)
             for asset_path in candidate_paths
-            if str(asset_path or "").strip()
+            if unreal_text(asset_path or "").strip()
         ]
         return [asset_path for asset_path in normalized_paths if asset_path]
 
@@ -253,7 +253,7 @@ def delete_assets(args):
         try:
             result = bool(unreal.EditorAssetLibrary.delete_asset(asset_path))
         except Exception as exc:
-            failed.append({"asset_path": asset_path, "message": str(exc)})
+            failed.append({"asset_path": asset_path, "message": unreal_text(exc)})
             continue
 
         if result:
@@ -285,7 +285,7 @@ def save_assets(args):
                 unreal.EditorAssetLibrary.save_asset(asset_path, only_if_is_dirty)
             )
         except Exception as exc:
-            failed.append({"asset_path": asset_path, "message": str(exc)})
+            failed.append({"asset_path": asset_path, "message": unreal_text(exc)})
             continue
 
         if result:
@@ -392,7 +392,7 @@ def main():
     try:
         result = handler(args or {})
     except Exception as exc:
-        result = {"success": False, "message": str(exc)}
+        result = {"success": False, "message": unreal_text(exc)}
 
     print(json.dumps(result, indent=2))
 

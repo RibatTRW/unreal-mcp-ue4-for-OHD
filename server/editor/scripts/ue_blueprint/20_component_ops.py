@@ -11,9 +11,9 @@ def add_component_to_blueprint(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
-    blueprint_asset_path = get_asset_package_name(blueprint) or str(blueprint_name)
+    blueprint_asset_path = get_asset_package_name(blueprint) or unreal_text(blueprint_name)
 
     component_class = resolve_component_class(component_type)
     if not component_class:
@@ -71,7 +71,7 @@ def add_component_to_blueprint(args):
                 parent_component_name=parent_component_name,
             )
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if component_template is None:
         component_template = get_scs_node_template(component_node)
@@ -126,7 +126,7 @@ def set_component_property(args):
             blueprint, component_name
         )
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if not property_name:
         return {"success": False, "message": "property_name is required"}
@@ -162,7 +162,7 @@ def set_physics_properties(args):
             blueprint, component_name
         )
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     apply_component_property(
         component_template,

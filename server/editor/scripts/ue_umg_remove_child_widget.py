@@ -42,7 +42,7 @@ def remove_child_widget(
             "class": child_widget_class_name,
         }
     except Exception as exc:
-        return {"error": "Failed to remove child widget: {0}".format(str(exc))}
+        return {"error": "Failed to remove child widget: {0}".format(unreal_text(exc))}
 
 
 def main():

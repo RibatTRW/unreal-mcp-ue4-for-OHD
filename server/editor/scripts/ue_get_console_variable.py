@@ -2,7 +2,7 @@ import json
 
 
 def read_console_variable(variable_name):
-    normalized_name = str(variable_name or "").strip()
+    normalized_name = unreal_text(variable_name or "").strip()
     if not normalized_name:
         return {"success": False, "message": "variable_name is required"}
 
@@ -12,11 +12,11 @@ def read_console_variable(variable_name):
     string_getter = getattr(unreal.SystemLibrary, "get_console_variable_string_value", None)
     if callable(string_getter):
         try:
-            string_value = str(string_getter(normalized_name))
+            string_value = unreal_text(string_getter(normalized_name))
         except Exception:
-            string_value = str(float_value if float_value != 0.0 else int_value)
+            string_value = unreal_text(float_value if float_value != 0.0 else int_value)
     else:
-        string_value = str(float_value if float_value != 0.0 else int_value)
+        string_value = unreal_text(float_value if float_value != 0.0 else int_value)
 
     return {
         "success": True,

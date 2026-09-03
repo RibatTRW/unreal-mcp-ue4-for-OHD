@@ -501,7 +501,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_source_control</code></td>
 		<td width="52%">Source-control tool namespace for provider inspection and file or package source-control operations.</td>
-		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.</td>
+		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider, returning success:false with unavailable:'source_control_no_provider' when none is enabled.</td>
 	</tr>
 	</tbody>
 </table>
@@ -604,7 +604,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_blueprint</code></td>
 		<td width="52%">Blueprint tool namespace for Blueprint creation, component editing, compilation, and basic Blueprint summary actions.</td>
-		<td width="30%">Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.25 Python.</td>
+		<td width="30%">Blueprint asset and component edits work; read returns high-level graph summaries only, while pin wiring, variable authoring, and variable/function detail helpers are excluded from the MCP surface in stock UE4.25 Python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sequence</code></td>

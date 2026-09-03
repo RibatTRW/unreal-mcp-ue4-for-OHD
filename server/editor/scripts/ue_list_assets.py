@@ -2,7 +2,7 @@ import json
 
 
 def list_assets(root_path=None, recursive=True, limit=None):
-    normalized_root = str(root_path or "/Game").strip() or "/Game"
+    normalized_root = unreal_text(root_path or "/Game").strip() or "/Game"
     is_recursive = bool(True if recursive is None else recursive)
 
     try:

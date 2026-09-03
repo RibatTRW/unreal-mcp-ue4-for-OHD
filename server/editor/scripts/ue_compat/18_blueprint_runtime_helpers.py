@@ -8,7 +8,7 @@ def get_blueprint_generated_class(blueprint):
         return generated_class
 
     try:
-        generated_class_path = str(blueprint.generated_class())
+        generated_class_path = unreal_text(blueprint.generated_class())
         if generated_class_path:
             return unreal.load_class(None, generated_class_path)
     except Exception:

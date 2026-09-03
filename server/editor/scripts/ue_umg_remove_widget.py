@@ -33,7 +33,7 @@ def remove_widget(widget_blueprint_path, widget_name):
             "was_root_widget": was_root_widget,
         }
     except Exception as exc:
-        return {"error": "Failed to remove widget: {0}".format(str(exc))}
+        return {"error": "Failed to remove widget: {0}".format(unreal_text(exc))}
 
 
 def main():

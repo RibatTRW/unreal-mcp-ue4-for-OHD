@@ -67,11 +67,11 @@ def _text_to_string(value):
 
     try:
         if hasattr(value, "to_string"):
-            return str(value.to_string())
+            return unreal_text(value.to_string())
     except Exception:
         pass
 
-    return str(value)
+    return unreal_text(value)
 
 
 def _provider_snapshot(helper):
@@ -113,7 +113,7 @@ def _coerce_string_list(values, label):
 
     normalized_values = []
     for value in values:
-        normalized_value = str(value or "").strip()
+        normalized_value = unreal_text(value or "").strip()
         if normalized_value:
             normalized_values.append(normalized_value)
 

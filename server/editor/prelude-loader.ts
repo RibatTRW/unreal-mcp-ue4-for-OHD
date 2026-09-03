@@ -23,7 +23,6 @@ export const editorPreludes = {
 	actor: buildOrderedPrelude("./scripts/ue_actor"),
 	compat: buildOrderedPrelude("./scripts/ue_compat"),
 	blueprint: buildOrderedPrelude("./scripts/ue_blueprint"),
-	blueprintGraph: buildOrderedPrelude("./scripts/ue_blueprint_graph"),
 	contentFactory: buildOrderedPrelude("./scripts/ue_content_factory"),
 	data: buildOrderedPrelude("./scripts/ue_data"),
 	material: buildOrderedPrelude("./scripts/ue_material"),

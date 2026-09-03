@@ -53,7 +53,7 @@ def add_child_widget(
             "parent_widget_name": parent_widget_name,
             "child_widget_name": get_widget_name(child_widget),
             "class": get_widget_class_name(child_widget),
-            "text": str(text) if text is not None else None,
+            "text": unreal_text(text) if text is not None else None,
             "layout": get_widget_slot_layout(child_widget),
             "style": get_widget_style_report(child_widget),
         }
@@ -64,7 +64,7 @@ def add_child_widget(
                 save_widget_blueprint(widget_blueprint)
             except Exception:
                 pass
-        return {"error": "Failed to add child widget: {0}".format(str(exc))}
+        return {"error": "Failed to add child widget: {0}".format(unreal_text(exc))}
 
 
 def main():

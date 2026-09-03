@@ -15,7 +15,7 @@ def add_component_node_to_blueprint_via_graph_fallback(
             "Blueprint generated class is not available for component template creation."
         )
 
-    template_name = str(component_name).strip()
+    template_name = unreal_text(component_name).strip()
     if not template_name:
         raise ValueError("component_name is required")
 

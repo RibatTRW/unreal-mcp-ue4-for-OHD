@@ -1,5 +1,5 @@
 def get_available_materials(args):
-    search_term = str(args.get("search_term") or "").strip().lower()
+    search_term = unreal_text(args.get("search_term") or "").strip().lower()
     include_engine = bool(args.get("include_engine", True))
     limit = int(args.get("limit", 100))
 
@@ -44,7 +44,7 @@ def apply_material_to_actor(args):
         actor, component = _resolve_actor_and_component(args)
         material_asset = apply_material_to_component(component, material_path, slot_index)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     return {
         "success": True,
@@ -70,12 +70,12 @@ def apply_material_to_blueprint(args):
         )
         finalize_blueprint_change(blueprint, structural=False)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     resolved_component_name = (
         get_scs_node_name(component_node)
         or get_object_name(component_template)
-        or str(component_name or "")
+        or unreal_text(component_name or "")
     )
 
     return {

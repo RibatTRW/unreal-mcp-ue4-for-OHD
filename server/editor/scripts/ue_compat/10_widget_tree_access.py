@@ -4,7 +4,7 @@ def get_widget_tree(widget_blueprint):
         return widget_tree
 
     asset_path = get_asset_package_name(widget_blueprint)
-    asset_name = str(asset_path or "").rsplit("/", 1)[-1]
+    asset_name = unreal_text(asset_path or "").rsplit("/", 1)[-1]
     if asset_path and asset_name:
         for tree_path in (
             "{0}.{1}:WidgetTree".format(asset_path, asset_name),

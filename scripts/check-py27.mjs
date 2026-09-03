@@ -36,8 +36,9 @@ const checks = [
 		pattern: /execute_console_command\(\s*None\s*,\s*['"](quit|disconnect|exit)/i,
 	},
 	{
-		name: "ascii-only str() on registry values (use unreal_text)",
-		pattern: /\bstr\(\s*asset\w*\./,
+		name: "bare str() coerces with ascii on py2 (use unreal_text)",
+		pattern: /\bstr\(/,
+		allow: [/\bstr\(\s*\)/, /\bstr\(value\)\.decode\(/],
 	},
 	{
 		name: "isinstance with bare str misses unicode on py2 (use _string_types)",
@@ -74,6 +75,9 @@ for (const file of files) {
 
 		for (const check of checks) {
 			if (check.pattern.test(line)) {
+				if (check.allow && check.allow.some((allowed) => allowed.test(line))) {
+					continue
+				}
 				problems.push(
 					`${path.relative(repoRoot, file)}:${index + 1}: ${check.name}: ${stripped.slice(0, 120)}`,
 				)

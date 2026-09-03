@@ -14,21 +14,6 @@ def get_blueprint_graphs(blueprint):
     return graphs
 
 
-def get_blueprint_event_graph(blueprint):
-    ubergraph_pages = list(get_editor_property_value(blueprint, "ubergraph_pages", []) or [])
-    if ubergraph_pages:
-        for graph in ubergraph_pages:
-            if get_object_name(graph).lower() == "eventgraph":
-                return graph
-        return ubergraph_pages[0]
-
-    for graph in get_blueprint_graphs(blueprint):
-        if "event" in get_object_name(graph).lower():
-            return graph
-
-    return None
-
-
 def load_graph_node_class(class_path):
     node_class = resolve_class_reference(class_path)
     if node_class:
@@ -117,7 +102,7 @@ def get_graph_nodes(graph):
 def get_node_guid_string(node):
     node_guid = get_editor_property_value(node, "node_guid")
     if node_guid:
-        return str(node_guid)
+        return unreal_text(node_guid)
 
     return get_object_name(node)
 
@@ -130,7 +115,7 @@ def get_node_title_text(node):
         if title_arg is None:
             continue
         try:
-            return str(node.get_node_title(title_arg))
+            return unreal_text(node.get_node_title(title_arg))
         except Exception:
             continue
 
@@ -140,7 +125,7 @@ def get_node_title_text(node):
 def get_pin_name(pin):
     pin_name = get_editor_property_value(pin, "pin_name")
     if pin_name:
-        return str(pin_name)
+        return unreal_text(pin_name)
 
     return get_object_name(pin)
 
@@ -169,7 +154,7 @@ def set_pin_default(pin, value):
         return
 
     if isinstance(value, (int, float)):
-        set_object_property(pin, "default_value", str(value))
+        set_object_property(pin, "default_value", unreal_text(value))
         return
 
     if isinstance(value, _string_types) and value.startswith("/"):
@@ -184,22 +169,6 @@ def set_pin_default(pin, value):
         return
 
     set_object_property(pin, "default_value", json.dumps(value))
-
-
-def find_blueprint_graph_node(blueprint, node_id):
-    if not node_id:
-        return None, None
-
-    normalized_node_id = unreal_text(node_id)
-    for graph in get_blueprint_graphs(blueprint):
-        for node in get_graph_nodes(graph):
-            if (
-                get_node_guid_string(node) == normalized_node_id
-                or get_object_name(node) == normalized_node_id
-            ):
-                return graph, node
-
-    return None, None
 
 
 def break_pin_links(pin, target_pin=None):

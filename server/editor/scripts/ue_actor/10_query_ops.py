@@ -9,7 +9,7 @@ def get_actors_in_level(_args):
 
 
 def find_actors_by_name(args):
-    pattern = str(args.get("pattern") or "").strip().lower()
+    pattern = unreal_text(args.get("pattern") or "").strip().lower()
     if not pattern:
         return {"success": False, "message": "Pattern is required", "actors": []}
 

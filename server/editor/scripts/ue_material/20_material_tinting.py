@@ -69,7 +69,7 @@ def set_mesh_material_color(args):
                 "parameter_name": used_parameter,
             }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     return {
         "success": False,

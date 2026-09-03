@@ -9,7 +9,7 @@ _SESSION_ENDING_COMMANDS = frozenset(["quit", "exit", "disconnect"])
 
 
 def execute_console_command(command):
-    normalized_command = str(command or "").strip()
+    normalized_command = unreal_text(command or "").strip()
     if not normalized_command:
         return {"success": False, "message": "command is required"}
 

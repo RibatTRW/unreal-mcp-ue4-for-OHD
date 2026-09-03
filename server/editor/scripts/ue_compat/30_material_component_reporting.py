@@ -95,7 +95,7 @@ def get_component_material_info(component):
 
         slot_name = ""
         if slot_index < len(material_slot_names):
-            slot_name = str(material_slot_names[slot_index])
+            slot_name = unreal_text(material_slot_names[slot_index])
 
         material_info.append(
             {

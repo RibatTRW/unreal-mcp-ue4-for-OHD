@@ -49,7 +49,7 @@ def spawn_blueprint_actor(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     blueprint_path = get_asset_package_name(blueprint)
     blueprint_class = None

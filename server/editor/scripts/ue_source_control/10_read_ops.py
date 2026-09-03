@@ -9,7 +9,7 @@ def _provider_info(args):
 
 
 def _query_state(args):
-    file_value = str(args.get("file") or "").strip()
+    file_value = unreal_text(args.get("file") or "").strip()
     if not file_value:
         return {"success": False, "message": "file is required"}
 
@@ -48,7 +48,7 @@ def _query_states(args):
             True,
         )
     except RuntimeError as exc:
-        if "does not expose query_file_states" not in str(exc):
+        if "does not expose query_file_states" not in unreal_text(exc):
             raise
 
         states = [

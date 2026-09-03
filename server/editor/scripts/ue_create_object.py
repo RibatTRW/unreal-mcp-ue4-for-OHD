@@ -116,7 +116,7 @@ def create_object(
             },
         }
     except Exception as e:
-        return {"error": "Failed to create object: {0}".format(str(e))}
+        return {"error": "Failed to create object: {0}".format(unreal_text(e))}
 
 
 def parse_value(value_str):

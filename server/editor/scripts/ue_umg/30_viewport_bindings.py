@@ -173,7 +173,7 @@ def _start_pie_for_viewport(timeout_seconds, poll_interval):
     try:
         starter()
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     # Fire-and-forget (run 8/21 diagnosis): never sleep-poll the game
     # thread here. The caller answers retry_recommended until a later

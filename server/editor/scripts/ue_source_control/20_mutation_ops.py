@@ -1,3 +1,37 @@
+def _no_provider_result(payload, operation_name, reason):
+    payload["success"] = False
+    payload["unavailable"] = "source_control_no_provider"
+    payload["message"] = (
+        "Source control provider is not enabled in this editor session; "
+        "{0} was not attempted ({1}).".format(operation_name, reason)
+    )
+    return payload
+
+
+def _require_provider(payload, operation_name):
+    """Resolve the helper and snapshot the provider, or return a
+    no-provider result. Returns (helper, None) when a provider is enabled,
+    or (None, result) with the defined unavailable shape otherwise."""
+    try:
+        helper, helper_name = _resolve_source_control_helper()
+    except Exception as exc:
+        payload["helper_class"] = ""
+        return None, _no_provider_result(payload, operation_name, unreal_text(exc))
+
+    payload["helper_class"] = helper_name
+    try:
+        payload.update(_provider_snapshot(helper))
+    except Exception as exc:
+        return None, _no_provider_result(payload, operation_name, unreal_text(exc))
+
+    if not payload.get("enabled"):
+        return None, _no_provider_result(
+            payload, operation_name, "provider reports enabled=False"
+        )
+
+    return helper, None
+
+
 def _run_file_operation(
     operation_name,
     method_names,
@@ -7,17 +41,17 @@ def _run_file_operation(
     keep_checked_out_key=None,
 ):
     def _handler(args):
-        helper, helper_name = _resolve_source_control_helper()
         payload = {
-            "helper_class": helper_name,
             "operation": operation_name,
         }
-        payload.update(_provider_snapshot(helper))
+        helper, unavailable = _require_provider(payload, operation_name)
+        if unavailable is not None:
+            return unavailable
 
         call_args = []
 
         if single_key:
-            file_value = str(args.get(single_key) or "").strip()
+            file_value = unreal_text(args.get(single_key) or "").strip()
             if not file_value:
                 return {"success": False, "message": "{0} is required".format(single_key)}
             payload["file"] = file_value
@@ -30,7 +64,7 @@ def _run_file_operation(
             call_args.append(files)
 
         if description_key:
-            description = str(args.get(description_key) or "").strip()
+            description = unreal_text(args.get(description_key) or "").strip()
             if not description:
                 return {
                     "success": False,
@@ -52,7 +86,7 @@ def _run_file_operation(
             if not keep_checked_out_key or not call_args:
                 raise
 
-            message = str(exc)
+            message = unreal_text(exc)
             if "argument" not in message and "positional" not in message:
                 raise
 
@@ -67,17 +101,18 @@ def _run_file_operation(
 
 
 def _revert_and_reload_packages(args):
-    packages = _coerce_string_list(args.get("packages"), "packages")
-    helper, helper_name = _resolve_source_control_helper()
     payload = {
-        "helper_class": helper_name,
         "operation": "revert_and_reload_packages",
-        "packages": packages,
-        "count": len(packages),
-        "revert_all": bool(args.get("revert_all", False)),
-        "reload_world": bool(args.get("reload_world", False)),
     }
-    payload.update(_provider_snapshot(helper))
+    helper, unavailable = _require_provider(payload, "revert_and_reload_packages")
+    if unavailable is not None:
+        return unavailable
+
+    packages = _coerce_string_list(args.get("packages"), "packages")
+    payload["packages"] = packages
+    payload["count"] = len(packages)
+    payload["revert_all"] = bool(args.get("revert_all", False))
+    payload["reload_world"] = bool(args.get("reload_world", False))
 
     success = bool(
         _call_helper_method(

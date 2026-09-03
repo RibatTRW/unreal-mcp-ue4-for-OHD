@@ -53,13 +53,13 @@ def _create_asset_via_factory(
     try:
         asset_leaf_name, package_path = split_asset_name_and_path(asset_name, content_path)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     try:
         factory = factory_class()
         asset = create_asset_with_factory(asset_leaf_name, package_path, asset_class, factory)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if not asset:
         return {
