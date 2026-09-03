@@ -12,19 +12,20 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerGameplayNamespaces(ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch) {
+export function gameplayDescriptors(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+): ToolNamespaceDescriptor[] {
 	const {
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		searchAssetsCommand,
 		toRotatorArray,
 		toVector3Array,
-		toolDescription,
 	} = ctx
 
 	const blueprintTargetNoNameShape = {
@@ -32,7 +33,8 @@ export function registerGameplayNamespaces(ctx: RegistrationParams & Registratio
 		asset_path: z.string().optional(),
 	}
 
-	registerToolNamespace("manage_animation_physics", toolDescription("manage_animation_physics"), {
+	return [
+		{ name: "manage_animation_physics", actions: {
 		spawn_physics_blueprint_actor: {
 			paramsSchema: requireAtLeastOneValue(
 				z
@@ -115,9 +117,8 @@ export function registerGameplayNamespaces(ctx: RegistrationParams & Registratio
 					}),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_input", toolDescription("manage_input"), {
+		} },
+		{ name: "manage_input", actions: {
 		create_input_mapping: {
 			paramsSchema: requireAtLeastOneValue(
 				z
@@ -143,9 +144,8 @@ export function registerGameplayNamespaces(ctx: RegistrationParams & Registratio
 					}),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_behavior_tree", toolDescription("manage_behavior_tree"), {
+		} },
+		{ name: "manage_behavior_tree", actions: {
 		create_behavior_tree: {
 			paramsSchema: requireAtLeastOneValue(
 				z
@@ -181,9 +181,8 @@ export function registerGameplayNamespaces(ctx: RegistrationParams & Registratio
 					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_gas", toolDescription("manage_gas"), {
+		} },
+		{ name: "manage_gas", actions: {
 		search_gas_assets: {
 			paramsSchema: z.object(searchAssetsShape).strict(),
 			handler: (params) => pythonDispatch(searchAssetsCommand(params)),
@@ -195,5 +194,6 @@ export function registerGameplayNamespaces(ctx: RegistrationParams & Registratio
 					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
 				),
 		},
-	})
+		} },
+	]
 }

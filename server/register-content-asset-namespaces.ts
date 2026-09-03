@@ -14,21 +14,24 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerContentAssetNamespaces(ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch) {
+export function contentAssetDescriptors(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		searchAssetsCommand,
 		toColorArray,
 	} = ctx
 
-	registerToolNamespace("manage_skeleton", ctx.toolDescription("manage_skeleton"), {
+	return [
+		{ name: "manage_skeleton", actions: {
 		search_skeletons: {
 			paramsSchema: z.object(searchAssetsShape).strict(),
 			handler: (params) => pythonDispatch(searchAssetsCommand(params, "Skeleton")),
@@ -42,9 +45,8 @@ export function registerContentAssetNamespaces(ctx: RegistrationParams & Registr
 			handler: (params) =>
 				pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 		},
-	})
-
-	registerToolNamespace("manage_material", ctx.toolDescription("manage_material"), {
+		} },
+		{ name: "manage_material", actions: {
 		list_materials: {
 			paramsSchema: z
 				.object({
@@ -144,9 +146,8 @@ export function registerContentAssetNamespaces(ctx: RegistrationParams & Registr
 					}),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_texture", ctx.toolDescription("manage_texture"), {
+		} },
+		{ name: "manage_texture", actions: {
 		search_textures: {
 			paramsSchema: z.object(searchAssetsShape).strict(),
 			handler: (params) => pythonDispatch(searchAssetsCommand(params, "Texture")),
@@ -186,9 +187,8 @@ export function registerContentAssetNamespaces(ctx: RegistrationParams & Registr
 					}),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_data", ctx.toolDescription("manage_data"), {
+		} },
+		{ name: "manage_data", actions: {
 		search_data_assets: {
 			paramsSchema: z
 				.object({
@@ -284,5 +284,6 @@ export function registerContentAssetNamespaces(ctx: RegistrationParams & Registr
 					}),
 				),
 		},
-	})
+		} },
+	]
 }

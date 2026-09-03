@@ -10,16 +10,16 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerWorldLightingNamespaces(
+export function worldLightingDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		toRotatorArray,
 		toVector3Array,
 	} = ctx
@@ -31,7 +31,8 @@ export function registerWorldLightingNamespaces(
 		})
 		.strict()
 
-	registerToolNamespace("manage_lighting", ctx.toolDescription("manage_lighting"), {
+	return [
+		{ name: "manage_lighting", actions: {
 		spawn_directional_light: {
 			paramsSchema: lightSpawnSchema,
 			handler: (params) =>
@@ -87,5 +88,6 @@ export function registerWorldLightingNamespaces(
 		inspect_lighting: {
 			handler: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		},
-	})
+		} },
+	]
 }

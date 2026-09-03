@@ -10,16 +10,16 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerContentBlueprintNamespaces(
+export function contentBlueprintDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		toRotatorArray,
 		toVector3Array,
@@ -30,7 +30,8 @@ export function registerContentBlueprintNamespaces(
 		asset_path: z.string().optional(),
 	}
 
-	registerToolNamespace("manage_blueprint", ctx.toolDescription("manage_blueprint"), {
+	return [
+		{ name: "manage_blueprint", actions: {
 		create_blueprint: {
 			paramsSchema: requireAtLeastOneValue(
 				z
@@ -223,5 +224,6 @@ export function registerContentBlueprintNamespaces(
 					}),
 				),
 		},
-	})
+		} },
+	]
 }

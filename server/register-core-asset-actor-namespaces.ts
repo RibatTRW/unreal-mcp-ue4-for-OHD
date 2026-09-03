@@ -16,6 +16,7 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 const assetMutationParamsSchema = requireAtLeastOneValue(
 	requireAtLeastOneValue(
@@ -38,9 +39,9 @@ const assetMutationParamsSchema = requireAtLeastOneValue(
 	"Provide one of source_asset_path, source_path, asset_path, or path. Provide destination_asset_path, target_asset_path, destination_path, new_name, or name for the new asset location.",
 )
 
-export function registerCoreAssetActorNamespaces(
+export function coreAssetActorDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
 		assetPathListParam,
@@ -48,7 +49,6 @@ export function registerCoreAssetActorNamespaces(
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		searchAssetsCommand,
 		toRotatorArray,
@@ -71,7 +71,8 @@ export function registerCoreAssetActorNamespaces(
 	const assetMutationHandler = (operation: "duplicate" | "rename" | "move") => (params: Record<string, any>) =>
 		pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params)))
 
-	registerToolNamespace("manage_asset", ctx.toolDescription("manage_asset"), {
+	return [
+		{ name: "manage_asset", actions: {
 		list: {
 			paramsSchema: z
 				.object({
@@ -267,9 +268,8 @@ export function registerCoreAssetActorNamespaces(
 			handler: (params) =>
 				pythonDispatch(editorTools.UEValidateAssets(assetPathListParam(params))),
 		},
-	})
-
-	registerToolNamespace("manage_actor", ctx.toolDescription("manage_actor"), {
+		} },
+		{ name: "manage_actor", actions: {
 		list: {
 			handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
 		},
@@ -411,5 +411,6 @@ export function registerCoreAssetActorNamespaces(
 					}),
 				),
 		},
-	})
+		} },
+	]
 }

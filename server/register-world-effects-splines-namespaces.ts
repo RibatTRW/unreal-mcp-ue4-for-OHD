@@ -13,16 +13,16 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerWorldEffectsSplineNamespaces(
+export function worldEffectsSplineDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		toColorArray,
 		toRotatorArray,
@@ -36,7 +36,8 @@ export function registerWorldEffectsSplineNamespaces(
 		asset_path: z.string().optional(),
 	}
 
-	registerToolNamespace("manage_splines", ctx.toolDescription("manage_splines"), {
+	return [
+		{ name: "manage_splines", actions: {
 		spawn_actor: {
 			paramsSchema: z
 				.object({
@@ -100,9 +101,8 @@ export function registerWorldEffectsSplineNamespaces(
 					}),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_effect", ctx.toolDescription("manage_effect"), {
+		} },
+		{ name: "manage_effect", actions: {
 		spawn_debug_shape: {
 			paramsSchema: z
 				.object({
@@ -199,5 +199,6 @@ export function registerWorldEffectsSplineNamespaces(
 					}),
 				),
 		},
-	})
+		} },
+	]
 }
