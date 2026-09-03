@@ -178,6 +178,21 @@ def ensure_canvas_root(widget_blueprint, root_widget_name=None, wrap_existing_ro
     }
 
 
+def ensure_canvas_parent_for_layout(widget_blueprint, parent_widget=None):
+    root_result = ensure_canvas_root(widget_blueprint, wrap_existing_root=True)
+    if parent_widget is None:
+        parent_widget = root_result["root_widget"]
+    parent_widget = require_panel_widget(parent_widget, get_widget_name(parent_widget))
+    return {
+        "widget_tree": root_result["widget_tree"],
+        "parent_widget": parent_widget,
+        "root_widget": root_result["root_widget"],
+        "created": bool(root_result["created"]),
+        "wrapped_existing_root": bool(root_result["wrapped_existing_root"]),
+        "renamed_existing_root": bool(root_result.get("renamed_existing_root")),
+    }
+
+
 def get_canvas_panel_slot(widget):
     slot = get_editor_property_value(widget, "slot")
     if not slot:

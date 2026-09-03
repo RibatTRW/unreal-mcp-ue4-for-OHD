@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-// Direction gate for the tiered Python prelude (candidate 6): the prelude has
+// Direction gate for the tiered Python prelude (candidates 6–7): the prelude has
 // no Python imports — files couple through concatenation order — so "one-way"
 // is a static-maintainability discipline checked here. A tier file may call only
-// same-or-lower tiers (text_codec < object_access < asset_resolution); domain
+// same-or-lower tiers
+// (text_codec < object_access < asset_resolution < widget_tree); domain
 // packages and payload tools above the tiers may call anything and are exempt
 // as callers. Duplicate top-level defs (concat shadowing) also fail.
 // Fails with file:line hits naming the offending symbol and its owner.
@@ -18,7 +19,7 @@ const repoRoot = path.resolve(__dirname, "..")
 const scriptsDir = path.join(repoRoot, "server", "editor", "scripts")
 
 // Tier rank: lower number = deeper. Anything not listed is "top" (above all tiers).
-const TIERS = { ue_text_codec: 0, ue_object_access: 1, ue_asset_resolution: 2 }
+const TIERS = { ue_text_codec: 0, ue_object_access: 1, ue_asset_resolution: 2, ue_widget_tree: 3 }
 
 const owners = new Map()
 const duplicates = []

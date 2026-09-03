@@ -26,6 +26,14 @@ def add_widget(
                     "error": "Parent widget not found: {0}".format(parent_widget_name)
                 }
 
+        is_root_widget = parent_widget is None
+        if is_root_widget and (
+            position is not None or size is not None or z_order is not None
+        ):
+            layout_parent = ensure_canvas_parent_for_layout(widget_blueprint)
+            widget_tree = layout_parent["widget_tree"]
+            parent_widget = layout_parent["parent_widget"]
+
         new_widget = create_widget_instance(widget_tree, widget_class, widget_name)
         add_widget_to_tree(widget_tree, new_widget, parent_widget)
         apply_widget_color(new_widget, background_color, role="background")
@@ -48,7 +56,7 @@ def add_widget(
             "widget_name": get_widget_name(new_widget),
             "class": get_widget_class_name(new_widget),
             "parent_widget_name": parent_widget_name,
-            "is_root_widget": parent_widget is None,
+            "is_root_widget": is_root_widget,
             "layout": get_widget_slot_layout(new_widget),
             "style": get_widget_style_report(new_widget),
         }

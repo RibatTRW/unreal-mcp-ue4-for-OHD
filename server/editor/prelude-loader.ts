@@ -16,8 +16,6 @@ const preludeManifest: Record<string, string[]> = {
 	ue_actor: ["00_transforms.py", "10_query_ops.py", "20_spawn_ops.py", "30_mutation_ops.py"],
 	ue_asset_resolution: [
 		"04_project_input_helpers.py",
-		"11_widget_editing.py",
-		"12_widget_creation.py",
 		"20_asset_blueprint_persistence.py",
 		"25_actor_widget_reporting.py",
 		"30_material_component_reporting.py",
@@ -32,8 +30,6 @@ const preludeManifest: Record<string, string[]> = {
 		"02_asset_package_helpers.py",
 		"03_object_property_helpers.py",
 		"09_widget_class_helpers.py",
-		"10_widget_tree_access.py",
-		"10_widget_tree_search.py",
 		"18_blueprint_component_lookup.py",
 		"18_blueprint_runtime_helpers.py",
 		"19_asset_lookup.py",
@@ -67,8 +63,16 @@ const preludeManifest: Record<string, string[]> = {
 	ue_umg: [
 		"00_helpers.py",
 		"10_widget_blueprints.py",
-		"20_widget_tree_ops.py",
 		"30_viewport_bindings.py",
+	],
+	ue_widget_tree: [
+		"00_helpers.py",
+		"10_widget_tree_access.py",
+		"10_widget_tree_search.py",
+		"11_widget_editing.py",
+		"12_widget_creation.py",
+		"20_widget_tree_ops.py",
+		"30_widget_presentation.py",
 	],
 	ue_world_building: [
 		"00_core.py",
@@ -119,5 +123,6 @@ export const editorPreludes = {
 	sourceControl: buildOrderedPrelude("./scripts/ue_source_control"),
 	sequence: buildOrderedPrelude("./scripts/ue_sequence"),
 	umg: buildOrderedPrelude("./scripts/ue_umg"),
+	widgetTree: buildOrderedPrelude("./scripts/ue_widget_tree"),
 	worldBuilding: buildOrderedPrelude("./scripts/ue_world_building"),
 }
