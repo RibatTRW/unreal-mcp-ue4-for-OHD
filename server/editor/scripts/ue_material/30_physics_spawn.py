@@ -49,4 +49,4 @@ def spawn_physics_blueprint_actor(args):
             "materials": get_component_material_info(component),
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}

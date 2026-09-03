@@ -10,7 +10,7 @@ def add_blueprint_variable(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     variables = list(get_editor_property_value(blueprint, "new_variables", []) or [])
     for existing_var in variables:
@@ -59,7 +59,7 @@ def add_blueprint_variable(args):
             "is_public": is_exposed,
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
 
 def create_variable(args):
@@ -90,7 +90,7 @@ def add_blueprint_get_self_component_reference(args):
         reconstruct_graph_node(node)
         return _result_for_node(blueprint, graph, node)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
 
 def add_blueprint_self_reference(args):
@@ -103,7 +103,7 @@ def add_blueprint_self_reference(args):
         reconstruct_graph_node(node)
         return _result_for_node(blueprint, graph, node)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
 
 def find_blueprint_nodes(args):
@@ -115,7 +115,7 @@ def find_blueprint_nodes(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc), "nodes": []}
+        return {"success": False, "message": unreal_text(exc), "nodes": []}
 
     results = []
     for graph in get_blueprint_graphs(blueprint):

@@ -64,7 +64,7 @@ def add_child_widget(
                 save_widget_blueprint(widget_blueprint)
             except Exception:
                 pass
-        return {"error": "Failed to add child widget: {0}".format(str(exc))}
+        return {"error": "Failed to add child widget: {0}".format(unreal_text(exc))}
 
 
 def main():

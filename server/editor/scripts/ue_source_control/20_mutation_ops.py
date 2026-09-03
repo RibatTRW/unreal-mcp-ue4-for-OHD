@@ -1,3 +1,13 @@
+def _no_provider_result(payload, operation_name, reason):
+    payload["success"] = False
+    payload["unavailable"] = "source_control_no_provider"
+    payload["message"] = (
+        "Source control provider is not enabled in this editor session; "
+        "{0} was not attempted ({1}).".format(operation_name, reason)
+    )
+    return payload
+
+
 def _run_file_operation(
     operation_name,
     method_names,
@@ -12,7 +22,15 @@ def _run_file_operation(
             "helper_class": helper_name,
             "operation": operation_name,
         }
-        payload.update(_provider_snapshot(helper))
+        try:
+            payload.update(_provider_snapshot(helper))
+        except Exception as exc:
+            return _no_provider_result(payload, operation_name, unreal_text(exc))
+
+        if not payload.get("enabled"):
+            return _no_provider_result(
+                payload, operation_name, "provider reports enabled=False"
+            )
 
         call_args = []
 
@@ -52,7 +70,7 @@ def _run_file_operation(
             if not keep_checked_out_key or not call_args:
                 raise
 
-            message = str(exc)
+            message = unreal_text(exc)
             if "argument" not in message and "positional" not in message:
                 raise
 
@@ -77,7 +95,19 @@ def _revert_and_reload_packages(args):
         "revert_all": bool(args.get("revert_all", False)),
         "reload_world": bool(args.get("reload_world", False)),
     }
-    payload.update(_provider_snapshot(helper))
+    try:
+        payload.update(_provider_snapshot(helper))
+    except Exception as exc:
+        return _no_provider_result(
+            payload, "revert_and_reload_packages", unreal_text(exc)
+        )
+
+    if not payload.get("enabled"):
+        return _no_provider_result(
+            payload,
+            "revert_and_reload_packages",
+            "provider reports enabled=False",
+        )
 
     success = bool(
         _call_helper_method(

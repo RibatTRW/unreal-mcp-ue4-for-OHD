@@ -31,9 +31,9 @@ def _pie_status(_args=None):
     return {
         "success": True,
         "is_pie_running": bool(game_world or pie_worlds),
-        "game_world_name": game_world.get_name() if game_world else None,
+        "game_world_name": unreal_text(game_world.get_name()) if game_world else None,
         "pie_world_count": len(pie_worlds),
-        "pie_worlds": [world.get_name() for world in pie_worlds],
+        "pie_worlds": [unreal_text(world.get_name()) for world in pie_worlds],
     }
 
 
@@ -53,7 +53,7 @@ def start_pie(args):
     try:
         starter()
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     # Fire-and-forget by design (run 8 diagnosis): the previous 10s
     # time.sleep poll ran on the game thread that PIE startup itself
@@ -86,7 +86,7 @@ def stop_pie(args):
         try:
             stopper()
         except Exception as exc:
-            return {"success": False, "message": str(exc)}
+            return {"success": False, "message": unreal_text(exc)}
     else:
         # This 4.25 build exposes no editor_end_play: end the session
         # with a console quit against the live game world. The quit
@@ -107,7 +107,7 @@ def stop_pie(args):
         try:
             unreal.SystemLibrary.execute_console_command(game_world, "quit")
         except Exception as exc:
-            return {"success": False, "message": str(exc)}
+            return {"success": False, "message": unreal_text(exc)}
 
     deadline = time.time() + max(0.1, timeout_seconds)
     while time.time() <= deadline:
@@ -157,7 +157,7 @@ def main():
     try:
         result = handler(args or {})
     except Exception as exc:
-        result = {"success": False, "message": str(exc)}
+        result = {"success": False, "message": unreal_text(exc)}
 
     print(json.dumps(result, indent=2))
 

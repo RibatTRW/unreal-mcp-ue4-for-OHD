@@ -59,7 +59,7 @@ def compile_blueprint(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     compiled = try_compile_blueprint(blueprint)
     saved = save_loaded_editor_asset(blueprint)
@@ -79,7 +79,7 @@ def set_blueprint_property(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     cdo = get_blueprint_default_object(blueprint)
     if not cdo:

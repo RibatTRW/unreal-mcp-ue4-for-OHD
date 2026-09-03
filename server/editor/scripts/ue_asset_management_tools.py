@@ -57,7 +57,7 @@ def _collect_asset_paths(args):
         normalized_paths = [
             normalize_asset_reference_path(asset_path)
             for asset_path in candidate_paths
-            if str(asset_path or "").strip()
+            if unreal_text(asset_path or "").strip()
         ]
         return [asset_path for asset_path in normalized_paths if asset_path]
 
@@ -253,7 +253,7 @@ def delete_assets(args):
         try:
             result = bool(unreal.EditorAssetLibrary.delete_asset(asset_path))
         except Exception as exc:
-            failed.append({"asset_path": asset_path, "message": str(exc)})
+            failed.append({"asset_path": asset_path, "message": unreal_text(exc)})
             continue
 
         if result:
@@ -285,7 +285,7 @@ def save_assets(args):
                 unreal.EditorAssetLibrary.save_asset(asset_path, only_if_is_dirty)
             )
         except Exception as exc:
-            failed.append({"asset_path": asset_path, "message": str(exc)})
+            failed.append({"asset_path": asset_path, "message": unreal_text(exc)})
             continue
 
         if result:
@@ -392,7 +392,7 @@ def main():
     try:
         result = handler(args or {})
     except Exception as exc:
-        result = {"success": False, "message": str(exc)}
+        result = {"success": False, "message": unreal_text(exc)}
 
     print(json.dumps(result, indent=2))
 

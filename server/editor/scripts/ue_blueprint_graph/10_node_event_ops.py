@@ -6,7 +6,7 @@ def add_blueprint_event_node(args):
     try:
         blueprint, graph = _load_blueprint_and_graph(blueprint_name, args.get("graph_name"))
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     utility_class = getattr(unreal, "KismetEditorUtilities", None)
     if utility_class and hasattr(utility_class, "add_default_event_node"):
@@ -45,7 +45,7 @@ def add_blueprint_event_node(args):
         reconstruct_graph_node(node)
         return _result_for_node(blueprint, graph, node)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
 
 def add_blueprint_input_action_node(args):
@@ -62,4 +62,4 @@ def add_blueprint_input_action_node(args):
         reconstruct_graph_node(node)
         return _result_for_node(blueprint, graph, node)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}

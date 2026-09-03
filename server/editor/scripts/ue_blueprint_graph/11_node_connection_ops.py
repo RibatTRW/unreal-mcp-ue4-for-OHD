@@ -8,7 +8,7 @@ def connect_blueprint_nodes(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     source_graph, source_node = find_blueprint_graph_node(blueprint, source_node_id)
     target_graph, target_node = find_blueprint_graph_node(blueprint, target_node_id)
@@ -29,7 +29,7 @@ def connect_blueprint_nodes(args):
     try:
         source_pin.make_link_to(target_pin)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     finalize_blueprint_change(blueprint, structural=True)
     return {
@@ -64,7 +64,7 @@ def disconnect_nodes(args):
     try:
         blueprint = load_blueprint_asset(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     source_graph, source_node = find_blueprint_graph_node(blueprint, source_node_id)
     if not source_node:
@@ -103,4 +103,4 @@ def disconnect_nodes(args):
             },
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}

@@ -103,7 +103,7 @@ def decode_template_json(encoded_value):
     if encoded_value is None:
         return None
 
-    encoded_text = str(encoded_value).strip()
+    encoded_text = unreal_text(encoded_value).strip()
     if not encoded_text:
         return None
 

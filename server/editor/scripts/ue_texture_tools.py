@@ -58,7 +58,7 @@ def import_texture(args):
     try:
         asset_leaf_name, package_path = split_asset_name_and_path(asset_name, destination_path)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     task_class = getattr(unreal, "AssetImportTask", None)
     helpers_class = getattr(unreal, "AssetToolsHelpers", None)
@@ -87,7 +87,7 @@ def import_texture(args):
         asset_tools = helpers_class.get_asset_tools()
         asset_tools.import_asset_tasks([import_task])
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     imported_object_paths = list(
         get_editor_property_value(import_task, "imported_object_paths", []) or []
@@ -154,7 +154,7 @@ def main():
     try:
         result = handler(args or {})
     except Exception as exc:
-        result = {"success": False, "message": str(exc)}
+        result = {"success": False, "message": unreal_text(exc)}
 
     print(json.dumps(result, indent=2))
 

@@ -41,7 +41,7 @@ def set_child_widget_position(
         }
     except Exception as exc:
         return {
-            "error": "Failed to set child widget position: {0}".format(str(exc))
+            "error": "Failed to set child widget position: {0}".format(unreal_text(exc))
         }
 
 

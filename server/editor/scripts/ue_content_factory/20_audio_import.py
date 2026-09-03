@@ -28,7 +28,7 @@ def import_audio(args):
     try:
         asset_leaf_name, package_path = split_asset_name_and_path(asset_name, destination_path)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     task_class = getattr(unreal, "AssetImportTask", None)
     helpers_class = getattr(unreal, "AssetToolsHelpers", None)
@@ -50,7 +50,7 @@ def import_audio(args):
         asset_tools = helpers_class.get_asset_tools()
         asset_tools.import_asset_tasks([import_task])
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     imported_object_paths = [
         normalize_asset_reference_path(str(imported_path))
@@ -110,7 +110,7 @@ def import_audio(args):
                 cue_factory,
             )
         except Exception as exc:
-            return {"success": False, "message": str(exc)}
+            return {"success": False, "message": unreal_text(exc)}
 
         if sound_cue_asset is None:
             sound_cue_asset = _load_editor_asset(expected_sound_cue_path)

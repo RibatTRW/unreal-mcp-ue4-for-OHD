@@ -34,7 +34,7 @@ def create_data_asset(args):
             factory,
         )
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if not asset:
         return {
@@ -91,7 +91,7 @@ def create_data_table(args):
             factory,
         )
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if not asset:
         return {
@@ -136,7 +136,7 @@ def create_string_table(args):
             factory,
         )
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if not asset:
         return {

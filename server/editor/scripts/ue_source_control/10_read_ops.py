@@ -48,7 +48,7 @@ def _query_states(args):
             True,
         )
     except RuntimeError as exc:
-        if "does not expose query_file_states" not in str(exc):
+        if "does not expose query_file_states" not in unreal_text(exc):
             raise
 
         states = [

@@ -36,8 +36,16 @@ const checks = [
 		pattern: /execute_console_command\(\s*None\s*,\s*['"](quit|disconnect|exit)/i,
 	},
 	{
-		name: "ascii-only str() on registry values (use unreal_text)",
-		pattern: /\bstr\(\s*asset\w*\./,
+		name: "ascii-only str() on exception values (use unreal_text)",
+		pattern: /\bstr\(\s*exc?\s*\)/,
+	},
+	{
+		name: "ascii-only str() on class-name values (use unreal_text)",
+		pattern: /\bstr\(\s*\w*class_name\b/,
+	},
+	{
+		name: "ascii-only str() on asset/export path params (use unreal_text)",
+		pattern: /\bstr\(\s*(asset_path|destination_path|encoded_value)\b/,
 	},
 	{
 		name: "isinstance with bare str misses unicode on py2 (use _string_types)",

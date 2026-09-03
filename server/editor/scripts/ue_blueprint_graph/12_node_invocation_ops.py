@@ -8,7 +8,7 @@ def add_blueprint_function_node(args):
     try:
         blueprint, graph = _load_blueprint_and_graph(blueprint_name, args.get("graph_name"))
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     try:
         if str(target).lower() == "self":
@@ -65,7 +65,7 @@ def add_blueprint_function_node(args):
 
         return _result_for_node(blueprint, graph, node)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
 
 def add_node(args):
@@ -141,4 +141,4 @@ def add_node(args):
         reconstruct_graph_node(node)
         return _result_for_node(blueprint, graph, node)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}

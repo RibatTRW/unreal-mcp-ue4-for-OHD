@@ -106,7 +106,7 @@ def create_input_mapping(args):
     try:
         key_name, modifiers = _parse_key_spec(key_spec)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     config_path = os.path.abspath(os.path.join(unreal.Paths.project_dir(), "Config", "DefaultInput.ini"))
     config_text = ""
@@ -191,7 +191,7 @@ def main():
     try:
         result = handler(args or {})
     except Exception as exc:
-        result = {"success": False, "message": str(exc)}
+        result = {"success": False, "message": unreal_text(exc)}
 
     print(json.dumps(result, indent=2))
 

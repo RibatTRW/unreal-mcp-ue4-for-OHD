@@ -30,7 +30,7 @@ def move_viewport_camera(location, rotation):
         }
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": unreal_text(e)}
 
 
 location_data = ${location}

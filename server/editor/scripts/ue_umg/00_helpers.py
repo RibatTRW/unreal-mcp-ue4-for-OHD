@@ -1,5 +1,5 @@
 def _format_widget_authoring_error(exc):
-    message = str(exc)
+    message = unreal_text(exc)
     if "editable widget tree in UE4.25 Python" in message:
         return {
             "success": False,

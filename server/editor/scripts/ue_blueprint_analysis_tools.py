@@ -72,7 +72,7 @@ def read_blueprint_content(args):
     try:
         blueprint = _load_blueprint(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     graphs = get_blueprint_graphs(blueprint)
     variables = [
@@ -104,7 +104,7 @@ def analyze_blueprint_graph(args):
     try:
         blueprint = _load_blueprint(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     target_graph = None
     if graph_name:
@@ -134,7 +134,7 @@ def get_blueprint_variable_details(args):
     try:
         blueprint = _load_blueprint(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc), "variables": []}
+        return {"success": False, "message": unreal_text(exc), "variables": []}
 
     variables = [
         serialize_blueprint_variable_desc(variable_desc)
@@ -159,7 +159,7 @@ def get_blueprint_function_details(args):
     try:
         blueprint = _load_blueprint(blueprint_name)
     except Exception as exc:
-        return {"success": False, "message": str(exc), "functions": []}
+        return {"success": False, "message": unreal_text(exc), "functions": []}
 
     function_graphs = get_blueprint_function_graphs(blueprint)
     details = []
@@ -206,7 +206,7 @@ def main():
     try:
         result = handler(args or {})
     except Exception as exc:
-        result = {"success": False, "message": str(exc)}
+        result = {"success": False, "message": unreal_text(exc)}
 
     print(json.dumps(result, indent=2))
 

@@ -30,7 +30,7 @@ def set_widget_position(
             "layout": get_widget_slot_layout(widget),
         }
     except Exception as exc:
-        return {"error": "Failed to set widget position: {0}".format(str(exc))}
+        return {"error": "Failed to set widget position: {0}".format(unreal_text(exc))}
 
 
 def main():

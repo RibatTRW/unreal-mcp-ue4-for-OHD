@@ -32,7 +32,7 @@ def delete_object(actor_name):
 
         return {"error": "Failed to delete actor: {0}".format(actor_name)}
     except Exception as e:
-        return {"error": "Failed to delete object: {0}".format(str(e))}
+        return {"error": "Failed to delete object: {0}".format(unreal_text(e))}
 
 
 def delete_multiple_objects(actor_names):
@@ -49,7 +49,7 @@ def delete_multiple_objects(actor_names):
         }
 
     except Exception as e:
-        return {"error": "Failed to delete multiple objects: {0}".format(str(e))}
+        return {"error": "Failed to delete multiple objects: {0}".format(unreal_text(e))}
 
 
 def main():

@@ -62,9 +62,9 @@ def asset_class_matches(asset_class_name, allowed_class_names=None):
     if not allowed_class_names:
         return True
 
-    asset_class_name_lower = str(asset_class_name).lower()
+    asset_class_name_lower = unreal_text(asset_class_name).lower()
     for allowed_class_name in allowed_class_names:
-        allowed_lower = str(allowed_class_name).lower()
+        allowed_lower = unreal_text(allowed_class_name).lower()
         if (
             asset_class_name_lower == allowed_lower
             or asset_class_name_lower.endswith(allowed_lower)

@@ -6,7 +6,7 @@ export interface ToolSupportInfo {
 }
 
 const sourceControlProviderNote =
-	"Requires a configured and available Unreal source-control provider in the active editor session."
+	"Requires a configured and available Unreal source-control provider in the active editor session; with no provider enabled the tool returns success:false with unavailable:'source_control_no_provider' instead of attempting the operation."
 
 const sourceControlQueryNote =
 	"Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider."
@@ -87,7 +87,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	add_widget_to_viewport: {
 		status: "Partial",
-		note: "Requires an active PIE or game world. start_pie_if_needed can request PIE, but UE4.25 may need a follow-up add_to_viewport retry after the game world is ready.",
+		note: "Requires an active PIE or game world. start_pie_if_needed can request PIE, but UE4.25 may need a follow-up add_to_viewport retry after the game world is ready. Instantiating generated widget classes is unsupported on this build (no constructible class or factory); see docs/ohd-spec/evidence/deferred-capabilities.md.",
 	},
 	manage_inspection: {
 		status: "Partial",
@@ -103,7 +103,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_blueprint: {
 		status: "Partial",
-		note: "Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.25 Python.",
+		note: "Blueprint asset and component edits work; read returns high-level graph summaries only, while pin wiring, variable authoring, and variable/function detail helpers are excluded from the MCP surface in stock UE4.25 Python.",
 	},
 	manage_sequence: {
 		status: "Partial",

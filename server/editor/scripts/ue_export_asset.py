@@ -5,7 +5,7 @@ import tempfile
 
 def _default_export_suffix(asset):
     asset_class_name = get_object_class_name(asset)
-    normalized = str(asset_class_name or "").lower()
+    normalized = unreal_text(asset_class_name or "").lower()
 
     if "texture" in normalized:
         return ".tga"
@@ -18,7 +18,7 @@ def _default_export_suffix(asset):
 
 
 def export_asset(asset_path, destination_path=None, overwrite=True):
-    normalized_asset_path = str(asset_path or "").strip()
+    normalized_asset_path = unreal_text(asset_path or "").strip()
     if not normalized_asset_path:
         return {"success": False, "message": "asset_path is required"}
 
@@ -30,7 +30,7 @@ def export_asset(asset_path, destination_path=None, overwrite=True):
         }
 
     created_temp_file = False
-    export_file_path = str(destination_path or "").strip()
+    export_file_path = unreal_text(destination_path or "").strip()
     if export_file_path:
         export_file_path = os.path.abspath(export_file_path)
         parent_directory = os.path.dirname(export_file_path)
@@ -71,7 +71,7 @@ def export_asset(asset_path, destination_path=None, overwrite=True):
                 os.unlink(export_file_path)
             except Exception:
                 pass
-        return {"success": False, "message": str(exc)}
+        return {"success": False, "message": unreal_text(exc)}
 
     if not result or not os.path.exists(export_file_path):
         if created_temp_file and os.path.exists(export_file_path):
@@ -82,13 +82,13 @@ def export_asset(asset_path, destination_path=None, overwrite=True):
         return {
             "success": False,
             "message": "Failed to export asset {0} to {1}".format(
-                asset.get_name(), export_file_path
+                unreal_text(asset.get_name()), export_file_path
             ),
         }
 
     return {
         "success": True,
-        "asset_name": asset.get_name(),
+        "asset_name": unreal_text(asset.get_name()),
         "asset_class": get_object_class_name(asset),
         "asset_path": normalized_asset_path,
         "exported_file": export_file_path,
