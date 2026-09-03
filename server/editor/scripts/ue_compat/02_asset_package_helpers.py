@@ -17,7 +17,7 @@ def get_asset_class_name(asset_or_data):
     try:
         asset_class = asset_or_data.get_class()
         if asset_class:
-            return asset_class.get_name()
+            return unreal_text(asset_class.get_name())
     except Exception:
         pass
 
@@ -32,7 +32,7 @@ def get_asset_object_path(asset_or_data):
         pass
 
     try:
-        return asset_or_data.get_path_name()
+        return unreal_text(asset_or_data.get_path_name())
     except Exception:
         return ""
 

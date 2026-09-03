@@ -10,10 +10,10 @@ def search_data_assets(args):
             continue
 
         asset_class_name = get_asset_class_name(asset_data)
-        searchable_text = "{0} {1} {2}".format(
-            package_name,
-            get_asset_object_path(asset_data),
-            asset_class_name,
+        searchable_text = u"{0} {1} {2}".format(
+            unreal_text(package_name),
+            unreal_text(get_asset_object_path(asset_data)),
+            unreal_text(asset_class_name),
         ).lower()
         if search_term and search_term not in searchable_text:
             continue

@@ -1,13 +1,13 @@
 def get_widget_name(widget):
     try:
-        return widget.get_name()
+        return unreal_text(widget.get_name())
     except Exception:
         return ""
 
 
 def get_widget_class_name(widget):
     try:
-        return widget.get_class().get_name()
+        return unreal_text(widget.get_class().get_name())
     except Exception:
         return ""
 

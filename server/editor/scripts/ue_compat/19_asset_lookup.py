@@ -3,7 +3,7 @@ def get_object_name(target):
         return ""
 
     try:
-        return target.get_name()
+        return unreal_text(target.get_name())
     except Exception:
         return unreal_text(target)
 
@@ -15,7 +15,7 @@ def get_object_class_name(target):
     try:
         target_class = target.get_class()
         if target_class:
-            return target_class.get_name()
+            return unreal_text(target_class.get_name())
     except Exception:
         pass
 
