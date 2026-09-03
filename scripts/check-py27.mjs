@@ -44,6 +44,15 @@ const checks = [
 		name: "isinstance with bare str misses unicode on py2 (use _string_types)",
 		pattern: /\bisinstance\([^)]*\bstr\b/,
 	},
+	{
+		name: "raw ${...} interpolation bypasses the arg codec (route args through jsonArg + decode_template_json/decode_template_arg)",
+		pattern: /\$\{/,
+		allow: [/decode_template_json\("""\$\{/, /decode_template_arg\("[^"]*", """\$\{/],
+	},
+	{
+		name: "multiple ${...} on one line hides an interpolation outside the arg codec (one decode call per line)",
+		pattern: /\$\{.*\$\{/,
+	},
 ]
 
 function collectPyFiles(dir) {

@@ -1,6 +1,7 @@
 import { jsonArg, renderScript } from "./tools-base.js"
 
-export const UEGetAssetInfo = (asset_path: string) => renderScript("./scripts/ue_get_asset_info.py", { asset_path })
+export const UEGetAssetInfo = (asset_path: string) =>
+	renderScript("./scripts/ue_get_asset_info.py", { asset_path: jsonArg(asset_path) })
 
 export const UEListAssets = (
 	root_path?: string,
@@ -25,7 +26,7 @@ export const UEExportAsset = (
 	})
 
 export const UEGetAssetReferences = (asset_path: string) =>
-	renderScript("./scripts/ue_get_asset_references.py", { asset_path })
+	renderScript("./scripts/ue_get_asset_references.py", { asset_path: jsonArg(asset_path) })
 
 export const UEConsoleCommand = (command: string) =>
 	renderScript("./scripts/ue_console_command.py", {
@@ -58,7 +59,7 @@ export const UEGetWorldOutliner = () => renderScript("./scripts/ue_get_world_out
 
 export const UEValidateAssets = (asset_paths?: string | string[]) =>
 	renderScript("./scripts/ue_validate_assets.py", {
-		asset_paths: jsonArg(asset_paths ?? ""),
+		asset_paths: jsonArg(asset_paths ?? null),
 	})
 
 export const UECreateObject = (
@@ -70,12 +71,12 @@ export const UECreateObject = (
 	properties?: Record<string, any>,
 ) => {
 	return renderScript("./scripts/ue_create_object.py", {
-		object_class,
-		object_name,
-		location: location ? JSON.stringify(location) : "null",
-		rotation: rotation ? JSON.stringify(rotation) : "null",
-		scale: scale ? JSON.stringify(scale) : "null",
-		properties: properties ? JSON.stringify(properties) : "null",
+		object_class: jsonArg(object_class),
+		object_name: jsonArg(object_name),
+		location: jsonArg(location),
+		rotation: jsonArg(rotation),
+		scale: jsonArg(scale),
+		properties: jsonArg(properties),
 	})
 }
 
@@ -88,18 +89,18 @@ export const UEUpdateObject = (
 	new_name?: string,
 ) => {
 	return renderScript("./scripts/ue_update_object.py", {
-		actor_name,
-		location: location ? JSON.stringify(location) : "null",
-		rotation: rotation ? JSON.stringify(rotation) : "null",
-		scale: scale ? JSON.stringify(scale) : "null",
-		properties: properties ? JSON.stringify(properties) : "null",
-		new_name: new_name || "null",
+		actor_name: jsonArg(actor_name),
+		location: jsonArg(location),
+		rotation: jsonArg(rotation),
+		scale: jsonArg(scale),
+		properties: jsonArg(properties),
+		new_name: jsonArg(new_name || null),
 	})
 }
 
 export const UEDeleteObject = (actor_names: string) =>
 	renderScript("./scripts/ue_delete_object.py", {
-		actor_names,
+		actor_names: jsonArg(actor_names),
 	})
 
 export const UETakeScreenshot = () => renderScript("./scripts/ue_take_screenshot.py", {})
@@ -109,8 +110,8 @@ export const UEMoveCamera = (
 	rotation: { pitch: number; yaw: number; roll: number },
 ) => {
 	return renderScript("./scripts/ue_move_camera.py", {
-		location: JSON.stringify(location),
-		rotation: JSON.stringify(rotation),
+		location: jsonArg(location),
+		rotation: jsonArg(rotation),
 	})
 }
 

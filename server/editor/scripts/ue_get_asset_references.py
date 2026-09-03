@@ -46,7 +46,13 @@ def get_asset_references(asset_path):
 
 
 def main():
-    references = get_asset_references("${asset_path}")
+    try:
+        asset_path = decode_template_arg("asset_path", """${asset_path}""")
+    except ArgDecodeError as exc:
+        print(json.dumps(arg_decode_failure(exc.arg_name), ensure_ascii=True))
+        return
+
+    references = get_asset_references(asset_path)
     print(json.dumps(references, ensure_ascii=True))
 
 

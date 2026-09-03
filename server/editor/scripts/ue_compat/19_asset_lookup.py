@@ -22,6 +22,16 @@ def get_object_class_name(target):
     return ""
 
 
+def _asset_summary(asset):
+    """Shared asset summary (single home for the former ue_data /
+    ue_content_factory copies, which were byte-identical)."""
+    return {
+        "name": get_object_name(asset),
+        "class": get_object_class_name(asset),
+        "asset_path": get_asset_package_name(asset) or get_asset_object_path(asset),
+    }
+
+
 def resolve_class_reference(class_name, module_hints=None):
     if not class_name:
         return None
