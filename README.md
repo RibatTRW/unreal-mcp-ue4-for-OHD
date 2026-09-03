@@ -1,18 +1,33 @@
 # unreal-mcp-ue4-for-OHD
 > UE4.25.4-focused MCP server for Operation Harsh Doorstop modding using Unreal Python Remote Execution
 
-[![npm version](https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm)](https://www.npmjs.com/package/unreal-mcp-ue4)
-[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-published-2ea44f)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.conaman/unreal-mcp-ue4)
-[![GitHub release](https://img.shields.io/github/v/release/conaman/unreal-mcp-ue4?label=release)](https://github.com/conaman/unreal-mcp-ue4/releases/latest)
+<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node >= 18" src="https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"></div>
 
 `unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first. This fork retargets that server to UE4.25.4 for the Operation Harsh Doorstop mod kit (OHDCore Mod Kit): same transport and tool surface, version pins, docs links, and Python-dialect constraints adjusted for the kit's embedded Python 2.7.
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
+> [!NOTE]
 > This project is still under active development, so bugs, rough edges, and UE4.25-specific limitations may still surface.
 >
-> Published package: [`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4)  
+> Published package: [`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4)
 > Registry name: `io.github.conaman/unreal-mcp-ue4`
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Origin](#origin)
+- [Requirements](#requirements)
+- [MCP Client Setup](#mcp-client-setup)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+- [Testing](#testing)
+- [Publishing to npm](#publishing-to-npm)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
+- [Notes and Limitations](#notes-and-limitations)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ## Overview
 
@@ -22,6 +37,15 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 - UE5-only editor scripting features are not reintroduced; UE4.25-safe operations work normally, while unreliable graph or binding flows are either excluded from the MCP surface or return a clear message instead of silently failing.
 - All Python sent to the OHD editor must be Python 2.7-compatible (the kit embeds Python 2.7.14): no f-strings, `print()` single-argument form, no `pathlib`-era idioms.
 
+<!-- Experimental: if rendering fails, preview on GitHub -->
+```mermaid
+graph TD
+    A[MCP client] --> B[unreal-mcp-ue4 stdio server]
+    B --> C[manage_* namespaces + direct tools]
+    C --> D[Python 2.7 payloads]
+    D --> E[Unreal Editor via Remote Execution]
+```
+
 ## Origin
 
 - Original inspiration and starting point: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
@@ -29,11 +53,8 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 - In practice, the shared idea is still visible, but the implementation, scope, and supported workflows now reflect a separate UE4-first project.
 - Unreal Python API reference: [Unreal Engine Python API 4.25](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.25)
 
-## Safety
-
-- This is not an official Epic Games project.
-- Any connected MCP client can inspect and modify your open Unreal Editor session.
-- Use a disposable test project first, especially when trying asset or world-generation tools.
+> [!CAUTION]
+> This is not an official Epic Games project. Any connected MCP client can inspect and modify your open Unreal Editor session. Use a disposable test project first, especially when trying asset or world-generation tools.
 
 ## Requirements
 
@@ -65,8 +86,8 @@ npx unreal-mcp-ue4
 Local source checkout:
 
 ```bash
-git clone https://github.com/conaman/unreal-mcp-ue4.git
-cd unreal-mcp-ue4
+git clone https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD.git
+cd unreal-mcp-ue4-for-OHD
 npm install
 npm run build
 ```
@@ -77,7 +98,7 @@ Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/
 
 Use the global examples when you installed with `npm install -g unreal-mcp-ue4`. Use the local source checkout examples when you are developing from a cloned repository.
 
-#### Claude
+<details><summary>Claude</summary>
 
 Global npm install:
 
@@ -88,10 +109,12 @@ claude mcp add --scope user unreal-mcp-ue4 -- unreal-mcp-ue4
 Local source checkout:
 
 ```bash
-claude mcp add --scope user unreal-mcp-ue4 -- node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
+claude mcp add --scope user unreal-mcp-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js
 ```
 
-#### Codex
+</details>
+
+<details><summary>Codex</summary>
 
 Global npm install:
 
@@ -102,10 +125,12 @@ codex mcp add unreal-ue4 -- unreal-mcp-ue4
 Local source checkout:
 
 ```bash
-codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
+codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js
 ```
 
-#### GitHub Copilot
+</details>
+
+<details><summary>GitHub Copilot</summary>
 
 Create or update `.vscode/mcp.json`.
 
@@ -130,7 +155,7 @@ Local source checkout:
     "unreal-ue4": {
       "command": "node",
       "args": [
-        "/absolute/path/to/unreal-mcp-ue4/dist/bin.js"
+        "/absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js"
       ]
     }
   }
@@ -143,6 +168,8 @@ Official Copilot docs:
 
 - [Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp)
 - [About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
+
+</details>
 
 ### 3. Enable Unreal Editor remote execution
 
@@ -210,170 +237,9 @@ Useful first natural-language requests:
 - Create and edit Widget Blueprint trees with UE4.25-safe UMG helpers.
 - Run grouped tool namespaces that dispatch through `action` and `params`.
 
-## Testing
-
-### Python 2.7 dialect gate
-
-All editor payload scripts must stay Python 2.7-compatible (the OHD kit embeds 2.7.14). Run the gate after touching anything under `server/editor/scripts`:
-
-```bash
-npm run check:py27
-```
-
-### No-Unreal smoke test
-
-Use this when you want to verify MCP startup, tool discovery, namespace action schemas, and action-specific parameter validation without launching Unreal Editor.
-
-```bash
-npm run test:no-unreal
-```
-
-### Quick smoke test
-
-The smoke test builds the server, launches its own local MCP server process, connects to the already running Unreal Editor, and runs a deterministic validation flow. You do not need to start a separate MCP server manually before this test.
-
-```bash
-npm run test:e2e
-```
-
-This checks:
-
-- MCP server startup
-- tool discovery
-- project info, map info, and world outliner reads
-- source-control provider and state reads
-- direct-tool actor create, update, and delete
-- namespace-layer actor spawn, search, transform, inspect, and delete
-- tool-namespace discovery and namespace-layer dispatch for source control and actor control
-
-### Asset-inclusive smoke test
-
-```bash
-npm run test:e2e -- --with-assets
-```
-
-This adds:
-
-- Blueprint creation
-- Blueprint component editing
-- Blueprint mesh assignment
-- Blueprint compilation
-- DataAsset creation
-- DataAsset metadata readback
-- StringTable creation
-- Texture import and metadata readback
-- Widget Blueprint creation
-- TextBlock and Button insertion
-- advanced CanvasPanel and child-widget add, move, and remove flows
-- cleanup of temporary assets under `/Game/MCP/Tests`
-
-Useful options:
-
-- `npm run test:e2e -- --with-assets --keep-assets` keeps the generated test assets so you can inspect them in the Content Browser after the run.
-- `npm run test:e2e -- --skip-namespace` skips the namespace-dispatch portion of the smoke run.
-- `npm run test:e2e -- --verbose` prints MCP server stderr during the run.
-- `npm run test:e2e -- --help` prints the runner options without rebuilding the server.
-
-### Windows test commands
-
-Open PowerShell in the repository folder:
-
-```powershell
-cd C:\dev\unreal-mcp-ue4
-npm install
-npm run test:no-unreal
-npm run test:e2e
-npm run test:e2e -- --with-assets
-```
-
-### What success looks like
-
-- The console prints `[PASS]` for every test step.
-- Actor tests visibly create and then remove temporary actors in the editor through both the direct-tool and namespace surfaces.
-- The asset-inclusive test creates temporary Blueprint, DataAsset, StringTable, Texture, and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit unless `--keep-assets` is used.
-
-### Recommended test workflow
-
-1. Start with `npm run test:no-unreal`.
-2. If that passes, run `npm run test:e2e`.
-3. If the editor-backed smoke test passes, run `npm run test:e2e -- --with-assets`.
-4. After all smoke tests pass, try the server once from your real MCP client.
-5. Use a separate Unreal test project before pointing the server at production content.
-
-## Publishing to npm
-
-The package is published to npm as a public package.
-
-The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, `2026.5.8-1` follows this format.
-
-Recommended maintainer flow:
-
-1. Update the project version.
-2. Run the publish preflight:
-
-```bash
-npm run publish:check
-```
-
-3. If you have a running OHD (UE4.25) editor test environment available, also run:
-
-```bash
-npm run test:e2e -- --with-assets --skip-build
-```
-
-4. Publish:
-
-```bash
-npm publish --tag latest
-```
-
-Notes:
-
-- `prepack` runs `npm run build`, so the published tarball always uses a fresh `dist`.
-- `npm run publish:check` verifies typecheck, rebuilds the package, and runs `npm pack --dry-run` so you can inspect the exact tarball contents before publishing.
-- Because the unified date version uses a semver prerelease suffix, publish with an explicit dist-tag such as `latest`.
-
-## Troubleshooting
-
-### `Remote node is not available`
-
-- Make sure Unreal Editor is fully open before running the MCP client or smoke test.
-- Verify that `Python Editor Script Plugin` is enabled.
-- Verify that `Editor Scripting Utilities` is enabled.
-- Verify that `Enable Remote Execution` is enabled in project settings.
-- Restart Unreal Editor after changing any of the above.
-
-### Connection or discovery problems on Windows
-
-- Allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall.
-- The server uses UDP multicast discovery on `239.0.0.1:6766` and opens the command channel on port `6776`.
-- By default, the command bind address is the first non-internal IPv4 address found on the machine. Override it with `UNREAL_MCP_BIND_ADDRESS` or `UNREAL_MCP_COMMAND_ADDRESS` if Unreal cannot discover or connect to the MCP process.
-- If your client config uses JSON, escape backslashes or switch to forward slashes.
-
-### Client starts but cannot find `unreal-mcp-ue4` or `node`
-
-- For the recommended global install, make sure the npm global binary directory is on the MCP client's `PATH`.
-- If your client cannot inherit that `PATH`, use an absolute path to the global `unreal-mcp-ue4` executable.
-- If you are using the source-development config, use an absolute path to `node` or `node.exe` instead of relying on `PATH`.
-
-### Some Blueprint graph or UMG binding commands are unavailable
-
-- Widget Blueprint creation and common widget-tree editing work in this fork; the main UMG gaps are delegate binding helpers and runtime-dependent viewport flows.
-- Blueprint asset creation, component editing, compilation, and high-level asset summaries work; graph inspection, graph pin wiring, and variable or function metadata helpers are intentionally excluded because stock UE4.25 Python does not expose the required Blueprint metadata reliably.
-- Capability areas that are not reliable enough to keep in the MCP surface are listed under `Excluded Capability Areas` in the tool section.
-
-## Notes and Limitations
-
-- World-building and structure-generation tools use UE4.25-friendly preset builders based on engine basic-shape assets.
-- Common UMG widget-tree editing works with native `PanelWidget` parents, but delegate binding helpers remain unavailable in stock UE4.25 Python.
-- UMG absolute positioning targets `CanvasPanel` slots in UE4.25. Use `manage_widget.ensure_canvas_root` when a Widget Blueprint has a non-Canvas root but needs CanvasPanel-style positioning.
-- Directly reparenting the current root widget and editing named-slot content are not currently handled.
-- Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.25 Python environment.
-- The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
+## API Reference
 
 The tool list below is generated from the TypeScript tool catalog during build.
-
-## Available Tools
 
 Notes call out important requirements or UE4.25 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
@@ -676,6 +542,184 @@ These capability areas are intentionally not exposed through the MCP surface in 
 | Blueprint variable and function metadata inspection | Variable-detail and function-detail helpers are excluded from the MCP surface. | The current UE4.25 Python environment does not expose NewVariables or FunctionGraphs reliably enough for deterministic inspection. |
 | Blueprint variable authoring | Variable-creation helpers are excluded from the MCP surface. | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.25 Python environment. |
 | UMG delegate-binding authoring | Widget event-binding and text-binding helpers are excluded from the MCP surface. | DelegateEditorBinding is not exposed in the current UE4.25 Python environment. |
+
+## Testing
+
+### Python 2.7 dialect gate
+
+> [!IMPORTANT]
+> All editor payload scripts must stay Python 2.7-compatible (the OHD kit embeds 2.7.14). Run the gate after touching anything under `server/editor/scripts`:
+
+```bash
+npm run check:py27
+```
+
+### No-Unreal smoke test
+
+Use this when you want to verify MCP startup, tool discovery, namespace action schemas, and action-specific parameter validation without launching Unreal Editor.
+
+```bash
+npm run test:no-unreal
+```
+
+### Quick smoke test
+
+The smoke test builds the server, launches its own local MCP server process, connects to the already running Unreal Editor, and runs a deterministic validation flow. You do not need to start a separate MCP server manually before this test.
+
+```bash
+npm run test:e2e
+```
+
+This checks:
+
+- MCP server startup
+- tool discovery
+- project info, map info, and world outliner reads
+- source-control provider and state reads
+- direct-tool actor create, update, and delete
+- namespace-layer actor spawn, search, transform, inspect, and delete
+- tool-namespace discovery and namespace-layer dispatch for source control and actor control
+
+### Asset-inclusive smoke test
+
+```bash
+npm run test:e2e -- --with-assets
+```
+
+This adds:
+
+- Blueprint creation
+- Blueprint component editing
+- Blueprint mesh assignment
+- Blueprint compilation
+- DataAsset creation
+- DataAsset metadata readback
+- StringTable creation
+- Texture import and metadata readback
+- Widget Blueprint creation
+- TextBlock and Button insertion
+- advanced CanvasPanel and child-widget add, move, and remove flows
+- cleanup of temporary assets under `/Game/MCP/Tests`
+
+Useful options:
+
+- `npm run test:e2e -- --with-assets --keep-assets` keeps the generated test assets so you can inspect them in the Content Browser after the run.
+- `npm run test:e2e -- --skip-namespace` skips the namespace-dispatch portion of the smoke run.
+- `npm run test:e2e -- --verbose` prints MCP server stderr during the run.
+- `npm run test:e2e -- --help` prints the runner options without rebuilding the server.
+
+### Windows test commands
+
+Open PowerShell in the repository folder:
+
+```powershell
+cd C:\dev\unreal-mcp-ue4-for-OHD
+npm install
+npm run test:no-unreal
+npm run test:e2e
+npm run test:e2e -- --with-assets
+```
+
+### What success looks like
+
+- The console prints `[PASS]` for every test step.
+- Actor tests visibly create and then remove temporary actors in the editor through both the direct-tool and namespace surfaces.
+- The asset-inclusive test creates temporary Blueprint, DataAsset, StringTable, Texture, and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit unless `--keep-assets` is used.
+
+### Recommended test workflow
+
+1. Start with `npm run test:no-unreal`.
+2. If that passes, run `npm run test:e2e`.
+3. If the editor-backed smoke test passes, run `npm run test:e2e -- --with-assets`.
+4. After all smoke tests pass, try the server once from your real MCP client.
+5. Use a separate Unreal test project before pointing the server at production content.
+
+## Publishing to npm
+
+The package is published to npm as a public package.
+
+The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N` (current `2026.5.12-3`).
+
+Recommended maintainer flow:
+
+1. Update the project version.
+2. Run the publish preflight:
+
+```bash
+npm run publish:check
+```
+
+3. If you have a running OHD (UE4.25) editor test environment available, also run:
+
+```bash
+npm run test:e2e -- --with-assets --skip-build
+```
+
+4. Publish:
+
+```bash
+npm publish --tag latest
+```
+
+Notes:
+
+- `prepack` runs `npm run build`, so the published tarball always uses a fresh `dist`.
+- `npm run publish:check` verifies typecheck, rebuilds the package, and runs `npm pack --dry-run` so you can inspect the exact tarball contents before publishing.
+- Because the unified date version uses a semver prerelease suffix, publish with an explicit dist-tag such as `latest`.
+
+## Contributing
+
+`main` is protected by the `protect-main` ruleset: all changes land via pull request (no direct pushes, no force-pushes, no deletions; review threads must resolve).
+
+1. Branch off `main` and open a PR back to it.
+2. Before pushing: `npm run typecheck` and `npm run check:py27`; if you can, `npm run test:no-unreal`.
+3. Keep editor payloads Python 2.7-compatible; the tool tables above regenerate during build, so run `npm run build` before committing doc changes.
+4. Resolve all review threads before merge.
+
+## Troubleshooting
+
+### `Remote node is not available`
+
+- Make sure Unreal Editor is fully open before running the MCP client or smoke test.
+- Verify that `Python Editor Script Plugin` is enabled.
+- Verify that `Editor Scripting Utilities` is enabled.
+- Verify that `Enable Remote Execution` is enabled in project settings.
+- Restart Unreal Editor after changing any of the above.
+
+### Connection or discovery problems on Windows
+
+> [!WARNING]
+> Allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall.
+- The server uses UDP multicast discovery on `239.0.0.1:6766` and opens the command channel on port `6776`.
+- By default, the command bind address is the first non-internal IPv4 address found on the machine. Override it with `UNREAL_MCP_BIND_ADDRESS` or `UNREAL_MCP_COMMAND_ADDRESS` if Unreal cannot discover or connect to the MCP process.
+- If your client config uses JSON, escape backslashes or switch to forward slashes.
+
+### Client starts but cannot find `unreal-mcp-ue4` or `node`
+
+- For the recommended global install, make sure the npm global binary directory is on the MCP client's `PATH`.
+- If your client cannot inherit that `PATH`, use an absolute path to the global `unreal-mcp-ue4` executable.
+- If you are using the source-development config, use an absolute path to `node` or `node.exe` instead of relying on `PATH`.
+
+### Some Blueprint graph or UMG binding commands are unavailable
+
+- Widget Blueprint creation and common widget-tree editing work in this fork; the main UMG gaps are delegate binding helpers and runtime-dependent viewport flows.
+- Blueprint asset creation, component editing, compilation, and high-level asset summaries work; graph inspection, graph pin wiring, and variable or function metadata helpers are intentionally excluded because stock UE4.25 Python does not expose the required Blueprint metadata reliably.
+- Capability areas that are not reliable enough to keep in the MCP surface are listed under `Excluded Capability Areas` in the tool section.
+
+## Notes and Limitations
+
+- World-building and structure-generation tools use UE4.25-friendly preset builders based on engine basic-shape assets.
+- Common UMG widget-tree editing works with native `PanelWidget` parents, but delegate binding helpers remain unavailable in stock UE4.25 Python.
+- UMG absolute positioning targets `CanvasPanel` slots in UE4.25. Use `manage_widget.ensure_canvas_root` when a Widget Blueprint has a non-Canvas root but needs CanvasPanel-style positioning.
+- Directly reparenting the current root widget and editing named-slot content are not currently handled.
+- Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.25 Python environment.
+- The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
+
+## Roadmap
+
+- [ ] Add GitHub Actions CI (then a Tests badge plus required status checks become possible)
+- [ ] Cut a first fork release (no tags exist yet)
+- [ ] Decide registry identity: keep `io.github.conaman/unreal-mcp-ue4` or rename to the fork
 
 ## License
 
