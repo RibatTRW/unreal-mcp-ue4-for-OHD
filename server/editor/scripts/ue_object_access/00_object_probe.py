@@ -1,3 +1,51 @@
+def _has_unreal_class(class_name):
+    return hasattr(unreal, class_name)
+
+
+def new_object_compat(object_class, outer, name=None):
+    """Create a UObject without depending on the new_object factory.
+
+    The OHD kit's Python has no such factory (probed live: hasattr is
+    False); calling the UClass positionally performs the same
+    NewObject(Outer, Class, Name) — probed working, while Outer=/Name=
+    kwargs are rejected as invalid. On engines WITH the factory (4.27+),
+    its known signatures are tried first so behavior there is unchanged.
+    Returns the created object or None.
+    """
+    new_object = getattr(unreal, "new_object", None)
+    if callable(new_object):
+        if name is None:
+            signature_attempts = [lambda: new_object(object_class, outer)]
+        else:
+            signature_attempts = [
+                lambda: new_object(object_class, outer=outer, name=name),
+                lambda: new_object(object_class, outer, name),
+            ]
+        for signature_attempt in signature_attempts:
+            try:
+                created_object = signature_attempt()
+                if created_object:
+                    return created_object
+            except Exception:
+                pass
+
+    if name is None:
+        try:
+            return object_class(outer)
+        except Exception:
+            return None
+
+    try:
+        return object_class(outer, name)
+    except Exception:
+        pass
+
+    try:
+        return object_class(outer)
+    except Exception:
+        return None
+
+
 def get_object_flags_value(*flag_names):
     object_flags = getattr(unreal, "ObjectFlags", None)
     if not object_flags:
@@ -94,31 +142,3 @@ def save_loaded_editor_asset(asset):
             pass
 
     return False
-
-
-def finalize_blueprint_change(blueprint, structural=False):
-    cdo = get_blueprint_default_object(blueprint)
-    if cdo:
-        touch_editor_object(cdo)
-
-    touch_editor_object(blueprint)
-
-    if structural:
-        for utility_name in ("BlueprintEditorUtils", "KismetEditorUtilities"):
-            utility_class = getattr(unreal, utility_name, None)
-            if utility_class and hasattr(
-                utility_class, "mark_blueprint_as_structurally_modified"
-            ):
-                try:
-                    utility_class.mark_blueprint_as_structurally_modified(blueprint)
-                    break
-                except Exception:
-                    continue
-
-    try:
-        blueprint.post_edit_change()
-    except Exception:
-        pass
-
-    try_compile_blueprint(blueprint)
-    return save_loaded_editor_asset(blueprint)
