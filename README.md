@@ -212,6 +212,14 @@ Useful first natural-language requests:
 
 ## Testing
 
+### Python 2.7 dialect gate
+
+All editor payload scripts must stay Python 2.7-compatible (the OHD kit embeds 2.7.14). Run the gate after touching anything under `server/editor/scripts`:
+
+```bash
+npm run check:py27
+```
+
 ### No-Unreal smoke test
 
 Use this when you want to verify MCP startup, tool discovery, namespace action schemas, and action-specific parameter validation without launching Unreal Editor.

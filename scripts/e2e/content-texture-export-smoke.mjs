@@ -20,7 +20,7 @@ export async function runContentTextureExportScenarios(state) {
 			action: "import_texture",
 			params: {
 				source_file: tempTextureFile,
-				destination_path: "/Game/MCP/Tests",
+				destination_path: options.testRoot,
 				asset_name: path.basename(texturePath),
 			},
 		})
@@ -62,12 +62,12 @@ export async function runContentTextureExportScenarios(state) {
 		const listedAssets = await callJsonTool("manage_asset", {
 			action: "list",
 			params: {
-				root_path: "/Game/MCP/Tests",
+				root_path: options.testRoot,
 				recursive: true,
 				limit: 500,
 			},
 		})
-		assert(listedAssets.root_path === "/Game/MCP/Tests", "manage_asset list returned the wrong root path")
+		assert(listedAssets.root_path === options.testRoot, "manage_asset list returned the wrong root path")
 		assert(Array.isArray(listedAssets.assets), "manage_asset list did not return an assets list")
 		assert(
 			listedAssets.assets.some(

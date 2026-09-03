@@ -16,6 +16,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:no-unreal": "npm run build && node scripts/no-unreal-smoke.mjs",
     "typecheck": "tsc --noEmit",
+    "check:py27": "node scripts/check-py27.mjs",
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
     "publish:check": "npm run typecheck && npm run build && npm pack --dry-run",
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",

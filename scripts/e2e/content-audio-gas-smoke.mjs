@@ -18,7 +18,7 @@ export async function runContentAudioGasScenarios(state) {
 			action: "import_audio",
 			params: {
 				source_file: tempAudioFile,
-				destination_path: "/Game/MCP/Tests",
+				destination_path: options.testRoot,
 				asset_name: `A_${options.prefix}`,
 				auto_create_cue: true,
 				cue_suffix: "_Cue",
@@ -26,7 +26,7 @@ export async function runContentAudioGasScenarios(state) {
 		})
 		assert(
 			typeof audioImportResult.sound_wave_path === "string" &&
-				audioImportResult.sound_wave_path.includes(`/Game/MCP/Tests/A_${options.prefix}`),
+				audioImportResult.sound_wave_path.includes(`${options.testRoot}/A_${options.prefix}`),
 			"manage_audio import_audio did not return the expected SoundWave path",
 		)
 		assert(
