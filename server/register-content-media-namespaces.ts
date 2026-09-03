@@ -60,7 +60,7 @@ export function registerContentMediaNamespaces(ctx: RegistrationContext) {
 
 	registerToolNamespace("manage_sequence", ctx.toolDescription("manage_sequence"), {
 		sequence_support: {
-			description: "Report whether the UE4.27 SequencerScripting APIs needed by advanced sequence actions are available.",
+			description: "Report whether the UE4.25 SequencerScripting APIs needed by advanced sequence actions are available (the plugin ships disabled in the OHD kit; enable it first).",
 			paramsSchema: z.object({}).strict(),
 			handler: () => pythonDispatch(editorTools.UESequenceTool("sequence_support")),
 		},

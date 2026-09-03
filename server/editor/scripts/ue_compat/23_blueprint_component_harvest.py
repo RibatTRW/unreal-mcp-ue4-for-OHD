@@ -9,7 +9,7 @@ def add_component_to_blueprint_via_harvest(
 ):
     if not supports_kismet_component_harvest():
         raise ValueError(
-            "KismetEditorUtilities.add_components_to_blueprint is not available in this UE4.27 Python environment."
+            "KismetEditorUtilities.add_components_to_blueprint is not available in this UE4.25 Python environment."
         )
 
     template_name = str(component_name or "").strip()
@@ -26,7 +26,7 @@ def add_component_to_blueprint_via_harvest(
 
     component_template = None
     try:
-        component_template = unreal.new_object(component_class, temp_actor, template_name)
+        component_template = new_object_compat(component_class, temp_actor, template_name)
 
         if not component_template:
             raise RuntimeError(

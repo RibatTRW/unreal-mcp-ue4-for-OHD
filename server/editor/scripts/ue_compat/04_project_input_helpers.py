@@ -4,7 +4,8 @@ def get_project_descriptor():
         return {}
 
     try:
-        return json.loads(Path(project_file_path).read_text(encoding="utf-8"))
+        with io.open(project_file_path, encoding="utf-8") as project_file:
+            return json.load(project_file)
     except Exception:
         return {}
 
@@ -34,26 +35,28 @@ def _extract_ini_names(ini_paths, pattern):
     seen = set()
 
     for ini_path in ini_paths:
-        path = Path(ini_path)
-        if not path.exists():
+        if not os.path.exists(ini_path):
             continue
 
         try:
-            for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
-                stripped = line.strip()
-                if not stripped or stripped[0] in ";#":
-                    continue
-
-                match = pattern.search(stripped)
-                if not match:
-                    continue
-
-                value = match.group(1).strip()
-                if value and value not in seen:
-                    seen.add(value)
-                    values.append(value)
+            with io.open(ini_path, encoding="utf-8", errors="ignore") as ini_file:
+                ini_lines = ini_file.read().splitlines()
         except Exception:
             continue
+
+        for line in ini_lines:
+            stripped = line.strip()
+            if not stripped or stripped[0] in ";#":
+                continue
+
+            match = pattern.search(stripped)
+            if not match:
+                continue
+
+            value = match.group(1).strip()
+            if value and value not in seen:
+                seen.add(value)
+                values.append(value)
 
     return values
 

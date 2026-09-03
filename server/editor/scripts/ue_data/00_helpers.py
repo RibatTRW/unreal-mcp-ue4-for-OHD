@@ -18,7 +18,7 @@ def _asset_summary(asset):
 
 
 def _data_asset_class_matches(asset_class_name):
-    normalized = str(asset_class_name or "").strip().lower()
+    normalized = unreal_text(asset_class_name or "").strip().lower()
     if not normalized:
         return False
 
@@ -26,7 +26,7 @@ def _data_asset_class_matches(asset_class_name):
 
 
 def _load_data_asset_class(class_name):
-    normalized = str(class_name or "DataAsset").strip()
+    normalized = unreal_text(class_name or "DataAsset").strip()
     resolved = resolve_class_reference(normalized, ["Engine"])
 
     if not resolved:
@@ -45,7 +45,7 @@ def _load_data_asset_class(class_name):
 
 
 def _resolve_script_struct(struct_name):
-    normalized = str(struct_name or "").strip()
+    normalized = unreal_text(struct_name or "").strip()
     if not normalized:
         return None
 

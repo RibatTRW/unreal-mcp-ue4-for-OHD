@@ -58,7 +58,7 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 	): NamespaceDispatchResult =>
 		directDispatch({
 			success: false,
-			message: `Action '${action}' is not supported by ${toolName} in this UE4.27 port.`,
+			message: `Action '${action}' is not supported by ${toolName} in this UE4.25 port.`,
 			supported_actions: supportedActions,
 		})
 

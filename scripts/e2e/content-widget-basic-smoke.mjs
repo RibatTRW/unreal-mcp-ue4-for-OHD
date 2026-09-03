@@ -85,7 +85,7 @@ export async function runContentWidgetBasicScenarios(state) {
 		} catch (error) {
 			if (isUnsupportedWidgetTreeAuthoring(error)) {
 				widgetAuthoringUnsupportedReason =
-					error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.27 Python environment."
+					error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.25 Python environment."
 				throw new StepSkipError(widgetAuthoringUnsupportedReason)
 			}
 
@@ -115,7 +115,7 @@ export async function runContentWidgetBasicScenarios(state) {
 		} catch (error) {
 			if (isUnsupportedWidgetTreeAuthoring(error)) {
 				widgetAuthoringUnsupportedReason =
-					error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.27 Python environment."
+					error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.25 Python environment."
 				throw new StepSkipError(widgetAuthoringUnsupportedReason)
 			}
 

@@ -201,7 +201,7 @@ def apply_component_property(component_template, property_name, property_value):
     if property_name == "AngularDamping":
         return set_object_property(component_template, "angular_damping", float(property_value))
 
-    if isinstance(property_value, str) and property_value.startswith("/"):
+    if isinstance(property_value, _string_types) and property_value.startswith("/"):
         loaded_asset = unreal.EditorAssetLibrary.load_asset(property_value)
         if loaded_asset and set_object_property(component_template, property_name, loaded_asset):
             return True

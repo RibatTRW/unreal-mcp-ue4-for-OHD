@@ -41,8 +41,8 @@ async function main() {
 		paths: {
 			basicShapeMaterialPath: "/Engine/BasicShapes/BasicShapeMaterial",
 			tintableMaterialPath: "/Engine/EngineMaterials/EmissiveMeshMaterial",
-			actorTintMaterialPath: `/Game/MCP/Tests/MI_${options.prefix}_ActorTint`,
-			debugTintMaterialPath: `/Game/MCP/Tests/MI_${options.prefix}_DebugTint`,
+			actorTintMaterialPath: `${options.testRoot}/MI_${options.prefix}_ActorTint`,
+			debugTintMaterialPath: `${options.testRoot}/MI_${options.prefix}_DebugTint`,
 		},
 	})
 

@@ -1,6 +1,6 @@
 def _format_widget_authoring_error(exc):
     message = str(exc)
-    if "editable widget tree in UE4.27 Python" in message:
+    if "editable widget tree in UE4.25 Python" in message:
         return {
             "success": False,
             "message": message,
@@ -31,7 +31,7 @@ def _resolve_widget_runtime_class(widget_name):
     if widget_path:
         candidate_paths.append(widget_path)
 
-    if isinstance(widget_name, str) and widget_name.startswith("/"):
+    if isinstance(widget_name, _string_types) and widget_name.startswith("/"):
         candidate_paths.append(widget_name)
 
     try:
@@ -213,7 +213,7 @@ def _apply_delegate_binding(widget_blueprint, object_name, property_name, functi
     binding_class = getattr(unreal, "DelegateEditorBinding", None)
     if not binding_class:
         raise ValueError(
-            "DelegateEditorBinding is not exposed in this UE4.27 Python environment."
+            "DelegateEditorBinding is not exposed in this UE4.25 Python environment."
         )
 
     bindings = list(get_editor_property_value(widget_blueprint, "bindings", []) or [])

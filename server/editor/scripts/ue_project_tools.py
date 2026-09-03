@@ -1,5 +1,6 @@
+import io
 import json
-from pathlib import Path
+import os
 
 
 def _parse_key_spec(key_spec):
@@ -107,10 +108,11 @@ def create_input_mapping(args):
     except Exception as exc:
         return {"success": False, "message": str(exc)}
 
-    config_path = (Path(unreal.Paths.project_dir()) / "Config" / "DefaultInput.ini").resolve()
+    config_path = os.path.abspath(os.path.join(unreal.Paths.project_dir(), "Config", "DefaultInput.ini"))
     config_text = ""
-    if config_path.exists():
-        config_text = config_path.read_text(encoding="utf-8", errors="ignore")
+    if os.path.exists(config_path):
+        with io.open(config_path, encoding="utf-8", errors="ignore") as config_file:
+            config_text = config_file.read()
 
     mapping_line = _build_mapping_line(
         mapping_name,
@@ -128,8 +130,12 @@ def create_input_mapping(args):
         }
 
     updated_text = _insert_mapping_line(config_text, mapping_line)
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(updated_text, encoding="utf-8")
+    try:
+        os.makedirs(os.path.dirname(config_path))
+    except OSError:
+        pass
+    with io.open(config_path, "w", encoding="utf-8") as config_file:
+        config_file.write(updated_text)
 
     input_settings_class = getattr(unreal, "InputSettings", None)
     if input_settings_class and hasattr(input_settings_class, "get_input_settings"):

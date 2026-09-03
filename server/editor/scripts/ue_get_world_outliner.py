@@ -1,8 +1,7 @@
-from typing import Any, Dict
 import json
 
 
-def get_world_outliner() -> Dict[str, Any]:
+def get_world_outliner():
     world = get_editor_world()
     if not world:
         return {"error": "No world loaded"}
@@ -36,7 +35,7 @@ def get_world_outliner() -> Dict[str, Any]:
                     "z": actor.get_actor_scale3d().z,
                 },
                 "is_hidden": actor.is_hidden_ed(),
-                "folder_path": str(actor.get_folder_path())
+                "folder_path": unreal_text(actor.get_folder_path())
                 if hasattr(actor, "get_folder_path")
                 else None,
             }
@@ -57,7 +56,7 @@ def get_world_outliner() -> Dict[str, Any]:
 
 def main():
     outliner_data = get_world_outliner()
-    print(json.dumps(outliner_data, indent=2))
+    print(json.dumps(outliner_data, indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":

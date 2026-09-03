@@ -5,7 +5,7 @@ def create_level_sequence(args):
         "LevelSequenceFactoryNew",
         "LevelSequence",
         ["LevelSequence"],
-        "LevelSequenceFactoryNew is not exposed in this UE4.27 Python environment.",
+        "LevelSequenceFactoryNew is not exposed in this UE4.25 Python environment.",
     )
 
 
@@ -16,5 +16,5 @@ def create_behavior_tree(args):
         "BehaviorTreeFactory",
         "BehaviorTree",
         ["AIModule"],
-        "BehaviorTreeFactory is not exposed in this UE4.27 Python environment.",
+        "BehaviorTreeFactory is not exposed in this UE4.25 Python environment.",
     )

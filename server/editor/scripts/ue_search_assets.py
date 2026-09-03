@@ -1,24 +1,23 @@
-from typing import Any, Dict, Optional
 import json
 
 
 def search_assets(
-    search_term: str,
-    asset_class: Optional[str] = None,
-    include_engine: Optional[bool] = None,
-    limit: Optional[int] = None,
-) -> Dict[str, Any]:
+    search_term,
+    asset_class=None,
+    include_engine=None,
+    limit=None,
+):
     asset_registry = unreal.AssetRegistryHelpers.get_asset_registry()
     all_assets = asset_registry.get_all_assets()
 
     matching_assets = []
-    search_term_lower = str(search_term or "").lower()
+    search_term_lower = unreal_text(search_term or "").lower()
     asset_class_filter = asset_class.strip().lower() if asset_class else None
     should_include_engine = True if include_engine is None else bool(include_engine)
 
     for asset in all_assets:
-        asset_name = str(asset.asset_name)
-        package_path = str(asset.package_path)
+        asset_name = unreal_text(asset.asset_name)
+        package_path = unreal_text(asset.package_path)
         asset_class_name = get_asset_class_name(asset)
 
         if not should_include_engine and package_path.startswith("/Engine"):
@@ -72,7 +71,7 @@ def main():
     include_engine = decode_template_json("""${include_engine}""")
     limit = decode_template_json("""${limit}""")
     result = search_assets(search_term, asset_class, include_engine, limit)
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":

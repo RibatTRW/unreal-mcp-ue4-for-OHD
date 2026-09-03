@@ -130,7 +130,7 @@ function updateReadmeWithTools() {
 
 	const toolsSection = `## Available Tools
 
-Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
+Notes call out important requirements or UE4.25 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
 The recommended public surface is the \`manage_*\` namespace layer. Prefer \`manage_editor.project_info\`, \`manage_editor.map_info\`, and \`manage_level.world_outliner\` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
 
@@ -138,7 +138,7 @@ ${generateToolsSections(toolCatalogEntries)}
 
 ### Excluded Capability Areas
 
-These capability areas are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+These capability areas are intentionally not exposed through the MCP surface in this UE4.25 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
 
 ${generateExcludedCapabilitiesTable(excludedCapabilities)}
 

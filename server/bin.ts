@@ -12,6 +12,29 @@ if (cliArgs.includes("--version") || cliArgs.includes("-v")) {
 let shutdownInProgress = false
 let shutdownRemoteExecution: (() => Promise<void>) | undefined
 
+// The remote-execution library leaves its command TCP socket without an
+// 'error' listener, so an editor-side connection drop (editor crash,
+// restart, or a wedged PIE start) surfaces as an uncaught ECONNRESET that
+// kills the whole server process — taking every in-flight tool call and all
+// cleanup with it. Convert exactly that case into a logged, survivable
+// event; the retry logic in remote-execution.ts re-establishes the command
+// connection on the next command. Anything else still crashes loudly.
+process.on("uncaughtException", (error: unknown) => {
+	const code =
+		typeof error === "object" && error !== null && "code" in error
+			? (error as { code?: unknown }).code
+			: undefined
+	if (code === "ECONNRESET") {
+		console.error(
+			"Unreal editor connection was reset (ECONNRESET). Staying alive; the next command will reconnect. Detail:",
+			error instanceof Error ? error.message : String(error),
+		)
+		return
+	}
+	console.error("Uncaught exception, exiting:", error)
+	process.exit(1)
+})
+
 async function main() {
 	const serverModule = await import("./")
 	shutdownRemoteExecution = serverModule.shutdownRemoteExecution

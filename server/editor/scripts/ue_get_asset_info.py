@@ -1,8 +1,7 @@
-from typing import Any, Dict, List
 import json
 
 
-def get_asset_info(asset_path: str) -> List[Dict[str, Any]]:
+def get_asset_info(asset_path):
     asset_data = unreal.EditorAssetLibrary.find_asset_data(asset_path)
     if not asset_data.is_valid():
         return []
@@ -14,7 +13,7 @@ def get_asset_info(asset_path: str) -> List[Dict[str, Any]]:
         loaded_asset = None
 
     asset_info = {
-        "name": loaded_asset.get_name() if loaded_asset else str(asset_data.asset_name),
+        "name": loaded_asset.get_name() if loaded_asset else unreal_text(asset_data.asset_name),
         "is_valid": asset_data.is_valid(),
         "is_u_asset": asset_data.is_u_asset(),
         "is_asset_loaded": asset_data.is_asset_loaded(),
@@ -31,7 +30,7 @@ def get_asset_info(asset_path: str) -> List[Dict[str, Any]]:
     return [asset_info]
 
 
-def get_lod_info(asset_object: Any) -> List[Dict[str, Any]]:
+def get_lod_info(asset_object):
     if not asset_object:
         return []
 
@@ -49,7 +48,7 @@ def get_lod_info(asset_object: Any) -> List[Dict[str, Any]]:
 
 def main():
     asset_info = get_asset_info("${asset_path}")
-    print(json.dumps(asset_info))
+    print(json.dumps(asset_info, ensure_ascii=True))
 
 
 if __name__ == "__main__":

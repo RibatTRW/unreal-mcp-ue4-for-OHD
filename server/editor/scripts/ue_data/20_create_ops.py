@@ -10,7 +10,7 @@ def create_data_asset(args):
     if not factory_class:
         return {
             "success": False,
-            "message": "DataAssetFactory is not exposed in this UE4.27 Python environment.",
+            "message": "DataAssetFactory is not exposed in this UE4.25 Python environment.",
         }
 
     data_asset_class = _load_data_asset_class(data_asset_class_name)
@@ -69,7 +69,7 @@ def create_data_table(args):
     if not factory_class or not data_table_class:
         return {
             "success": False,
-            "message": "DataTableFactory is not exposed in this UE4.27 Python environment.",
+            "message": "DataTableFactory is not exposed in this UE4.25 Python environment.",
         }
 
     row_struct = _resolve_script_struct(row_struct_name)
@@ -106,7 +106,7 @@ def create_data_table(args):
         "asset": _asset_summary(asset),
         "asset_path": asset_path,
         "saved": bool(saved),
-        "row_struct": str(row_struct_name),
+        "row_struct": unreal_text(row_struct_name),
     }
 
 
@@ -122,7 +122,7 @@ def create_string_table(args):
     if not factory_class or not string_table_class:
         return {
             "success": False,
-            "message": "StringTableFactory is not exposed in this UE4.27 Python environment.",
+            "message": "StringTableFactory is not exposed in this UE4.25 Python environment.",
         }
 
     asset_leaf_name, package_path = split_asset_name_and_path(asset_name, content_path)

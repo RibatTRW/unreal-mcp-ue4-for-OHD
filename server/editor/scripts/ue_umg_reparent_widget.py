@@ -1,14 +1,13 @@
-from typing import Dict, Optional
 import json
 
 
 def reparent_widget(
-    widget_blueprint_path: str,
-    widget_name: str,
-    new_parent_widget_name: str,
-    position: Optional[Dict[str, float]] = None,
-    size: Optional[Dict[str, float]] = None,
-    z_order: Optional[int] = None,
+    widget_blueprint_path,
+    widget_name,
+    new_parent_widget_name,
+    position=None,
+    size=None,
+    z_order=None,
 ):
     widget_blueprint = None
     widget_tree = None

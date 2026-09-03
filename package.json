@@ -2,7 +2,7 @@
   "name": "unreal-mcp-ue4",
   "version": "2026.5.12-3",
   "mcpName": "io.github.conaman/unreal-mcp-ue4",
-  "description": "UE4.27-first MCP server for controlling the Unreal Editor through Unreal Python Remote Execution.",
+  "description": "UE4.25-first MCP server for controlling the Unreal Editor through Unreal Python Remote Execution (Operation Harsh Doorstop mod-kit retarget).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -16,6 +16,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:no-unreal": "npm run build && node scripts/no-unreal-smoke.mjs",
     "typecheck": "tsc --noEmit",
+    "check:py27": "node scripts/check-py27.mjs",
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
     "publish:check": "npm run typecheck && npm run build && npm pack --dry-run",
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",
@@ -30,7 +31,8 @@
     "modelcontextprotocol",
     "unreal-mcp",
     "ue4",
-    "ue4.27"
+    "ue4.25",
+    "ohd"
   ],
   "author": "Seungjee Baek (conaman)",
   "license": "MIT",
@@ -40,11 +42,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/conaman/unreal-mcp-ue4.git"
+    "url": "git+https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD.git"
   },
-  "homepage": "https://github.com/conaman/unreal-mcp-ue4#readme",
+  "homepage": "https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD#readme",
   "bugs": {
-    "url": "https://github.com/conaman/unreal-mcp-ue4/issues"
+    "url": "https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/issues"
   },
   "publishConfig": {
     "access": "public"

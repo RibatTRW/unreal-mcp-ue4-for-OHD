@@ -1,7 +1,7 @@
 import json
 
 
-def remove_widget(widget_blueprint_path: str, widget_name: str):
+def remove_widget(widget_blueprint_path, widget_name):
     try:
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)
         widget_tree = get_widget_tree(widget_blueprint)

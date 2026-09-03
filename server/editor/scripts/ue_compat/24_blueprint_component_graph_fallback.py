@@ -6,7 +6,7 @@ def add_component_node_to_blueprint_via_graph_fallback(
     construction_graph = get_blueprint_construction_graph(blueprint)
     if not construction_graph:
         raise ValueError(
-            "Blueprint does not expose a UserConstructionScript graph in this UE4.27 Python environment."
+            "Blueprint does not expose a UserConstructionScript graph in this UE4.25 Python environment."
         )
 
     generated_class = get_blueprint_generated_class(blueprint)
@@ -19,7 +19,7 @@ def add_component_node_to_blueprint_via_graph_fallback(
     if not template_name:
         raise ValueError("component_name is required")
 
-    new_template = unreal.new_object(component_class, generated_class, template_name)
+    new_template = new_object_compat(component_class, generated_class, template_name)
     if not new_template:
         raise RuntimeError(
             "Failed to create blueprint component template: {0}".format(component_name)

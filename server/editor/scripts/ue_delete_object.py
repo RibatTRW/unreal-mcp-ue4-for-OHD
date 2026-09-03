@@ -1,8 +1,7 @@
-from typing import Any, Dict, List
 import json
 
 
-def delete_object(actor_name: str) -> Dict[str, Any]:
+def delete_object(actor_name):
     try:
         world = get_editor_world()
         if not world:
@@ -36,7 +35,7 @@ def delete_object(actor_name: str) -> Dict[str, Any]:
         return {"error": "Failed to delete object: {0}".format(str(e))}
 
 
-def delete_multiple_objects(actor_names: List[str]) -> Dict[str, Any]:
+def delete_multiple_objects(actor_names):
     try:
         results = []
         for actor_name in actor_names:
@@ -50,7 +49,7 @@ def delete_multiple_objects(actor_names: List[str]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        return {"error": f"Failed to delete multiple objects: {str(e)}"}
+        return {"error": "Failed to delete multiple objects: {0}".format(str(e))}
 
 
 def main():

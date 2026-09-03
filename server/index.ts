@@ -10,7 +10,7 @@ export { shutdownRemoteExecution }
 
 export const server = new McpServer({
 	name: "UnrealMCP-UE4",
-	description: "Unreal Engine MCP for UE4.27.2 with UE4/UE5 editor scripting compatibility helpers",
+	description: "Unreal Engine MCP for UE4.25.4 (Operation Harsh Doorstop mod kit) with UE4 editor scripting compatibility helpers",
 	version: projectVersion,
 })
 
@@ -23,8 +23,8 @@ server.resource("docs", "docs://unreal_python", async () => {
 	return {
 		contents: [
 			{
-				uri: "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27",
-				text: "Unreal Engine 4.27 Python API Documentation",
+				uri: "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.25",
+				text: "Unreal Engine 4.25 Python API Documentation",
 			},
 		],
 	}

@@ -1,11 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
 import ast
 import json
 
 
 def validate_assets(
-    asset_paths: Optional[Union[str, List[str]]] = None,
-) -> Dict[str, Any]:
+    asset_paths=None,
+):
     validation_results = {
         "total_validated": 0,
         "valid_assets": [],
@@ -22,7 +21,7 @@ def validate_assets(
         all_assets = asset_registry.get_all_assets()
         assets_to_validate = [
             get_asset_object_path(asset)
-            or "{0}/{1}".format(str(asset.package_path), str(asset.asset_name))
+            or "{0}/{1}".format(unreal_text(asset.package_path), unreal_text(asset.asset_name))
             for asset in all_assets[:100]
         ]
 
@@ -60,7 +59,7 @@ def validate_assets(
             )
         except Exception as e:
             validation_results["invalid_assets"].append(
-                {"path": asset_path, "error": str(e)}
+                {"path": asset_path, "error": unreal_text(e)}
             )
 
     validation_results["validation_summary"] = {
@@ -79,7 +78,7 @@ def validate_assets(
     return validation_results
 
 
-def parse_asset_paths(asset_paths_input: str):
+def parse_asset_paths(asset_paths_input):
     if not asset_paths_input or asset_paths_input == "null":
         return None
 
@@ -87,7 +86,7 @@ def parse_asset_paths(asset_paths_input: str):
         parsed = decode_template_json(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
-        if isinstance(parsed, str):
+        if isinstance(parsed, _string_types):
             asset_paths_input = parsed
     except Exception:
         pass
@@ -96,7 +95,7 @@ def parse_asset_paths(asset_paths_input: str):
         parsed = json.loads(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
-        if isinstance(parsed, str):
+        if isinstance(parsed, _string_types):
             asset_paths_input = parsed
     except Exception:
         pass
@@ -105,12 +104,12 @@ def parse_asset_paths(asset_paths_input: str):
         parsed = ast.literal_eval(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
-        if isinstance(parsed, str):
+        if isinstance(parsed, _string_types):
             asset_paths_input = parsed
     except Exception:
         pass
 
-    if isinstance(asset_paths_input, str):
+    if isinstance(asset_paths_input, _string_types):
         if "," in asset_paths_input:
             return [
                 path.strip()
@@ -126,7 +125,7 @@ def parse_asset_paths(asset_paths_input: str):
 
 def main():
     result = validate_assets(parse_asset_paths("${asset_paths}"))
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":

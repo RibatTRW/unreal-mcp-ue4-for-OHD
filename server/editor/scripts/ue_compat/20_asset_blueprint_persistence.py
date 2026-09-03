@@ -19,7 +19,7 @@ def new_object_with_flags(object_class, outer, name, *flag_names):
     object_flags = get_object_flags_value(*flag_names)
 
     constructor_attempts = []
-    if object_flags is not None:
+    if object_flags is not None and callable(getattr(unreal, "new_object", None)):
         constructor_attempts.extend(
             [
                 lambda: unreal.new_object(
@@ -33,11 +33,10 @@ def new_object_with_flags(object_class, outer, name, *flag_names):
             ]
         )
 
-    constructor_attempts.extend(
-        [
-            lambda: unreal.new_object(object_class, outer=outer, name=name),
-            lambda: unreal.new_object(object_class, outer, name),
-        ]
+    # Positional class-call covers engines without unreal.new_object
+    # (OHD kit, probed live) as well as the plain no-flags case.
+    constructor_attempts.append(
+        lambda: new_object_compat(object_class, outer, name)
     )
 
     last_error = None

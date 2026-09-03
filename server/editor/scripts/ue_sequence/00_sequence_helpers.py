@@ -82,7 +82,7 @@ def sequence_support_status(args=None):
         "missing_optional": missing_optional,
         "message": "Sequencer scripting is available."
         if not missing_required
-        else "Enable the SequencerScripting plugin in the UE4.27 project to use advanced manage_sequence actions.",
+        else "Enable the SequencerScripting plugin in the UE4.25 project to use advanced manage_sequence actions.",
     }
 
 
@@ -244,11 +244,11 @@ def resolve_track_class(track_type):
     if not track_type:
         raise ValueError("track_type is required")
 
-    if not isinstance(track_type, str):
+    if not isinstance(track_type, _string_types):
         return track_type
 
     candidates = []
-    raw = str(track_type).strip()
+    raw = unreal_text(track_type).strip()
     cleaned = _clean_identifier(raw)
     alias = TRACK_CLASS_ALIASES.get(raw.lower()) or TRACK_CLASS_ALIASES.get(cleaned)
     if alias:
@@ -405,13 +405,13 @@ def channel_default(channel):
 def json_safe_value(value):
     if value is None:
         return None
-    if isinstance(value, (bool, int, float, str)):
+    if isinstance(value, (bool, int, float, _string_types)):
         return value
     if isinstance(value, (list, tuple)):
         return [json_safe_value(entry) for entry in value]
     if hasattr(value, "get_path_name"):
         return object_path(value)
-    return str(value)
+    return unreal_text(value)
 
 
 def key_summary(sequence, key):
@@ -943,7 +943,7 @@ def make_camera_binding_id(sequence, binding):
             return sequence.make_binding_id(binding, unreal.MovieSceneObjectBindingSpace.LOCAL)
         except Exception:
             return sequence.make_binding_id(binding)
-    raise RuntimeError("Cannot create camera binding ID in this UE4.27 Python environment.")
+    raise RuntimeError("Cannot create camera binding ID in this UE4.25 Python environment.")
 
 
 def add_camera_cut(args):

@@ -22,7 +22,7 @@ export async function runCoreProjectMapScenarios(ctx) {
 			params: {},
 		})
 		assert(typeof projectInfo.project_name === "string" && projectInfo.project_name.length > 0, "project_name is missing")
-		assert(typeof projectInfo.engine_version === "string" && projectInfo.engine_version.includes("4.27"), "engine_version does not look like UE4.27")
+		assert(typeof projectInfo.engine_version === "string" && projectInfo.engine_version.includes("4.25"), "engine_version does not look like UE4.25")
 		setProjectInfo(projectInfo)
 	})
 
@@ -59,8 +59,8 @@ export async function runCoreProjectMapScenarios(ctx) {
 			"get_unreal_version did not return the expected text format",
 		)
 		assert(
-			versionText.includes("4.27"),
-			"get_unreal_version did not report a UE4.27 engine version",
+			versionText.includes("4.25"),
+			"get_unreal_version did not report a UE4.25 engine version",
 		)
 		assert(
 			typeof projectInfo.engine_version === "string" &&

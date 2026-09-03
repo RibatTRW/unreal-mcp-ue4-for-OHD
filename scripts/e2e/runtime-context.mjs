@@ -132,7 +132,20 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 
 		return (
 			error instanceof Error &&
-			error.message.includes("Widget blueprint does not expose an editable widget tree in UE4.27 Python.")
+			error.message.includes("Widget blueprint does not expose an editable widget tree in UE4.25 Python.")
+		)
+	}
+
+	const isUnsupportedViewportInstantiation = (error) => {
+		if (error instanceof ToolFailureError) {
+			if (error.parsed?.unsupported_capability === "widget_viewport_instantiation") {
+				return true
+			}
+		}
+
+		return (
+			error instanceof Error &&
+			error.message.includes("Could not instantiate a UserWidget in this UE4.25 Python environment.")
 		)
 	}
 
@@ -253,6 +266,7 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 		safeRevertSourceControlFiles,
 		pollPieStatus,
 		isUnsupportedWidgetTreeAuthoring,
+		isUnsupportedViewportInstantiation,
 		firstAssetPathFromSearch,
 		projectRepoHasGitRemote,
 		StepSkipError,

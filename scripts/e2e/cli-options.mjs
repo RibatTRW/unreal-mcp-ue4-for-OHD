@@ -12,6 +12,7 @@ Options:
   --keep-assets         Keep temporary Blueprint and Widget assets after the run.
   --skip-namespace      Skip the tool-namespace smoke phase.
   --prefix <value>      Prefix used for temporary test actor and asset names.
+  --test-root <path>    Unreal content root for temporary test assets. Default: /Game/MCP/Tests.
   --timeout-ms <value>  Timeout for connect/tool calls. Default: 20000.
   --server-entry <path> Path to the built MCP server entry. Default: dist/bin.js.
   --node-path <path>    Node executable used to launch the MCP server. Default: current node.
@@ -24,6 +25,7 @@ export function parseArgs(argv, defaults) {
 	const options = {
 		nodePath: defaults.nodePath,
 		prefix: `MCP_E2E_${Date.now()}`,
+		testRoot: "/Game/MCP/Tests",
 		serverEntry: defaults.serverEntry,
 		skipNamespace: false,
 		timeoutMs: 20_000,
@@ -61,6 +63,9 @@ export function parseArgs(argv, defaults) {
 			case "--prefix":
 				options.prefix = argv[++index]
 				break
+			case "--test-root":
+				options.testRoot = argv[++index]
+				break
 			case "--timeout-ms":
 				options.timeoutMs = Number(argv[++index])
 				break
@@ -78,6 +83,10 @@ export function parseArgs(argv, defaults) {
 	if (!options.help) {
 		if (!options.prefix) {
 			throw new Error("--prefix requires a value")
+		}
+
+		if (!options.testRoot || !options.testRoot.startsWith("/")) {
+			throw new Error("--test-root must be a /Game-style content path")
 		}
 
 		if (!Number.isFinite(options.timeoutMs) || options.timeoutMs <= 0) {

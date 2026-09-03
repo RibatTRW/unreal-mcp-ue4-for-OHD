@@ -1,15 +1,102 @@
 import base64
+import io
 import json
 import os
 import re
 import tempfile
-from pathlib import Path
 
 import unreal
 
 
 def _has_unreal_class(class_name):
     return hasattr(unreal, class_name)
+
+
+try:
+    _text_type = unicode
+except NameError:
+    _text_type = str
+
+
+try:
+    _string_types = basestring
+except NameError:
+    _string_types = str
+
+
+def unreal_text(value):
+    """Coerce an Unreal-exposed value to text without ascii-only str().
+
+    On Python 2, str() on a unicode value encodes with ascii and raises
+    UnicodeEncodeError for names outside ascii (seen live: U+041C inside
+    an asset name broke manage_editor.project_info). Returning unicode on
+    py2 keeps every downstream op safe; json.dumps with ensure_ascii
+    escapes non-ascii on print, so the wire payload stays ascii.
+    """
+    if value is None:
+        return _text_type()
+    if isinstance(value, _text_type):
+        return value
+    if isinstance(value, bytes):
+        try:
+            return value.decode("utf-8")
+        except Exception:
+            try:
+                return value.decode("utf-8", "ignore")
+            except Exception:
+                return _text_type()
+    try:
+        return _text_type(value)
+    except Exception:
+        pass
+    try:
+        return str(value).decode("utf-8", "ignore")
+    except Exception:
+        return _text_type()
+
+
+def new_object_compat(object_class, outer, name=None):
+    """Create a UObject without depending on the new_object factory.
+
+    The OHD kit's Python has no such factory (probed live: hasattr is
+    False); calling the UClass positionally performs the same
+    NewObject(Outer, Class, Name) — probed working, while Outer=/Name=
+    kwargs are rejected as invalid. On engines WITH the factory (4.27+),
+    its known signatures are tried first so behavior there is unchanged.
+    Returns the created object or None.
+    """
+    new_object = getattr(unreal, "new_object", None)
+    if callable(new_object):
+        if name is None:
+            signature_attempts = [lambda: new_object(object_class, outer)]
+        else:
+            signature_attempts = [
+                lambda: new_object(object_class, outer=outer, name=name),
+                lambda: new_object(object_class, outer, name),
+            ]
+        for signature_attempt in signature_attempts:
+            try:
+                created_object = signature_attempt()
+                if created_object:
+                    return created_object
+            except Exception:
+                pass
+
+    if name is None:
+        try:
+            return object_class(outer)
+        except Exception:
+            return None
+
+    try:
+        return object_class(outer, name)
+    except Exception:
+        pass
+
+    try:
+        return object_class(outer)
+    except Exception:
+        return None
 
 
 def decode_template_json(encoded_value):

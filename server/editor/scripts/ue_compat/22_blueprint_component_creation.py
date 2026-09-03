@@ -69,7 +69,7 @@ def add_component_node_to_blueprint(
 
             if not hasattr(parent_node, "add_child_node"):
                 raise ValueError(
-                    "Parent component cannot accept child nodes in this UE4.27 Python environment."
+                    "Parent component cannot accept child nodes in this UE4.25 Python environment."
                 )
 
             parent_node.add_child_node(new_node)
@@ -92,7 +92,7 @@ def add_component_node_to_blueprint(
 
     if parent_component_name:
         raise ValueError(
-            "UE4.27 Python cannot parent Blueprint components without SimpleConstructionScript editing support."
+            "UE4.25 Python cannot parent Blueprint components without SimpleConstructionScript editing support."
         )
 
     return add_component_node_to_blueprint_via_graph_fallback(
