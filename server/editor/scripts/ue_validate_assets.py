@@ -1,4 +1,3 @@
-import ast
 import json
 
 
@@ -78,53 +77,43 @@ def validate_assets(
     return validation_results
 
 
-def parse_asset_paths(asset_paths_input):
-    if not asset_paths_input or asset_paths_input == "null":
+def normalize_asset_path_list(decoded_value):
+    """Explicit multi-shape normalization for the validate_assets call site.
+
+    The codec decodes exactly one value; the shapes callers actually send
+    (list, single path, comma-separated paths) are normalized here, in the
+    open, instead of hiding inside wire-format guessing. Returns None for
+    empty input so validate_assets falls back to the registry scan.
+    """
+    if decoded_value is None:
         return None
 
-    try:
-        parsed = decode_template_json(asset_paths_input)
-        if isinstance(parsed, list):
-            return parsed
-        if isinstance(parsed, _string_types):
-            asset_paths_input = parsed
-    except Exception:
-        pass
+    if isinstance(decoded_value, list):
+        return decoded_value
 
-    try:
-        parsed = json.loads(asset_paths_input)
-        if isinstance(parsed, list):
-            return parsed
-        if isinstance(parsed, _string_types):
-            asset_paths_input = parsed
-    except Exception:
-        pass
-
-    try:
-        parsed = ast.literal_eval(asset_paths_input)
-        if isinstance(parsed, list):
-            return parsed
-        if isinstance(parsed, _string_types):
-            asset_paths_input = parsed
-    except Exception:
-        pass
-
-    if isinstance(asset_paths_input, _string_types):
-        if "," in asset_paths_input:
+    if isinstance(decoded_value, _string_types):
+        if "," in decoded_value:
             return [
                 path.strip()
-                for path in asset_paths_input.split(",")
+                for path in decoded_value.split(",")
                 if path.strip()
             ]
-        stripped = asset_paths_input.strip()
+        stripped = decoded_value.strip()
         if stripped:
             return stripped
+        return None
 
-    return asset_paths_input
+    return decoded_value
 
 
 def main():
-    result = validate_assets(parse_asset_paths("${asset_paths}"))
+    try:
+        decoded_paths = decode_template_arg("asset_paths", """${asset_paths}""")
+    except ArgDecodeError as exc:
+        print(json.dumps(arg_decode_failure(exc.arg_name), indent=2, ensure_ascii=True))
+        return
+
+    result = validate_assets(normalize_asset_path_list(decoded_paths))
     print(json.dumps(result, indent=2, ensure_ascii=True))
 
 

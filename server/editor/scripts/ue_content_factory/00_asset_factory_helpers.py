@@ -1,14 +1,6 @@
 import os
 
 
-def _asset_summary(asset):
-    return {
-        "name": get_object_name(asset),
-        "class": get_object_class_name(asset),
-        "asset_path": get_asset_package_name(asset) or get_asset_object_path(asset),
-    }
-
-
 def _load_editor_asset(asset_path):
     normalized_asset_path = normalize_asset_reference_path(asset_path)
     if not normalized_asset_path:

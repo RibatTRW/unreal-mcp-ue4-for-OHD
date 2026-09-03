@@ -77,36 +77,19 @@ def update_object(
         return {"error": "Failed to update object: {0}".format(unreal_text(e))}
 
 
-def parse_value(value_str):
-    import json as parse_json
-
-    if value_str and value_str != "null" and value_str.strip():
-        try:
-            return parse_json.loads(value_str)
-        except Exception:
-            return None
-    return None
-
-
-def parse_string(value_str):
-    if value_str and value_str != "null" and value_str.strip():
-        return value_str
-    return None
-
-
 def main():
-    actor_name = "${actor_name}"
-    location_str = """${location}"""
-    rotation_str = """${rotation}"""
-    scale_str = """${scale}"""
-    properties_str = """${properties}"""
-    new_name_str = """${new_name}"""
-
-    location = parse_value(location_str)
-    rotation = parse_value(rotation_str)
-    scale = parse_value(scale_str)
-    properties = parse_value(properties_str)
-    new_name = parse_string(new_name_str)
+    # All template variables arrive via the one codec (jsonArg on the TS
+    # side, decode_template_arg here): base64(JSON) inside triple quotes.
+    try:
+        actor_name = decode_template_arg("actor_name", """${actor_name}""")
+        location = decode_template_arg("location", """${location}""")
+        rotation = decode_template_arg("rotation", """${rotation}""")
+        scale = decode_template_arg("scale", """${scale}""")
+        properties = decode_template_arg("properties", """${properties}""")
+        new_name = decode_template_arg("new_name", """${new_name}""")
+    except ArgDecodeError as exc:
+        print(json.dumps(arg_decode_failure(exc.arg_name), indent=2))
+        return
 
     result = update_object(
         actor_name=actor_name,
