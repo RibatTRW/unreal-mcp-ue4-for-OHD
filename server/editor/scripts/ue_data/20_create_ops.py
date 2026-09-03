@@ -106,7 +106,7 @@ def create_data_table(args):
         "asset": _asset_summary(asset),
         "asset_path": asset_path,
         "saved": bool(saved),
-        "row_struct": str(row_struct_name),
+        "row_struct": unreal_text(row_struct_name),
     }
 
 

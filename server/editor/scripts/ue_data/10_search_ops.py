@@ -1,5 +1,5 @@
 def search_data_assets(args):
-    search_term = str(args.get("search_term") or args.get("query") or "").strip().lower()
+    search_term = unreal_text(args.get("search_term") or args.get("query") or "").strip().lower()
     include_engine = bool(args.get("include_engine", False))
     limit = int(args.get("limit", 100))
     results = []
