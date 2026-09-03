@@ -9,14 +9,6 @@ _KNOWN_DATA_CLASS_TOKENS = (
 )
 
 
-def _asset_summary(asset):
-    return {
-        "name": get_object_name(asset),
-        "class": get_object_class_name(asset),
-        "asset_path": get_asset_package_name(asset) or get_asset_object_path(asset),
-    }
-
-
 def _data_asset_class_matches(asset_class_name):
     normalized = unreal_text(asset_class_name or "").strip().lower()
     if not normalized:
