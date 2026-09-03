@@ -6,9 +6,15 @@ import {
 	requireAtLeastOneValue,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
-export function registerWorldNavigationVolumeNamespaces(ctx: RegistrationContext) {
+export function registerWorldNavigationVolumeNamespaces(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+) {
 	const {
 		actorNameParam,
 		editorTools,

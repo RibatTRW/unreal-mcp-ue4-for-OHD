@@ -8,9 +8,15 @@ import {
 	requireAtLeastOneValue,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
-export function registerWorldEffectsSplineNamespaces(ctx: RegistrationContext) {
+export function registerWorldEffectsSplineNamespaces(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+) {
 	const {
 		actorNameParam,
 		editorTools,

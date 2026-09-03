@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import type * as editorTools from "./editor/tools.js"
 import { tryRunCommand } from "./remote-execution.js"
 
 export type NamespaceDispatchResult = { kind: "python"; command: string } | { kind: "direct"; payload: unknown }
@@ -21,16 +22,49 @@ export interface ToolNamespaceRegistrationOptions {
 
 type TextResponse = { content: Array<{ type: "text"; text: string }> }
 
+export interface RegistrationDispatch {
+	directDispatch: (payload: unknown) => NamespaceDispatchResult
+	editorTools: typeof editorTools
+	pythonDispatch: (command: string) => NamespaceDispatchResult
+	rawServerTool: (...args: any[]) => unknown
+	registerPythonTool: (
+		name: string,
+		description: string,
+		schema: Record<string, z.ZodTypeAny>,
+		buildCommand: (args: any) => string,
+	) => void
+	registerToolNamespace: (
+		name: string,
+		description: string,
+		actions: Record<string, NamespaceActionRegistration>,
+		options?: { compactParamsSchema?: boolean },
+	) => void
+	registerZeroArgPythonTool: (name: string, description: string, buildCommand: () => string) => void
+	textResponse: (text: string) => TextResponse
+	toolDescription: (name: string) => string
+	toolNamespaceRegistry: Map<string, { description: string; supportedActions: string[] }>
+}
+
 interface DispatchHelperOptions {
+	editorTools: typeof editorTools
 	rawServerRegisterTool: (name: string, config: Record<string, unknown>, cb: (...args: any[]) => unknown) => unknown
 	rawServerTool: (...args: any[]) => unknown
 	recordSchema: z.ZodRecord<z.ZodString, z.ZodAny>
 	textResponse: (text: string) => TextResponse
+	toolDescription: (name: string) => string
 	toolNamespaceRegistry: Map<string, { description: string; supportedActions: string[] }>
 }
 
-export function createDispatchHelpers(options: DispatchHelperOptions) {
-	const { rawServerRegisterTool, rawServerTool, recordSchema, textResponse, toolNamespaceRegistry } = options
+export function createDispatchHelpers(options: DispatchHelperOptions): RegistrationDispatch {
+	const {
+		editorTools,
+		rawServerRegisterTool,
+		rawServerTool,
+		recordSchema,
+		textResponse,
+		toolDescription,
+		toolNamespaceRegistry,
+	} = options
 
 	const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
 	const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
@@ -206,9 +240,14 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 
 	return {
 		directDispatch,
+		editorTools,
 		pythonDispatch,
+		rawServerTool,
 		registerPythonTool,
 		registerToolNamespace,
 		registerZeroArgPythonTool,
+		textResponse,
+		toolDescription,
+		toolNamespaceRegistry,
 	}
 }

@@ -11,7 +11,11 @@ import {
 	searchAssetsShape,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import {
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
 const assetMutationParamsSchema = requireAtLeastOneValue(
 	requireAtLeastOneValue(
@@ -34,7 +38,9 @@ const assetMutationParamsSchema = requireAtLeastOneValue(
 	"Provide one of source_asset_path, source_path, asset_path, or path. Provide destination_asset_path, target_asset_path, destination_path, new_name, or name for the new asset location.",
 )
 
-export function registerCoreAssetActorNamespaces(ctx: RegistrationContext) {
+export function registerCoreAssetActorNamespaces(
+	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
+) {
 	const {
 		actorNameParam,
 		assetPathListParam,

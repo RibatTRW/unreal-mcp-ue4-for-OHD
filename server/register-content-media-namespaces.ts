@@ -5,9 +5,9 @@ import {
 	requireAtLeastOneValue,
 	searchAssetsShape,
 } from "./namespace-action-schema-fragments.js"
-import { RegistrationContext } from "./registration-context.js"
+import { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
 
-export function registerContentMediaNamespaces(ctx: RegistrationContext) {
+export function registerContentMediaNamespaces(ctx: RegistrationParams & RegistrationDispatch) {
 	const {
 		editorTools,
 		optionalStringParam,
