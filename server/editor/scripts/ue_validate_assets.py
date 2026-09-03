@@ -86,7 +86,7 @@ def parse_asset_paths(asset_paths_input):
         parsed = decode_template_json(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
-        if isinstance(parsed, str):
+        if isinstance(parsed, _string_types):
             asset_paths_input = parsed
     except Exception:
         pass
@@ -95,7 +95,7 @@ def parse_asset_paths(asset_paths_input):
         parsed = json.loads(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
-        if isinstance(parsed, str):
+        if isinstance(parsed, _string_types):
             asset_paths_input = parsed
     except Exception:
         pass
@@ -104,12 +104,12 @@ def parse_asset_paths(asset_paths_input):
         parsed = ast.literal_eval(asset_paths_input)
         if isinstance(parsed, list):
             return parsed
-        if isinstance(parsed, str):
+        if isinstance(parsed, _string_types):
             asset_paths_input = parsed
     except Exception:
         pass
 
-    if isinstance(asset_paths_input, str):
+    if isinstance(asset_paths_input, _string_types):
         if "," in asset_paths_input:
             return [
                 path.strip()

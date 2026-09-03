@@ -31,7 +31,7 @@ def _resolve_widget_runtime_class(widget_name):
     if widget_path:
         candidate_paths.append(widget_path)
 
-    if isinstance(widget_name, str) and widget_name.startswith("/"):
+    if isinstance(widget_name, _string_types) and widget_name.startswith("/"):
         candidate_paths.append(widget_name)
 
     try:

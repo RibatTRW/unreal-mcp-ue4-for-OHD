@@ -18,6 +18,12 @@ except NameError:
     _text_type = str
 
 
+try:
+    _string_types = basestring
+except NameError:
+    _string_types = str
+
+
 def unreal_text(value):
     """Coerce an Unreal-exposed value to text without ascii-only str().
 

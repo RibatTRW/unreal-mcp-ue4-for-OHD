@@ -26,7 +26,7 @@ def resolve_class_reference(class_name, module_hints=None):
     if not class_name:
         return None
 
-    if not isinstance(class_name, str):
+    if not isinstance(class_name, _string_types):
         return class_name
 
     try:
@@ -136,7 +136,7 @@ def load_asset_by_identifier(identifier, allowed_class_names=None):
         raise ValueError("Asset identifier is required")
 
     direct_candidates = [identifier]
-    if isinstance(identifier, str) and identifier.startswith("/") and "." not in identifier.rsplit("/", 1)[-1]:
+    if isinstance(identifier, _string_types) and identifier.startswith("/") and "." not in identifier.rsplit("/", 1)[-1]:
         direct_candidates.append(
             "{0}.{1}".format(identifier, identifier.rsplit("/", 1)[-1])
         )

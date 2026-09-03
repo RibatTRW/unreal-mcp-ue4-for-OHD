@@ -172,14 +172,14 @@ def set_pin_default(pin, value):
         set_object_property(pin, "default_value", str(value))
         return
 
-    if isinstance(value, str) and value.startswith("/"):
+    if isinstance(value, _string_types) and value.startswith("/"):
         loaded_asset = unreal.EditorAssetLibrary.load_asset(value)
         if loaded_asset:
             set_object_property(pin, "default_object", loaded_asset)
             set_object_property(pin, "default_value", "")
             return
 
-    if isinstance(value, str):
+    if isinstance(value, _string_types):
         set_object_property(pin, "default_value", value)
         return
 
@@ -190,7 +190,7 @@ def find_blueprint_graph_node(blueprint, node_id):
     if not node_id:
         return None, None
 
-    normalized_node_id = str(node_id)
+    normalized_node_id = unreal_text(node_id)
     for graph in get_blueprint_graphs(blueprint):
         for node in get_graph_nodes(graph):
             if (

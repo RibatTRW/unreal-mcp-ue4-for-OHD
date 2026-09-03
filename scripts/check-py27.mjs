@@ -31,6 +31,10 @@ const checks = [
 		name: "ascii-only str() on registry values (use unreal_text)",
 		pattern: /\bstr\(\s*asset\w*\./,
 	},
+	{
+		name: "isinstance with bare str misses unicode on py2 (use _string_types)",
+		pattern: /\bisinstance\([^)]*\bstr\b/,
+	},
 ]
 
 function collectPyFiles(dir) {

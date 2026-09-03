@@ -64,10 +64,10 @@ def get_actor_property_report(actor):
         if property_value is None:
             continue
 
-        if isinstance(property_value, (str, int, float, bool)):
+        if isinstance(property_value, (_string_types, int, float, bool)):
             common_properties[property_name] = property_value
         else:
-            common_properties[property_name] = str(property_value)
+            common_properties[property_name] = unreal_text(property_value)
 
     actor_report["properties"] = common_properties
     return actor_report
