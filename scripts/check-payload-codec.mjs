@@ -16,8 +16,9 @@ const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, "..")
 const toolsDirectPath = path.join(repoRoot, "dist", "editor", "tools-direct.js")
 const toolsDomainPath = path.join(repoRoot, "dist", "editor", "tools-domain.js")
+const scriptRendererPath = path.join(repoRoot, "dist", "editor", "script-renderer.js")
 
-for (const required of [toolsDirectPath, toolsDomainPath]) {
+for (const required of [toolsDirectPath, toolsDomainPath, scriptRendererPath]) {
 	if (!fs.existsSync(required)) {
 		console.error("check-payload-codec: dist/ is missing — run `npm run build` first.")
 		process.exit(2)
@@ -27,6 +28,7 @@ for (const required of [toolsDirectPath, toolsDomainPath]) {
 const require = createRequire(import.meta.url)
 const direct = require(toolsDirectPath)
 const domain = require(toolsDomainPath)
+const { renderEditorScript, jsonArg } = require(scriptRendererPath)
 
 // Brutal by design: quotes, backslashes, JS-template and Python-quote
 // breakage attempts, newlines, non-ascii, and a triple-quote sequence.
@@ -149,6 +151,32 @@ for (const [label, build] of [
 	["UEPIETool", domain.UEPIETool],
 ]) {
 	checkBlobs(label, build("probe_op", { probe_key: ADV }), ["probe_op", { probe_key: ADV }])
+}
+
+// Renderer failure path: a withheld required arg throws naming the file and arg.
+try {
+	renderEditorScript("./scripts/ue_get_asset_info.py", {})
+	failures.push("renderEditorScript.withheld-arg: expected a missing-arg throw, rendered clean")
+} catch (error) {
+	const message = error instanceof Error ? error.message : String(error)
+	if (!message.includes("ue_get_asset_info.py") || !message.includes("asset_path")) {
+		failures.push(`renderEditorScript.withheld-arg: error names neither file nor arg: ${message.slice(0, 120)}`)
+	}
+}
+
+// Renderer contract: extra provided values stay ignored.
+try {
+	const rendered = renderEditorScript("./scripts/ue_get_asset_info.py", {
+		asset_path: jsonArg("/Game/A"),
+		spare_not_in_template: jsonArg("/Game/B"),
+	})
+	if (rendered.includes("${")) {
+		failures.push("renderEditorScript.extra-var: rendered payload still contains an unrendered ${...}")
+	}
+} catch (error) {
+	failures.push(
+		`renderEditorScript.extra-var: extra values must be ignored, threw: ${error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120)}`,
+	)
 }
 
 if (failures.length > 0) {
