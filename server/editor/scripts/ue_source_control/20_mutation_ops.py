@@ -101,17 +101,18 @@ def _run_file_operation(
 
 
 def _revert_and_reload_packages(args):
-    packages = _coerce_string_list(args.get("packages"), "packages")
     payload = {
         "operation": "revert_and_reload_packages",
-        "packages": packages,
-        "count": len(packages),
-        "revert_all": bool(args.get("revert_all", False)),
-        "reload_world": bool(args.get("reload_world", False)),
     }
     helper, unavailable = _require_provider(payload, "revert_and_reload_packages")
     if unavailable is not None:
         return unavailable
+
+    packages = _coerce_string_list(args.get("packages"), "packages")
+    payload["packages"] = packages
+    payload["count"] = len(packages)
+    payload["revert_all"] = bool(args.get("revert_all", False))
+    payload["reload_world"] = bool(args.get("reload_world", False))
 
     success = bool(
         _call_helper_method(

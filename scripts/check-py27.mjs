@@ -38,7 +38,7 @@ const checks = [
 	{
 		name: "bare str() coerces with ascii on py2 (use unreal_text)",
 		pattern: /\bstr\(/,
-		allow: [/\bstr\(\s*\)/, /\.decode\(/],
+		allow: [/\bstr\(\s*\)/, /\bstr\(value\)\.decode\(/],
 	},
 	{
 		name: "isinstance with bare str misses unicode on py2 (use _string_types)",
