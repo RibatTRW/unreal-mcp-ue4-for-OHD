@@ -13,6 +13,7 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	manage_editor: {
@@ -81,9 +82,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	},
 }
 
-export function registerCoreEditorSystemNamespaces(
+export function coreEditorSystemDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
 		assetPathListParam,
@@ -91,7 +92,6 @@ export function registerCoreEditorSystemNamespaces(
 		directDispatch,
 		editorTools,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		toRotatorRecord,
 		toVector3Record,
@@ -99,7 +99,8 @@ export function registerCoreEditorSystemNamespaces(
 	} = ctx
 	const assetPathListInputSchema = z.union([z.string(), z.array(z.string())])
 
-	registerToolNamespace("manage_editor", ctx.toolDescription("manage_editor"), {
+	return [
+		{ name: "manage_editor", actions: {
 		run_python: {
 			paramsSchema: z
 				.object({
@@ -195,9 +196,8 @@ export function registerCoreEditorSystemNamespaces(
 					),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_system", ctx.toolDescription("manage_system"), {
+		} },
+		{ name: "manage_system", actions: {
 		console_command: {
 			paramsSchema: z
 				.object({
@@ -242,9 +242,8 @@ export function registerCoreEditorSystemNamespaces(
 					editorTools.UEValidateAssets(assetPathListParam(params)),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_inspection", ctx.toolDescription("manage_inspection"), {
+		} },
+		{ name: "manage_inspection", actions: {
 		asset: {
 			paramsSchema: assetLookupSchema,
 			handler: (params) =>
@@ -297,9 +296,8 @@ export function registerCoreEditorSystemNamespaces(
 				),
 		},
 		map: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
-	})
-
-	registerToolNamespace("manage_tools", ctx.toolDescription("manage_tools"), {
+		} },
+		{ name: "manage_tools", actions: {
 		list_namespaces: {
 			handler: () =>
 				directDispatch({
@@ -353,5 +351,6 @@ export function registerCoreEditorSystemNamespaces(
 				)
 			},
 		},
-	})
+		} },
+	]
 }

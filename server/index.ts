@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { createRegistrationContext } from "./registration-context.js"
 import { registerDirectTools } from "./register-direct-tools.js"
-import { registerToolNamespaces } from "./register-namespaces.js"
+import { registerAllToolNamespaces } from "./tool-namespaces.js"
 import { shutdownRemoteExecution } from "./remote-execution.js"
 import { projectVersion } from "./version.js"
 
@@ -17,7 +17,7 @@ export const server = new McpServer({
 const registrationContext = createRegistrationContext(server)
 
 registerDirectTools(registrationContext)
-registerToolNamespaces(registrationContext)
+registerAllToolNamespaces(registrationContext)
 
 server.resource("docs", "docs://unreal_python", async () => {
 	return {

@@ -22,15 +22,15 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerContentWidgetNamespaces(
+export function contentWidgetDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		toColorArray,
 		toVector2Array,
@@ -66,10 +66,8 @@ export function registerContentWidgetNamespaces(
 		z_order: z.number().optional(),
 	}
 
-	registerToolNamespace(
-		"manage_widget",
-		ctx.toolDescription("manage_widget"),
-		{
+	return [
+		{ name: "manage_widget", actions: {
 			create_widget_blueprint: {
 				paramsSchema: requireAtLeastOneValue(
 					strictObject({
@@ -349,7 +347,6 @@ export function registerContentWidgetNamespaces(
 						),
 					),
 			},
-		},
-		{ compactParamsSchema: true },
-	)
+		}, options: { compactParamsSchema: true } },
+	]
 }

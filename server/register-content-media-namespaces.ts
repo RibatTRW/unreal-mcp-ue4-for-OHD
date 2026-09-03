@@ -6,13 +6,13 @@ import {
 	searchAssetsShape,
 } from "./namespace-action-schema-fragments.js"
 import { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerContentMediaNamespaces(ctx: RegistrationParams & RegistrationDispatch) {
+export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDispatch): ToolNamespaceDescriptor[] {
 	const {
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		searchAssetsCommand,
 	} = ctx
@@ -58,7 +58,8 @@ export function registerContentMediaNamespaces(ctx: RegistrationParams & Registr
 		...sequenceBindingTargetShape,
 	}
 
-	registerToolNamespace("manage_sequence", ctx.toolDescription("manage_sequence"), {
+	return [
+		{ name: "manage_sequence", actions: {
 		sequence_support: {
 			description: "Report whether the UE4.25 SequencerScripting APIs needed by advanced sequence actions are available (the plugin ships disabled in the OHD kit; enable it first).",
 			paramsSchema: z.object({}).strict(),
@@ -230,9 +231,8 @@ export function registerContentMediaNamespaces(ctx: RegistrationParams & Registr
 			),
 			handler: (params) => pythonDispatch(editorTools.UESequenceTool("calculate_playback_time", params)),
 		},
-	})
-
-	registerToolNamespace("manage_audio", ctx.toolDescription("manage_audio"), {
+		} },
+		{ name: "manage_audio", actions: {
 		import_audio: {
 			paramsSchema: requireAtLeastOneValue(
 				z
@@ -284,5 +284,6 @@ export function registerContentMediaNamespaces(ctx: RegistrationParams & Registr
 					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
 				),
 		},
-	})
+		} },
+	]
 }

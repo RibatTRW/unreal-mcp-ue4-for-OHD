@@ -9,12 +9,14 @@ import {
 	sourceControlPackagesShape,
 } from "./namespace-action-schema-fragments.js"
 import { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerCoreSourceControlNamespaces(ctx: RegistrationParams & RegistrationDispatch) {
+export function coreSourceControlDescriptors(
+	ctx: RegistrationParams & RegistrationDispatch,
+): ToolNamespaceDescriptor[] {
 	const {
 		editorTools,
 		pythonDispatch,
-		registerToolNamespace,
 		requiredStringParam,
 		sourceControlFileListParam,
 		sourceControlFileParam,
@@ -22,10 +24,8 @@ export function registerCoreSourceControlNamespaces(ctx: RegistrationParams & Re
 		sourceControlPackageListParam,
 	} = ctx
 
-	registerToolNamespace(
-		"manage_source_control",
-		ctx.toolDescription("manage_source_control"),
-		{
+	return [
+		{ name: "manage_source_control", actions: {
 			provider_info: {
 				handler: () =>
 					pythonDispatch(editorTools.UESourceControlTool("get_source_control_provider")),
@@ -170,6 +170,6 @@ export function registerCoreSourceControlNamespaces(ctx: RegistrationParams & Re
 						}),
 					),
 			},
-		},
-	)
+		}, },
+	]
 }

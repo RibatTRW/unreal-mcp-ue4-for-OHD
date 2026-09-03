@@ -11,16 +11,16 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerWorldNavigationVolumeNamespaces(
+export function worldNavigationVolumeDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
+): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
 		editorTools,
 		optionalStringParam,
 		pythonDispatch,
-		registerToolNamespace,
 		toRotatorArray,
 		toRotatorRecord,
 		toVector3Array,
@@ -37,7 +37,8 @@ export function registerWorldNavigationVolumeNamespaces(
 		})
 		.strict()
 
-	registerToolNamespace("manage_volumes", ctx.toolDescription("manage_volumes"), {
+	return [
+		{ name: "manage_volumes", actions: {
 		spawn_trigger_volume: {
 			paramsSchema: volumeSpawnSchema,
 			handler: (params) =>
@@ -123,9 +124,8 @@ export function registerWorldNavigationVolumeNamespaces(
 					}),
 				),
 		},
-	})
-
-	registerToolNamespace("manage_navigation", ctx.toolDescription("manage_navigation"), {
+		} },
+		{ name: "manage_navigation", actions: {
 		spawn_nav_mesh_bounds_volume: {
 			paramsSchema: volumeSpawnSchema,
 			handler: (params) =>
@@ -174,5 +174,6 @@ export function registerWorldNavigationVolumeNamespaces(
 		inspect_navigation: {
 			handler: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		},
-	})
+		} },
+	]
 }

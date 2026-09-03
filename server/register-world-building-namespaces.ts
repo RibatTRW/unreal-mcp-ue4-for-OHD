@@ -5,11 +5,12 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
-export function registerWorldBuildingNamespaces(
+export function worldBuildingDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
-) {
-	const { editorTools, pythonDispatch, registerToolNamespace, worldBuildBaseSchema, worldBuildCommand } = ctx
+): ToolNamespaceDescriptor[] {
+	const { editorTools, pythonDispatch, worldBuildBaseSchema, worldBuildCommand } = ctx
 
 	const worldSchema = (shape: z.ZodRawShape) =>
 		z
@@ -105,7 +106,8 @@ export function registerWorldBuildingNamespaces(
 		handler: (params: Record<string, any>) => pythonDispatch(worldBuildCommand(operation, params)),
 	})
 
-	registerToolNamespace("manage_level", ctx.toolDescription("manage_level"), {
+	return [
+		{ name: "manage_level", actions: {
 		info: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
 		world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
 		list_actors: { handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")) },
@@ -114,9 +116,8 @@ export function registerWorldBuildingNamespaces(
 		create_pyramid: worldAction("create_pyramid", createPyramidSchema),
 		create_bridge: worldAction("create_bridge", createBridgeSchema),
 		create_town: worldAction("create_town", createTownSchema),
-	})
-
-	registerToolNamespace("manage_level_structure", ctx.toolDescription("manage_level_structure"), {
+		} },
+		{ name: "manage_level_structure", actions: {
 		world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
 		create_town: worldAction("create_town", createTownSchema),
 		construct_house: worldAction("construct_house", constructHouseSchema),
@@ -127,20 +128,19 @@ export function registerWorldBuildingNamespaces(
 		create_suspension_bridge: worldAction("create_suspension_bridge", createSuspensionBridgeSchema),
 		create_aqueduct: worldAction("create_aqueduct", createAqueductSchema),
 		create_castle_fortress: worldAction("create_castle_fortress", createCastleFortressSchema),
-	})
-
-	registerToolNamespace("manage_environment", ctx.toolDescription("manage_environment"), {
+		} },
+		{ name: "manage_environment", actions: {
 		create_town: worldAction("create_town", createTownSchema),
 		create_arch: worldAction("create_arch", createArchSchema),
 		create_staircase: worldAction("create_staircase", createStaircaseSchema),
 		create_pyramid: worldAction("create_pyramid", createPyramidSchema),
 		create_maze: worldAction("create_maze", createMazeSchema),
-	})
-
-	registerToolNamespace("manage_geometry", ctx.toolDescription("manage_geometry"), {
+		} },
+		{ name: "manage_geometry", actions: {
 		create_wall: worldAction("create_wall", createWallSchema),
 		create_arch: worldAction("create_arch", createArchSchema),
 		create_staircase: worldAction("create_staircase", createStaircaseSchema),
 		create_pyramid: worldAction("create_pyramid", createPyramidSchema),
-	})
+		} },
+	]
 }
