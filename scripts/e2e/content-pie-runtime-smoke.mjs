@@ -6,7 +6,14 @@ export async function runContentPieRuntimeScenarios(state) {
 		safeStopPie,
 		pollPieStatus,
 		widgetPath,
+		StepSkipError,
+		isUnsupportedViewportInstantiation,
 	} = state
+
+	const viewportSkipReason = (error) =>
+		error instanceof Error && error.message
+			? error.message
+			: "UserWidget instantiation is unavailable in this UE4.25 Python environment."
 
 	await runStep("Read PIE status through manage_editor", async () => {
 		await safeStopPie()
@@ -30,13 +37,22 @@ export async function runContentPieRuntimeScenarios(state) {
 	})
 
 	await runStep("Add the Widget Blueprint to the viewport", async () => {
-		const viewportResult = await callJsonTool("manage_widget", {
-			action: "add_to_viewport",
-			params: {
-				widget_name: widgetPath,
-				z_order: 5,
-			},
-		})
+		let viewportResult
+		try {
+			viewportResult = await callJsonTool("manage_widget", {
+				action: "add_to_viewport",
+				params: {
+					widget_name: widgetPath,
+					z_order: 5,
+				},
+			})
+		} catch (error) {
+			if (isUnsupportedViewportInstantiation(error)) {
+				throw new StepSkipError(viewportSkipReason(error))
+			}
+
+			throw error
+		}
 		assert(
 			viewportResult.widget_blueprint === widgetPath,
 			"manage_widget add_to_viewport returned the wrong widget blueprint path",
@@ -74,6 +90,10 @@ export async function runContentPieRuntimeScenarios(state) {
 				},
 			})
 		} catch (error) {
+			if (isUnsupportedViewportInstantiation(error)) {
+				throw new StepSkipError(viewportSkipReason(error))
+			}
+
 			assert(
 				error?.parsed?.retry_recommended === true,
 				"manage_widget add_to_viewport auto-start did not return a retry recommendation",
@@ -90,6 +110,12 @@ export async function runContentPieRuntimeScenarios(state) {
 				widget_name: widgetPath,
 				z_order: 6,
 			},
+		}).catch((error) => {
+			if (isUnsupportedViewportInstantiation(error)) {
+				throw new StepSkipError(viewportSkipReason(error))
+			}
+
+			throw error
 		})
 		assert(viewportResult.widget_blueprint === widgetPath, "manage_widget add_to_viewport retry returned the wrong widget blueprint path")
 		const pieStatus = await pollPieStatus(true)

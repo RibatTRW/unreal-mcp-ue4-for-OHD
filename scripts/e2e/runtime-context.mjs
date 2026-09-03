@@ -136,6 +136,19 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 		)
 	}
 
+	const isUnsupportedViewportInstantiation = (error) => {
+		if (error instanceof ToolFailureError) {
+			if (error.parsed?.unsupported_capability === "widget_viewport_instantiation") {
+				return true
+			}
+		}
+
+		return (
+			error instanceof Error &&
+			error.message.includes("Could not instantiate a UserWidget in this UE4.25 Python environment.")
+		)
+	}
+
 	const safeDeleteActor = async (actorName) => {
 		try {
 			await callJsonTool("manage_actor", {
@@ -253,6 +266,7 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 		safeRevertSourceControlFiles,
 		pollPieStatus,
 		isUnsupportedWidgetTreeAuthoring,
+		isUnsupportedViewportInstantiation,
 		firstAssetPathFromSearch,
 		projectRepoHasGitRemote,
 		StepSkipError,

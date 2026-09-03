@@ -101,6 +101,7 @@ def add_widget_to_viewport(args):
         return {
             "success": False,
             "message": "Could not instantiate a UserWidget in this UE4.25 Python environment.",
+            "unsupported_capability": "widget_viewport_instantiation",
         }
 
     try:
@@ -157,36 +158,31 @@ def _start_pie_for_viewport(timeout_seconds, poll_interval):
         status["already_running"] = True
         return status
 
-    requested = False
-    if not status["is_pie_running"]:
-        starter = getattr(unreal.EditorLevelLibrary, "editor_play_simulate", None)
-        if not callable(starter):
-            return {
-                "success": False,
-                "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.25 Python environment.",
-            }
+    if status["is_pie_running"]:
+        status["requested"] = False
+        status["transition_pending"] = True
+        return status
 
-        try:
-            starter()
-            requested = True
-        except Exception as exc:
-            return {"success": False, "message": str(exc)}
+    starter = getattr(unreal.EditorLevelLibrary, "editor_play_simulate", None)
+    if not callable(starter):
+        return {
+            "success": False,
+            "message": "EditorLevelLibrary.editor_play_simulate is not exposed in this UE4.25 Python environment.",
+        }
 
-    deadline = time.time() + max(0.1, timeout_seconds)
-    while time.time() <= deadline:
-        status = _get_viewport_pie_status()
-        if status.get("game_world_name"):
-            status["already_running"] = False
-            status["requested"] = requested
-            status["transition_pending"] = False
-            return status
-        time.sleep(max(0.01, poll_interval))
+    try:
+        starter()
+    except Exception as exc:
+        return {"success": False, "message": str(exc)}
 
+    # Fire-and-forget (run 8/21 diagnosis): never sleep-poll the game
+    # thread here. The caller answers retry_recommended until a later
+    # is_pie_running poll observes the game world.
     status = _get_viewport_pie_status()
-    status["requested"] = requested
+    status["requested"] = True
     status["transition_pending"] = not status.get("game_world_name")
     if status["transition_pending"]:
-        status["message"] = "PIE start was requested, but no game world became available before the timeout."
+        status["message"] = "PIE start was requested, but no game world is available yet."
     return status
 
 
