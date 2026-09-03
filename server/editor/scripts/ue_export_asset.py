@@ -34,8 +34,12 @@ def export_asset(asset_path, destination_path=None, overwrite=True):
     if export_file_path:
         export_file_path = os.path.abspath(export_file_path)
         parent_directory = os.path.dirname(export_file_path)
-        if parent_directory:
-            os.makedirs(parent_directory, exist_ok=True)
+        if parent_directory and not os.path.exists(parent_directory):
+            try:
+                os.makedirs(parent_directory)
+            except OSError:
+                if not os.path.isdir(parent_directory):
+                    raise
         if os.path.exists(export_file_path) and not bool(overwrite):
             return {
                 "success": False,

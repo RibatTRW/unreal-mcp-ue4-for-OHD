@@ -28,6 +28,10 @@ const checks = [
 	{ name: "async def", pattern: /^\s*async\s+def\b/ },
 	{ name: "walrus operator", pattern: /:=/ },
 	{
+		name: "os.makedirs exist_ok kwarg is py3-only (use try/except OSError)",
+		pattern: /makedirs\([^)]*\bexist_ok\b/,
+	},
+	{
 		name: "ascii-only str() on registry values (use unreal_text)",
 		pattern: /\bstr\(\s*asset\w*\./,
 	},
