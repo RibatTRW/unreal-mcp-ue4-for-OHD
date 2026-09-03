@@ -39,7 +39,7 @@ function substituteTemplateArgs(
 }
 
 function readWithPrelude(filePath: string, extraPrelude = ""): string {
-	return [editorPreludes.compat, extraPrelude, readEditorScript(filePath)].filter(Boolean).join("\n\n")
+	return [editorPreludes.textCodec, editorPreludes.objectAccess, editorPreludes.assetResolution, extraPrelude, readEditorScript(filePath)].filter(Boolean).join("\n\n")
 }
 
 export function renderEditorScript(

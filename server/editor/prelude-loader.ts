@@ -14,22 +14,29 @@ export function readEditorScript(filePath: string): string {
  */
 const preludeManifest: Record<string, string[]> = {
 	ue_actor: ["00_transforms.py", "10_query_ops.py", "20_spawn_ops.py", "30_mutation_ops.py"],
+	ue_asset_resolution: [
+		"04_project_input_helpers.py",
+		"11_widget_editing.py",
+		"12_widget_creation.py",
+		"20_asset_blueprint_persistence.py",
+		"25_actor_widget_reporting.py",
+		"30_material_component_reporting.py",
+		"30_material_helpers.py",
+		"31_physics_shape_helpers.py",
+	],
 	ue_blueprint: ["00_helpers.py", "10_asset_lifecycle.py", "20_component_ops.py"],
-	ue_compat: [
-		"00_core.py",
+	ue_text_codec: ["00_text_codec.py"],
+	ue_object_access: [
+		"00_object_probe.py",
 		"01_editor_world.py",
 		"02_asset_package_helpers.py",
 		"03_object_property_helpers.py",
-		"04_project_input_helpers.py",
 		"09_widget_class_helpers.py",
 		"10_widget_tree_access.py",
 		"10_widget_tree_search.py",
-		"11_widget_editing.py",
-		"12_widget_creation.py",
 		"18_blueprint_component_lookup.py",
 		"18_blueprint_runtime_helpers.py",
 		"19_asset_lookup.py",
-		"20_asset_blueprint_persistence.py",
 		"21_blueprint_component_helpers.py",
 		"22_blueprint_component_core.py",
 		"22_blueprint_component_creation.py",
@@ -37,10 +44,6 @@ const preludeManifest: Record<string, string[]> = {
 		"23_blueprint_graph_core.py",
 		"24_blueprint_component_graph_fallback.py",
 		"24_blueprint_graph_analysis.py",
-		"25_actor_widget_reporting.py",
-		"30_material_component_reporting.py",
-		"30_material_helpers.py",
-		"31_physics_shape_helpers.py",
 	],
 	ue_content_factory: [
 		"00_asset_factory_helpers.py",
@@ -106,7 +109,9 @@ export function buildOrderedPrelude(relativeDir: string): string {
 
 export const editorPreludes = {
 	actor: buildOrderedPrelude("./scripts/ue_actor"),
-	compat: buildOrderedPrelude("./scripts/ue_compat"),
+	textCodec: buildOrderedPrelude("./scripts/ue_text_codec"),
+	objectAccess: buildOrderedPrelude("./scripts/ue_object_access"),
+	assetResolution: buildOrderedPrelude("./scripts/ue_asset_resolution"),
 	blueprint: buildOrderedPrelude("./scripts/ue_blueprint"),
 	contentFactory: buildOrderedPrelude("./scripts/ue_content_factory"),
 	data: buildOrderedPrelude("./scripts/ue_data"),
