@@ -10,8 +10,9 @@ def add_text_block_to_widget(args):
 
     try:
         widget_blueprint = _load_widget_blueprint(widget_name)
-        widget_tree, root_widget = _ensure_root_canvas(widget_blueprint)
-        root_widget = require_panel_widget(root_widget, get_widget_name(root_widget))
+        layout_parent = ensure_canvas_parent_for_layout(widget_blueprint)
+        widget_tree = layout_parent["widget_tree"]
+        root_widget = layout_parent["parent_widget"]
         text_block = create_widget_instance(widget_tree, "TextBlock", text_block_name)
         slot = add_widget_to_tree(widget_tree, text_block, root_widget)
         if z_order is None:
@@ -50,8 +51,9 @@ def add_button_to_widget(args):
 
     try:
         widget_blueprint = _load_widget_blueprint(widget_name)
-        widget_tree, root_widget = _ensure_root_canvas(widget_blueprint)
-        root_widget = require_panel_widget(root_widget, get_widget_name(root_widget))
+        layout_parent = ensure_canvas_parent_for_layout(widget_blueprint)
+        widget_tree = layout_parent["widget_tree"]
+        root_widget = layout_parent["parent_widget"]
 
         button_widget = create_widget_instance(widget_tree, "Button", button_name)
         button_slot = add_widget_to_tree(widget_tree, button_widget, root_widget)
