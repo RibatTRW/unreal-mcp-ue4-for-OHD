@@ -36,7 +36,7 @@ def get_asset_references(asset_path):
             seen.add(object_path)
             references.append(
                 {
-                    "name": str(asset.asset_name),
+                    "name": unreal_text(asset.asset_name),
                     "class": get_asset_class_name(asset),
                     "path": object_path,
                 }
@@ -47,7 +47,7 @@ def get_asset_references(asset_path):
 
 def main():
     references = get_asset_references("${asset_path}")
-    print(json.dumps(references))
+    print(json.dumps(references, ensure_ascii=True))
 
 
 if __name__ == "__main__":

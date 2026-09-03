@@ -27,6 +27,10 @@ const checks = [
 	{ name: "yield from", pattern: /\byield\s+from\b/ },
 	{ name: "async def", pattern: /^\s*async\s+def\b/ },
 	{ name: "walrus operator", pattern: /:=/ },
+	{
+		name: "ascii-only str() on registry values (use unreal_text)",
+		pattern: /\bstr\(\s*asset\w*\./,
+	},
 ]
 
 function collectPyFiles(dir) {

@@ -3,14 +3,14 @@ def get_asset_class_name(asset_or_data):
         if hasattr(asset_or_data, "asset_class_path"):
             asset_class_path = asset_or_data.asset_class_path
             if hasattr(asset_class_path, "asset_name"):
-                return str(asset_class_path.asset_name)
-            return str(asset_class_path)
+                return unreal_text(asset_class_path.asset_name)
+            return unreal_text(asset_class_path)
     except Exception:
         pass
 
     try:
         if hasattr(asset_or_data, "asset_class"):
-            return str(asset_or_data.asset_class)
+            return unreal_text(asset_or_data.asset_class)
     except Exception:
         pass
 
@@ -27,7 +27,7 @@ def get_asset_class_name(asset_or_data):
 def get_asset_object_path(asset_or_data):
     try:
         if hasattr(asset_or_data, "object_path"):
-            return str(asset_or_data.object_path)
+            return unreal_text(asset_or_data.object_path)
     except Exception:
         pass
 
@@ -41,7 +41,7 @@ def normalize_asset_reference_path(path_value):
     if not path_value:
         return ""
 
-    normalized = str(path_value).strip()
+    normalized = unreal_text(path_value).strip()
     if not normalized:
         return ""
 
@@ -94,7 +94,7 @@ def get_asset_package_name(asset_or_data):
 def get_asset_package_path(asset_or_data):
     try:
         if hasattr(asset_or_data, "package_path"):
-            return str(asset_or_data.package_path)
+            return unreal_text(asset_or_data.package_path)
     except Exception:
         pass
 

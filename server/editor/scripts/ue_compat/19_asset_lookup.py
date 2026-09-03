@@ -5,7 +5,7 @@ def get_object_name(target):
     try:
         return target.get_name()
     except Exception:
-        return str(target)
+        return unreal_text(target)
 
 
 def get_object_class_name(target):
@@ -78,12 +78,12 @@ def find_asset_candidates(identifier, allowed_class_names=None):
     if not identifier:
         return []
 
-    identifier_lower = str(identifier).lower()
+    identifier_lower = unreal_text(identifier).lower()
     asset_registry = get_asset_registry()
     matches = []
 
     for asset_data in asset_registry.get_all_assets():
-        asset_name = str(asset_data.asset_name)
+        asset_name = unreal_text(asset_data.asset_name)
         object_path = get_asset_object_path(asset_data)
         package_name = get_asset_package_name(asset_data)
         package_path = get_asset_package_path(asset_data)
@@ -191,7 +191,7 @@ def get_asset_package_path_for_create(content_path):
     if not content_path:
         return "/Game"
 
-    normalized = str(content_path).strip()
+    normalized = unreal_text(content_path).strip()
     if not normalized.startswith("/"):
         normalized = "/Game/{0}".format(normalized.strip("/"))
 
@@ -202,7 +202,7 @@ def split_asset_name_and_path(asset_name, default_path):
     if not asset_name:
         raise ValueError("Asset name is required")
 
-    normalized = str(asset_name).strip()
+    normalized = unreal_text(asset_name).strip()
     if normalized.startswith("/"):
         package_path, leaf_name = normalized.rsplit("/", 1)
         return leaf_name, package_path

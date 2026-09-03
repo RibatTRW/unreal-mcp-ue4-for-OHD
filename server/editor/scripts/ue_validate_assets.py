@@ -21,7 +21,7 @@ def validate_assets(
         all_assets = asset_registry.get_all_assets()
         assets_to_validate = [
             get_asset_object_path(asset)
-            or "{0}/{1}".format(str(asset.package_path), str(asset.asset_name))
+            or "{0}/{1}".format(unreal_text(asset.package_path), unreal_text(asset.asset_name))
             for asset in all_assets[:100]
         ]
 
@@ -59,7 +59,7 @@ def validate_assets(
             )
         except Exception as e:
             validation_results["invalid_assets"].append(
-                {"path": asset_path, "error": str(e)}
+                {"path": asset_path, "error": unreal_text(e)}
             )
 
     validation_results["validation_summary"] = {
@@ -125,7 +125,7 @@ def parse_asset_paths(asset_paths_input):
 
 def main():
     result = validate_assets(parse_asset_paths("${asset_paths}"))
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":

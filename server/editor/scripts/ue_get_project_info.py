@@ -20,9 +20,9 @@ def get_project_info():
     maps = []
 
     for asset in all_assets:
-        asset_name = str(asset.asset_name)
+        asset_name = unreal_text(asset.asset_name)
         asset_name_lower = asset_name.lower()
-        package_path = str(asset.package_path)
+        package_path = unreal_text(asset.package_path)
         asset_class_name = get_asset_class_name(asset).lower()
         full_path = get_asset_object_path(asset) or "{0}/{1}".format(
             package_path, asset_name
@@ -104,7 +104,7 @@ def get_project_info():
 
 def main():
     project_data = get_project_info()
-    print(json.dumps(project_data, indent=2))
+    print(json.dumps(project_data, indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":

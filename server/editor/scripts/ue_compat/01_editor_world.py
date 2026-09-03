@@ -77,7 +77,7 @@ def get_streaming_level_names(world):
     for streaming_level in streaming_levels:
         try:
             if hasattr(streaming_level, "get_world_asset_package_name"):
-                name = str(streaming_level.get_world_asset_package_name())
+                name = unreal_text(streaming_level.get_world_asset_package_name())
                 if name:
                     names.append(name)
                     continue
@@ -85,7 +85,7 @@ def get_streaming_level_names(world):
             pass
 
         try:
-            name = str(streaming_level.get_editor_property("package_name_to_load"))
+            name = unreal_text(streaming_level.get_editor_property("package_name_to_load"))
             if name:
                 names.append(name)
                 continue

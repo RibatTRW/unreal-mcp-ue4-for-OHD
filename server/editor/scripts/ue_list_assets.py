@@ -17,7 +17,7 @@ def list_assets(root_path=None, recursive=True, limit=None):
         except TypeError:
             assets = unreal.EditorAssetLibrary.list_assets(normalized_root, is_recursive)
 
-    normalized_assets = [str(asset_path) for asset_path in (assets or []) if asset_path]
+    normalized_assets = [unreal_text(asset_path) for asset_path in (assets or []) if asset_path]
     total_found = len(normalized_assets)
 
     normalized_limit = None
@@ -44,7 +44,7 @@ def main():
     root_path = decode_template_json("""${root_path}""")
     recursive = decode_template_json("""${recursive}""")
     limit = decode_template_json("""${limit}""")
-    print(json.dumps(list_assets(root_path, recursive, limit), indent=2))
+    print(json.dumps(list_assets(root_path, recursive, limit), indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":

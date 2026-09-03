@@ -36,7 +36,7 @@ def search_data_assets(args):
 
         results.append(
             {
-                "name": str(asset_data.asset_name),
+                "name": unreal_text(asset_data.asset_name),
                 "class": asset_class_name,
                 "path": package_name,
             }

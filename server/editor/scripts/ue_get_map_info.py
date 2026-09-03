@@ -48,7 +48,7 @@ def get_map_info():
 
 def main():
     map_data = get_map_info()
-    print(json.dumps(map_data, indent=2))
+    print(json.dumps(map_data, indent=2, ensure_ascii=True))
 
 
 if __name__ == "__main__":
