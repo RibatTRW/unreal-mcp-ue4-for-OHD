@@ -1,9 +1,9 @@
 import base64
+import io
 import json
 import os
 import re
 import tempfile
-from pathlib import Path
 
 import unreal
 

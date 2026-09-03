@@ -1,13 +1,12 @@
-from typing import Any, Dict, Optional
 import json
 
 
 def search_assets(
-    search_term: str,
-    asset_class: Optional[str] = None,
-    include_engine: Optional[bool] = None,
-    limit: Optional[int] = None,
-) -> Dict[str, Any]:
+    search_term,
+    asset_class=None,
+    include_engine=None,
+    limit=None,
+):
     asset_registry = unreal.AssetRegistryHelpers.get_asset_registry()
     all_assets = asset_registry.get_all_assets()
 

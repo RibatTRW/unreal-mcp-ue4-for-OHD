@@ -1,8 +1,7 @@
-from typing import Any, Dict
 import json
 
 
-def get_map_info() -> Dict[str, Any]:
+def get_map_info():
     world = get_editor_world()
     if not world:
         return {"error": "No world loaded"}

@@ -1,13 +1,12 @@
-from typing import Dict, Optional
 import json
 
 
 def set_widget_position(
-    widget_blueprint_path: str,
-    widget_name: str,
-    position: Optional[Dict[str, float]] = None,
-    size: Optional[Dict[str, float]] = None,
-    z_order: Optional[int] = None,
+    widget_blueprint_path,
+    widget_name,
+    position=None,
+    size=None,
+    z_order=None,
 ):
     try:
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)

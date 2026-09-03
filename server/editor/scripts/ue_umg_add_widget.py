@@ -1,16 +1,15 @@
-from typing import Dict, Optional
 import json
 
 
 def add_widget(
-    widget_blueprint_path: str,
-    widget_class: str,
-    widget_name: str,
-    parent_widget_name: Optional[str] = None,
-    position: Optional[Dict[str, float]] = None,
-    size: Optional[Dict[str, float]] = None,
+    widget_blueprint_path,
+    widget_class,
+    widget_name,
+    parent_widget_name=None,
+    position=None,
+    size=None,
     background_color=None,
-    z_order: Optional[int] = None,
+    z_order=None,
 ):
     widget_blueprint = None
     widget_tree = None

@@ -1,8 +1,7 @@
-from typing import Any, Dict
 import json
 
 
-def get_world_outliner() -> Dict[str, Any]:
+def get_world_outliner():
     world = get_editor_world()
     if not world:
         return {"error": "No world loaded"}

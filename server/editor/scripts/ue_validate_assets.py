@@ -1,11 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
 import ast
 import json
 
 
 def validate_assets(
-    asset_paths: Optional[Union[str, List[str]]] = None,
-) -> Dict[str, Any]:
+    asset_paths=None,
+):
     validation_results = {
         "total_validated": 0,
         "valid_assets": [],
@@ -79,7 +78,7 @@ def validate_assets(
     return validation_results
 
 
-def parse_asset_paths(asset_paths_input: str):
+def parse_asset_paths(asset_paths_input):
     if not asset_paths_input or asset_paths_input == "null":
         return None
 

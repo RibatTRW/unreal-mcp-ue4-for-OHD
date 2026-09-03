@@ -1,19 +1,18 @@
-from typing import Dict, Optional
 import json
 
 
 def add_child_widget(
-    widget_blueprint_path: str,
-    parent_widget_name: str,
-    child_widget_class: str,
-    child_widget_name: str,
-    position: Optional[Dict[str, float]] = None,
-    size: Optional[Dict[str, float]] = None,
-    text: Optional[str] = None,
-    font_size: Optional[int] = None,
+    widget_blueprint_path,
+    parent_widget_name,
+    child_widget_class,
+    child_widget_name,
+    position=None,
+    size=None,
+    text=None,
+    font_size=None,
     color=None,
     background_color=None,
-    z_order: Optional[int] = None,
+    z_order=None,
 ):
     widget_blueprint = None
     widget_tree = None

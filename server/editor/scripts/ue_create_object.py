@@ -1,15 +1,14 @@
-from typing import Any, Dict, Optional
 import json
 
 
 def create_object(
-    object_class: str,
-    object_name: str,
-    location: Optional[Dict[str, float]] = None,
-    rotation: Optional[Dict[str, float]] = None,
-    scale: Optional[Dict[str, float]] = None,
-    properties: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    object_class,
+    object_name,
+    location=None,
+    rotation=None,
+    scale=None,
+    properties=None,
+):
     try:
         world = get_editor_world()
         if not world:

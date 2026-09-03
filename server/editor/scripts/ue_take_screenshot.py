@@ -1,4 +1,4 @@
-def take_screenshot() -> str:
+def take_screenshot():
     return take_editor_screenshot(640, 520)
 
 

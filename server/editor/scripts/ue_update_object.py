@@ -1,15 +1,14 @@
-from typing import Any, Dict, Optional
 import json
 
 
 def update_object(
-    actor_name: str,
-    location: Optional[Dict[str, float]] = None,
-    rotation: Optional[Dict[str, float]] = None,
-    scale: Optional[Dict[str, float]] = None,
-    properties: Optional[Dict[str, Any]] = None,
-    new_name: Optional[str] = None,
-) -> Dict[str, Any]:
+    actor_name,
+    location=None,
+    rotation=None,
+    scale=None,
+    properties=None,
+    new_name=None,
+):
     try:
         world = get_editor_world()
         if not world:

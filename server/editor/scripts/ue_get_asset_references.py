@@ -1,8 +1,7 @@
-from typing import Dict, List
 import json
 
 
-def get_asset_references(asset_path: str) -> List[Dict[str, str]]:
+def get_asset_references(asset_path):
     asset_registry = unreal.AssetRegistryHelpers.get_asset_registry()
     referencer_packages = []
 

@@ -1,8 +1,7 @@
-from typing import Any, Dict
 import json
 
 
-def get_project_info() -> Dict[str, Any]:
+def get_project_info():
     project_file_path = unreal.Paths.get_project_file_path()
     project_directory = unreal.Paths.project_dir()
     enabled_plugins = get_enabled_plugins()

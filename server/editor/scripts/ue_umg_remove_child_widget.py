@@ -2,9 +2,9 @@ import json
 
 
 def remove_child_widget(
-    widget_blueprint_path: str,
-    parent_widget_name: str,
-    child_widget_name: str,
+    widget_blueprint_path,
+    parent_widget_name,
+    child_widget_name,
 ):
     try:
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)
