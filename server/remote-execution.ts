@@ -1,13 +1,22 @@
 import os from "node:os"
 
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
+import type {
+	IRemoteExecutionMessageCommandOutputData,
+	RemoteExecutionNode,
+} from "unreal-remote-execution"
+
+import {
+	ConnectionSession,
+	DEFAULT_RETRY_COUNT,
+	DEFAULT_RETRY_DELAY_MS,
+	type ConnectionTransport,
+} from "./connection-session.js"
 
 const DEFAULT_MULTICAST_TTL = 1
 const DEFAULT_MULTICAST_ADDRESS = "239.0.0.1"
 const DEFAULT_MULTICAST_PORT = 6766
 const DEFAULT_COMMAND_PORT = 6776
-const DEFAULT_RETRY_COUNT = 3
-const DEFAULT_RETRY_DELAY_MS = 2000
 
 const readIntegerEnv = (name: string, fallback: number) => {
 	const value = process.env[name]
@@ -64,163 +73,85 @@ const createRemoteExecutionConfig = () => {
 	}
 }
 
-let remoteExecution: RemoteExecution | undefined = undefined
-let remoteExecutionStartPromise: Promise<void> | undefined = undefined
-let remoteConnectionPromise: Promise<RemoteExecution> | undefined = undefined
+// Real-transport adapter: thin wrapper satisfying the session's transport
+// seam with the live editor library. All policy lives in
+// connection-session.ts; this file owns config + singleton lifecycle only.
+class RealRemoteExecutionTransport implements ConnectionTransport {
+	private readonly runtime: RemoteExecution
 
-const ensureRemoteExecutionStarted = async () => {
-	if (!remoteExecution) {
-		const { bindAddress, commandAddress, commandPort, config } = createRemoteExecutionConfig()
-		remoteExecution = new RemoteExecution(config)
-		console.error(
-			`Using Unreal Remote Execution bind address: ${bindAddress} (command: ${commandAddress}:${commandPort})`,
-		)
+	constructor(runtime: RemoteExecution) {
+		this.runtime = runtime
 	}
 
-	if (!remoteExecutionStartPromise) {
-		const runtime = remoteExecution
-		remoteExecutionStartPromise = runtime
-			.start()
-			.catch((error) => {
-				if (remoteExecution === runtime) {
-					remoteExecution = undefined
-				}
-				throw error
-			})
-			.finally(() => {
-				remoteExecutionStartPromise = undefined
-			})
+	start(): Promise<void> {
+		return this.runtime.start()
 	}
 
-	await remoteExecutionStartPromise
-	return remoteExecution!
+	stop(): void {
+		this.runtime.stop()
+	}
+
+	hasCommandConnection(): boolean {
+		return this.runtime.hasCommandConnection()
+	}
+
+	async openCommandConnection(node: RemoteExecutionNode): Promise<void> {
+		await this.runtime.openCommandConnection(node)
+	}
+
+	closeCommandConnection(): void {
+		this.runtime.closeCommandConnection()
+	}
+
+	async getFirstRemoteNode(pingInterval?: number, timeoutMs?: number): Promise<RemoteExecutionNode> {
+		return this.runtime.getFirstRemoteNode(pingInterval, timeoutMs)
+	}
+
+	async runCommand(command: string): Promise<IRemoteExecutionMessageCommandOutputData> {
+		return this.runtime.runCommand(command)
+	}
 }
 
-const connectWithRetry = async (
-	maxRetries: number = readIntegerEnv("UNREAL_MCP_RETRY_COUNT", DEFAULT_RETRY_COUNT),
-	retryDelay: number = readIntegerEnv("UNREAL_MCP_RETRY_DELAY_MS", DEFAULT_RETRY_DELAY_MS),
-) => {
-	const runtime = await ensureRemoteExecutionStarted()
-	let lastError: unknown = undefined
-
-	for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
-		try {
-			const node = await runtime.getFirstRemoteNode(1000, 5000)
-			await runtime.openCommandConnection(node)
-
-			const result = await runtime.runCommand('print("rrmcp:init")')
-			if (!result.success) {
-				throw new Error(`Failed to run command: ${JSON.stringify(result.result)}`)
-			}
-
-			return runtime
-		} catch (error) {
-			lastError = error
-			console.error(`Connection attempt ${attempt} failed:`, error)
-
-			try {
-				if (runtime.hasCommandConnection()) {
-					runtime.closeCommandConnection()
-				}
-			} catch (closeError) {
-				console.error("Failed to close Unreal command connection after a failed attempt:", closeError)
-			}
-
-			if (attempt < maxRetries) {
-				console.error(`Retrying in ${retryDelay}ms...`)
-				await new Promise((resolve) => setTimeout(resolve, retryDelay))
-				retryDelay = Math.min(retryDelay * 1.5, 10000)
-			}
-		}
-	}
-
-	throw lastError instanceof Error
-		? lastError
-		: new Error("Unable to connect to your Unreal Engine Editor after multiple attempts")
+const createSessionTransport = () => {
+	const { bindAddress, commandAddress, commandPort, config } = createRemoteExecutionConfig()
+	console.error(
+		`Using Unreal Remote Execution bind address: ${bindAddress} (command: ${commandAddress}:${commandPort})`,
+	)
+	return new RealRemoteExecutionTransport(new RemoteExecution(config))
 }
 
-const ensureRemoteConnection = async () => {
-	if (remoteExecution?.hasCommandConnection()) {
-		return remoteExecution
-	}
+let session: ConnectionSession | undefined = undefined
 
-	if (!remoteConnectionPromise) {
-		remoteConnectionPromise = connectWithRetry().finally(() => {
-			if (!remoteExecution?.hasCommandConnection()) {
-				remoteConnectionPromise = undefined
-			}
+const getSharedSession = () => {
+	if (!session) {
+		session = new ConnectionSession({
+			transport: createSessionTransport(),
+			createTransport: createSessionTransport,
+			readRetryPolicy: () => ({
+				maxRetries: readIntegerEnv("UNREAL_MCP_RETRY_COUNT", DEFAULT_RETRY_COUNT),
+				retryDelayMs: readIntegerEnv("UNREAL_MCP_RETRY_DELAY_MS", DEFAULT_RETRY_DELAY_MS),
+			}),
 		})
 	}
 
-	return remoteConnectionPromise
+	return session
 }
 
 export const shutdownRemoteExecution = async () => {
-	const runtime = remoteExecution
-	remoteExecution = undefined
-	remoteExecutionStartPromise = undefined
-	remoteConnectionPromise = undefined
+	const runtime = session
+	session = undefined
 
 	if (!runtime) {
 		return
 	}
 
-	try {
-		if (runtime.hasCommandConnection()) {
-			runtime.closeCommandConnection()
-		}
-	} catch (error) {
-		console.error("Failed to close Unreal command connection during shutdown:", error)
-	}
-
-	try {
-		runtime.stop()
-	} catch (error) {
-		console.error("Failed to stop Unreal Remote Execution during shutdown:", error)
-	}
+	await runtime.shutdown()
 }
 
 export const tryRunCommand = async (command: string): Promise<string> => {
-	const runtime = await ensureRemoteConnection()
-
-	try {
-		const result = await runtime.runCommand(command)
-		if (!result.success) {
-			throw new Error(`Command failed with: ${result.result}`)
-		}
-
-		return result.output.map((line) => line.output).join("\n")
-	} catch (error) {
-		try {
-			if (runtime.hasCommandConnection()) {
-				runtime.closeCommandConnection()
-			}
-		} catch (closeError) {
-			console.error("Failed to close stale Unreal command connection:", closeError)
-		}
-
-		remoteConnectionPromise = undefined
-		const retryRuntime = await ensureRemoteConnection()
-		const retryResult = await retryRuntime.runCommand(command)
-		if (!retryResult.success) {
-			throw error instanceof Error ? error : new Error(String(error))
-		}
-
-		return retryResult.output.map((line) => line.output).join("\n")
-	}
+	return getSharedSession().runCommand(command)
 }
 
 export const discoverPath = async (command: string, errorMessage: string) => {
-	const output = await tryRunCommand(command)
-	const lines = output
-		.split(/\r?\n/)
-		.map((line) => line.trim())
-		.filter(Boolean)
-	const discoveredPath = lines.length > 0 ? lines[lines.length - 1] : ""
-
-	if (!discoveredPath || discoveredPath === "None") {
-		throw new Error(errorMessage)
-	}
-
-	return discoveredPath
+	return getSharedSession().discoverPath(command, errorMessage)
 }
