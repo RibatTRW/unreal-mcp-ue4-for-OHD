@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
+import { isRecoverableConnectionError } from "./connection-session.js"
 import { projectVersion } from "./version.js"
 
 const cliArgs = process.argv.slice(2)
@@ -17,14 +18,12 @@ let shutdownRemoteExecution: (() => Promise<void>) | undefined
 // restart, or a wedged PIE start) surfaces as an uncaught ECONNRESET that
 // kills the whole server process — taking every in-flight tool call and all
 // cleanup with it. Convert exactly that case into a logged, survivable
-// event; the retry logic in remote-execution.ts re-establishes the command
+// event; the retry logic in connection-session.ts re-establishes the command
 // connection on the next command. Anything else still crashes loudly.
+// Which errors count as recoverable is session policy
+// (isRecoverableConnectionError); this wiring just delivers the verdict.
 process.on("uncaughtException", (error: unknown) => {
-	const code =
-		typeof error === "object" && error !== null && "code" in error
-			? (error as { code?: unknown }).code
-			: undefined
-	if (code === "ECONNRESET") {
+	if (isRecoverableConnectionError(error)) {
 		console.error(
 			"Unreal editor connection was reset (ECONNRESET). Staying alive; the next command will reconnect. Detail:",
 			error instanceof Error ? error.message : String(error),

@@ -19,6 +19,7 @@
     "check:py27": "node scripts/check-py27.mjs",
     "check:compat-direction": "node scripts/check-compat-direction.mjs",
     "check:codec": "node scripts/check-payload-codec.mjs",
+    "check:session": "node scripts/check-connection-session.mjs",
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
     "publish:check": "npm run typecheck && npm run build && npm pack --dry-run",
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",
