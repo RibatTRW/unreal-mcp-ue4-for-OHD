@@ -1,4 +1,95 @@
+import base64
 import json
+import os
+
+
+TEMPLATE_STAGING_PATH = "/Game/DSHSidebarTemplate"
+TEMPLATE_BROWSER_NAME = "DSHBrowser"
+
+
+def decode_template_bytes(template_b64):
+    try:
+        return base64.b64decode(unreal_text(template_b64))
+    except Exception:
+        return None
+
+
+def staging_template_file():
+    return os.path.join(unreal.Paths.project_content_dir(), "DSHSidebarTemplate.uasset")
+
+
+def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
+    """Duplicate the golden template into a missing target.
+
+    Returns (blueprint_or_None, status) where status is "ok" (fall through
+    to the shared tree/URL/save/tab tail), "restart" (staged but undiscovered:
+    the caller must report re-run-after-restart), or "scratch" (template
+    unusable: the caller falls back to building from scratch).
+    """
+    data = decode_template_bytes(template_b64)
+    if not data:
+        warnings.append("Sidebar template payload unreadable; building from scratch.")
+        return None, "scratch"
+    duplicate = getattr(unreal.EditorAssetLibrary, "duplicate_asset", None)
+    if duplicate is None:
+        warnings.append("EditorAssetLibrary.duplicate_asset missing here; building from scratch.")
+        return None, "scratch"
+    if unreal.EditorAssetLibrary.does_asset_exist(TEMPLATE_STAGING_PATH):
+        try:
+            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_PATH))
+        except Exception:
+            staged_cleared = False
+        if not staged_cleared:
+            warnings.append("Stale staging template {0} could not be cleared; continuing anyway.".format(
+                TEMPLATE_STAGING_PATH
+            ))
+    try:
+        handle = open(staging_template_file(), "wb")
+        try:
+            handle.write(data)
+        finally:
+            handle.close()
+    except Exception as exc:
+        try:
+            os.remove(staging_template_file())
+        except Exception:
+            pass
+        warnings.append("Sidebar template could not be staged ({0}); building from scratch.".format(
+            unreal_text(exc)[:120]
+        ))
+        return None, "scratch"
+    # A runtime-dropped .uasset stays invisible to the 4.25 Asset Registry
+    # (verified live: even forced synchronous rescans don't discover it),
+    # so the first template run always stages the file and reports
+    # restart-and-rerun; the post-restart re-run duplicates from it.
+    if not unreal.EditorAssetLibrary.does_asset_exist(TEMPLATE_STAGING_PATH):
+        return None, "restart"
+    try:
+        duplicate(TEMPLATE_STAGING_PATH, unreal_text(widget_blueprint_path))
+        widget_blueprint = load_widget_blueprint(widget_blueprint_path)
+    except Exception as exc:
+        try:
+            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_PATH))
+        except Exception:
+            staged_cleared = False
+        if not staged_cleared:
+            warnings.append("Staging template {0} left behind; delete it by hand.".format(
+                TEMPLATE_STAGING_PATH
+            ))
+        warnings.append("Sidebar template duplication failed ({0}); building from scratch.".format(
+            unreal_text(exc)[:120]
+        ))
+        return None, "scratch"
+    try:
+        staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_PATH))
+    except Exception:
+        staged_cleared = False
+    if not staged_cleared:
+        warnings.append("Staging template {0} left behind; delete it by hand.".format(
+            TEMPLATE_STAGING_PATH
+        ))
+    warnings.append("Duplicated the golden sidebar template (browser + On Key Down shortcut fix included).")
+    return widget_blueprint, "ok"
 
 
 def sidebar_creation_failure(reason, widget_blueprint_path):
@@ -31,12 +122,15 @@ def setup_sidebar_tab(
     url,
     browser_widget_name=None,
     open_tab=True,
+    template_b64=None,
+    template_expected=None,
 ):
     warnings = []
     created_asset = False
     created_browser = False
     fill_applied = False
     url_set = False
+    template_used = False
     widget_blueprint = None
     browser_widget = None
     asset_missing = False
@@ -57,24 +151,46 @@ def setup_sidebar_tab(
         widget_blueprint = None
 
     if not widget_blueprint:
-        try:
-            create_result = create_umg_widget_blueprint({
-                "widget_name": widget_blueprint_path,
-                "parent_class": "EditorUtilityWidget",
-            })
-        except Exception as exc:
-            return sidebar_creation_failure(unreal_text(exc), widget_blueprint_path)
-        if not create_result.get("success"):
-            reason = create_result.get("reason") or create_result.get("message") or "unknown"
-            return sidebar_creation_failure(reason, widget_blueprint_path)
-        created_asset = True
-        try:
-            widget_blueprint = load_widget_blueprint(widget_blueprint_path)
-        except Exception as exc:
-            return {
-                "success": False,
-                "message": "Sidebar asset was created but could not be reloaded: {0}.".format(unreal_text(exc)),
-            }
+        if template_expected and not template_b64:
+            warnings.append("use_template requested but the server package ships no sidebar template; building from scratch.")
+        if template_b64:
+            widget_blueprint, template_status = setup_sidebar_from_template(
+                widget_blueprint_path, template_b64, warnings
+            )
+            if template_status == "restart":
+                return {
+                    "success": False,
+                    "message": "Sidebar template staged under /Game but not yet visible to the Asset Registry (one-time step). Restart the editor, then re-run setup_sidebar_tab with the same arguments to finish.",
+                    "template_staged": True,
+                    "warnings": warnings,
+                }
+            if template_status == "ok":
+                template_used = True
+                created_asset = True
+                if browser_widget_name and unreal_text(browser_widget_name) != TEMPLATE_BROWSER_NAME:
+                    warnings.append("Template ships the {0} browser; the requested {1} was ignored so the URL lands on the fixed browser.".format(
+                        TEMPLATE_BROWSER_NAME, unreal_text(browser_widget_name)
+                    ))
+                    browser_widget_name = None
+        if not widget_blueprint:
+            try:
+                create_result = create_umg_widget_blueprint({
+                    "widget_name": widget_blueprint_path,
+                    "parent_class": "EditorUtilityWidget",
+                })
+            except Exception as exc:
+                return sidebar_creation_failure(unreal_text(exc), widget_blueprint_path)
+            if not create_result.get("success"):
+                reason = create_result.get("reason") or create_result.get("message") or "unknown"
+                return sidebar_creation_failure(reason, widget_blueprint_path)
+            created_asset = True
+            try:
+                widget_blueprint = load_widget_blueprint(widget_blueprint_path)
+            except Exception as exc:
+                return {
+                    "success": False,
+                    "message": "Sidebar asset was created but could not be reloaded: {0}.".format(unreal_text(exc)),
+                }
 
     try:
         widget_tree = get_widget_tree(widget_blueprint)
@@ -180,6 +296,7 @@ def setup_sidebar_tab(
             "success": True,
             "asset_path": widget_blueprint_path,
             "created_asset": created_asset,
+            "template_used": template_used,
             "canvas_widget_name": canvas_name,
             "browser_widget_name": browser_label,
             "created_browser": created_browser,
@@ -201,12 +318,16 @@ def main():
     url = decode_template_json("""${url}""")
     browser_widget_name = decode_template_json("""${browser_widget_name}""")
     open_tab = decode_template_json("""${open_tab}""")
+    template_b64 = decode_template_json("""${template_b64}""")
+    template_expected = decode_template_json("""${template_expected}""")
 
     result = setup_sidebar_tab(
         widget_blueprint_path=widget_blueprint_path,
         url=url,
         browser_widget_name=browser_widget_name,
         open_tab=open_tab if open_tab is not None else True,
+        template_b64=template_b64,
+        template_expected=template_expected,
     )
     print(json.dumps(result, indent=2))
 

@@ -73,3 +73,10 @@ fs.cpSync(
 	path.join(distDir, "editor", "scripts"),
 	{ recursive: true },
 )
+// Golden EUW sidebar template (binary .uasset with the On Key Down fix);
+// read at runtime by UEUMGSetupSidebarTab for use_template setups.
+fs.cpSync(
+	path.join(rootDir, "server", "editor", "sidebar-template"),
+	path.join(distDir, "editor", "sidebar-template"),
+	{ recursive: true },
+)
