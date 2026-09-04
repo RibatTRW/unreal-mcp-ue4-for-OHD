@@ -913,7 +913,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_widget</code></td>
 		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree inspection, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use inspect_tree to verify designer contents, add_child_widget for nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.</td>
-		<td width="30%">create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.</td>
+		<td width="30%">create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. setup_sidebar_tab builds a WebBrowser sidebar tab end to end (EUW asset, browser child, URL, open tab). add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.</td>
 	</tr>
 	</tbody>
 </table>

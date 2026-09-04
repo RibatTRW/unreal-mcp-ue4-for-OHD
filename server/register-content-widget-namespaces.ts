@@ -347,6 +347,23 @@ export function contentWidgetDescriptors(
 						),
 					),
 			},
+			setup_sidebar_tab: {
+				paramsSchema: requireWidgetBlueprintSelection({
+					url: z.string().describe("Initial URL loaded by the sidebar browser (e.g. the harness web GUI address)"),
+					browser_widget_name: z.string().optional().describe("Optional browser child widget name (defaults to DSHBrowser)"),
+					name: z.string().optional().describe("Alias for browser_widget_name"),
+					open_tab: z.boolean().optional().describe("Open the widget as an editor tab when true (default)"),
+				}),
+				handler: (params) =>
+					pythonDispatch(
+						editorTools.UEUMGSetupSidebarTab(
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+							requiredStringParam(params, ["url"]),
+							optionalStringParam(params, ["browser_widget_name", "name"]),
+							typeof params.open_tab === "boolean" ? params.open_tab : undefined,
+						),
+					),
+			},
 		}, options: { compactParamsSchema: true } },
 	]
 }

@@ -1,4 +1,4 @@
-import { jsonArg, renderScript } from "./tools-base.js"
+import { editorPreludes, jsonArg, renderScript } from "./tools-base.js"
 
 export const UEGetAssetInfo = (asset_path: string) =>
 	renderScript("./scripts/ue_get_asset_info.py", { asset_path: jsonArg(asset_path) })
@@ -228,3 +228,16 @@ export const UEUMGSetChildWidgetPosition = (
 		size: jsonArg(size),
 		z_order: jsonArg(z_order),
 	})
+
+export const UEUMGSetupSidebarTab = (
+	widget_blueprint_path: string,
+	url: string,
+	browser_widget_name?: string,
+	open_tab?: boolean,
+) =>
+	renderScript("./scripts/ue_umg_setup_sidebar_tab.py", {
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		url: jsonArg(url),
+		browser_widget_name: jsonArg(browser_widget_name),
+		open_tab: jsonArg(open_tab),
+	}, editorPreludes.umg)
