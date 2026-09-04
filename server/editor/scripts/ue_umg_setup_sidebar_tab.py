@@ -156,6 +156,7 @@ def setup_sidebar_tab(
                 "message": "Sidebar tab content was prepared but the widget blueprint could not be saved.",
                 "rolled_back_new_browser": rolled_back,
                 "deleted_new_asset": deleted_asset,
+                "warnings": warnings,
             }
 
         tab_state = None
