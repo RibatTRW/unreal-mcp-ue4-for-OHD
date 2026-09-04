@@ -10,6 +10,22 @@ def sidebar_creation_failure(reason, widget_blueprint_path):
     }
 
 
+def apply_browser_fill(browser_widget, action_word, warnings, slot=None):
+    try:
+        if slot is None:
+            slot = get_canvas_panel_slot(browser_widget)
+        if slot and set_canvas_panel_slot_fill(slot):
+            touch_editor_object(slot)
+            touch_editor_object(browser_widget)
+            return True
+    except Exception:
+        pass
+    warnings.append("Browser {0} but full-fill layout could not be applied; set anchors to full in the designer.".format(
+        action_word
+    ))
+    return False
+
+
 def setup_sidebar_tab(
     widget_blueprint_path,
     url,
@@ -19,6 +35,7 @@ def setup_sidebar_tab(
     warnings = []
     created_asset = False
     created_browser = False
+    fill_applied = False
     url_set = False
     widget_blueprint = None
     browser_widget = None
@@ -83,15 +100,7 @@ def setup_sidebar_tab(
         browser_widget = find_widget_in_tree(widget_tree, browser_name)
         if browser_widget:
             browser_label = get_widget_name(browser_widget)
-            try:
-                reuse_slot = get_canvas_panel_slot(browser_widget)
-                if reuse_slot and set_canvas_panel_slot_fill(reuse_slot):
-                    touch_editor_object(reuse_slot)
-                    touch_editor_object(browser_widget)
-                else:
-                    warnings.append("Browser reused but full-fill layout could not be applied; set anchors to full in the designer.")
-            except Exception:
-                warnings.append("Browser reused but full-fill layout could not be applied; set anchors to full in the designer.")
+            fill_applied = apply_browser_fill(browser_widget, "reused", warnings)
         else:
             try:
                 browser_widget = create_widget_instance(widget_tree, "WebBrowser", browser_name)
@@ -104,10 +113,7 @@ def setup_sidebar_tab(
                     "message": "Could not create the WebBrowser widget: {0}.{1}".format(unreal_text(exc), hint),
                 }
             slot = add_widget_to_tree(widget_tree, browser_widget, canvas_widget)
-            try:
-                set_canvas_panel_slot_fill(slot)
-            except Exception:
-                warnings.append("Browser added but full-fill layout could not be applied; set anchors to full in the designer.")
+            fill_applied = apply_browser_fill(browser_widget, "added", warnings, slot=slot)
             created_browser = True
             browser_label = get_widget_name(browser_widget)
 
@@ -127,16 +133,29 @@ def setup_sidebar_tab(
         saved = bool(save_widget_blueprint(widget_blueprint))
         if not saved:
             rolled_back = False
+            deleted_asset = False
             try:
                 if created_browser and browser_widget:
                     remove_widget_from_blueprint_tree(widget_tree, browser_widget)
                     rolled_back = bool(save_widget_blueprint(widget_blueprint))
             except Exception:
                 rolled_back = False
+            try:
+                if created_asset:
+                    deleted_asset = bool(unreal.EditorAssetLibrary.delete_asset(widget_blueprint_path))
+                    if not deleted_asset:
+                        warnings.append("New sidebar asset could not be removed after save failure; delete {0} in the Content Browser by hand.".format(
+                            widget_blueprint_path
+                        ))
+            except Exception as exc:
+                warnings.append("New sidebar asset could not be removed after save failure ({0}); delete {1} in the Content Browser by hand.".format(
+                    unreal_text(exc)[:160], widget_blueprint_path
+                ))
             return {
                 "success": False,
                 "message": "Sidebar tab content was prepared but the widget blueprint could not be saved.",
                 "rolled_back_new_browser": rolled_back,
+                "deleted_new_asset": deleted_asset,
             }
 
         tab_state = None
@@ -153,7 +172,7 @@ def setup_sidebar_tab(
                 tab_reason = unreal_text(exc)[:200]
 
         next_steps = []
-        if created_asset or created_browser:
+        if created_asset or created_browser or fill_applied:
             next_steps.append("Compile the widget blueprint in the designer if the opened tab looks stale, then dock the tab beside the viewport.")
 
         return {
@@ -163,6 +182,7 @@ def setup_sidebar_tab(
             "canvas_widget_name": canvas_name,
             "browser_widget_name": browser_label,
             "created_browser": created_browser,
+            "fill_applied": fill_applied,
             "url": unreal_text(url),
             "url_set": url_set,
             "saved": saved,
