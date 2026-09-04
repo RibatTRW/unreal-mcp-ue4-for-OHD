@@ -83,6 +83,15 @@ def setup_sidebar_tab(
         browser_widget = find_widget_in_tree(widget_tree, browser_name)
         if browser_widget:
             browser_label = get_widget_name(browser_widget)
+            try:
+                reuse_slot = get_canvas_panel_slot(browser_widget)
+                if reuse_slot and set_canvas_panel_slot_fill(reuse_slot):
+                    touch_editor_object(reuse_slot)
+                    touch_editor_object(browser_widget)
+                else:
+                    warnings.append("Browser reused but full-fill layout could not be applied; set anchors to full in the designer.")
+            except Exception:
+                warnings.append("Browser reused but full-fill layout could not be applied; set anchors to full in the designer.")
         else:
             try:
                 browser_widget = create_widget_instance(widget_tree, "WebBrowser", browser_name)
