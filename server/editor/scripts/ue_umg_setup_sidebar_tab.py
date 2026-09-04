@@ -3,8 +3,22 @@ import json
 import os
 
 
-TEMPLATE_STAGING_PATH = "/Game/DSHSidebarTemplate"
+# Object path of the staged template. Coupled to the golden file: its inner
+# object is still named EUW_DSHSidebar (verified live: 4.25 needs full
+# object paths — package-only existence checks report False and
+# duplicate_asset with package-only paths silently does nothing).
+TEMPLATE_STAGING_OBJECT = "/Game/DSHSidebarTemplate.EUW_DSHSidebar"
 TEMPLATE_BROWSER_NAME = "DSHBrowser"
+
+
+def asset_exists(asset_path):
+    try:
+        if unreal.EditorAssetLibrary.does_asset_exist(asset_path):
+            return True
+        base = unreal_text(asset_path).strip().rsplit("/", 1)[-1]
+        return bool(unreal.EditorAssetLibrary.does_asset_exist(asset_path + "." + base))
+    except Exception:
+        return False
 
 
 def decode_template_bytes(template_b64):
@@ -34,14 +48,14 @@ def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
     if duplicate is None:
         warnings.append("EditorAssetLibrary.duplicate_asset missing here; building from scratch.")
         return None, "scratch"
-    if unreal.EditorAssetLibrary.does_asset_exist(TEMPLATE_STAGING_PATH):
+    if asset_exists(TEMPLATE_STAGING_OBJECT):
         try:
-            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_PATH))
+            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
         except Exception:
             staged_cleared = False
         if not staged_cleared:
             warnings.append("Stale staging template {0} could not be cleared; continuing anyway.".format(
-                TEMPLATE_STAGING_PATH
+                TEMPLATE_STAGING_OBJECT
             ))
     try:
         handle = open(staging_template_file(), "wb")
@@ -62,31 +76,32 @@ def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
     # (verified live: even forced synchronous rescans don't discover it),
     # so the first template run always stages the file and reports
     # restart-and-rerun; the post-restart re-run duplicates from it.
-    if not unreal.EditorAssetLibrary.does_asset_exist(TEMPLATE_STAGING_PATH):
+    if not asset_exists(TEMPLATE_STAGING_OBJECT):
         return None, "restart"
+    target_base = unreal_text(widget_blueprint_path).strip().rsplit("/", 1)[-1]
     try:
-        duplicate(TEMPLATE_STAGING_PATH, unreal_text(widget_blueprint_path))
+        duplicate(TEMPLATE_STAGING_OBJECT, unreal_text(widget_blueprint_path) + "." + target_base)
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)
     except Exception as exc:
         try:
-            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_PATH))
+            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
         except Exception:
             staged_cleared = False
         if not staged_cleared:
             warnings.append("Staging template {0} left behind; delete it by hand.".format(
-                TEMPLATE_STAGING_PATH
+                TEMPLATE_STAGING_OBJECT
             ))
         warnings.append("Sidebar template duplication failed ({0}); building from scratch.".format(
             unreal_text(exc)[:120]
         ))
         return None, "scratch"
     try:
-        staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_PATH))
+        staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
     except Exception:
         staged_cleared = False
     if not staged_cleared:
         warnings.append("Staging template {0} left behind; delete it by hand.".format(
-            TEMPLATE_STAGING_PATH
+            TEMPLATE_STAGING_OBJECT
         ))
     warnings.append("Duplicated the golden sidebar template (browser + On Key Down shortcut fix included).")
     return widget_blueprint, "ok"
@@ -139,8 +154,10 @@ def setup_sidebar_tab(
     except Exception as exc:
         # Distinguish "absent" (create it) from "present but unloadable"
         # (report it): only a confirmed-missing asset triggers creation.
+        # asset_exists checks the object path too: 4.25 package-only
+        # existence checks report False for perfectly good assets.
         try:
-            asset_missing = not bool(unreal.EditorAssetLibrary.does_asset_exist(widget_blueprint_path))
+            asset_missing = not asset_exists(widget_blueprint_path)
         except Exception:
             asset_missing = False
         if not asset_missing:
