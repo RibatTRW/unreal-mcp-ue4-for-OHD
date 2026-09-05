@@ -132,22 +132,37 @@ def apply_browser_fill(browser_widget, action_word, warnings, slot=None):
     return False
 
 
-def setup_sidebar_tab(
+class _EarlyResult(Exception):
+    """Carries a final response out of a setup phase: the orchestrator
+    catches it and returns the response unchanged. Lets provision and
+    finalize exit early without threading result dicts through callers."""
+
+    def __init__(self, result):
+        super(_EarlyResult, self).__init__("early result")
+        self.result = result
+
+
+def provision_sidebar_asset(
     widget_blueprint_path,
-    url,
-    browser_widget_name=None,
-    open_tab=True,
-    template_b64=None,
-    template_expected=None,
+    browser_widget_name,
+    template_b64,
+    template_expected,
+    warnings,
 ):
-    warnings = []
+    """Load-or-create the sidebar asset (provision half).
+
+    Returns (widget_blueprint, browser_widget_name, provision) where
+    provision carries created_asset/template_used. The template path
+    may clear a custom browser_widget_name (the golden asset ships a
+    fixed browser) — callers must use the returned name. Raises
+    _EarlyResult with the final response when setup cannot continue
+    (unloadable asset, template-staged restart, creation/reload
+    failure). Anything else propagates to the orchestrator, which wraps
+    it in the generic setup-failure response."""
+
     created_asset = False
-    created_browser = False
-    fill_applied = False
-    url_set = False
     template_used = False
     widget_blueprint = None
-    browser_widget = None
     asset_missing = False
     try:
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)
@@ -161,10 +176,10 @@ def setup_sidebar_tab(
         except Exception:
             asset_missing = False
         if not asset_missing:
-            return {
+            raise _EarlyResult({
                 "success": False,
                 "message": "Sidebar asset exists but could not be loaded: {0}.".format(unreal_text(exc)),
-            }
+            })
         widget_blueprint = None
 
     if not widget_blueprint:
@@ -175,12 +190,12 @@ def setup_sidebar_tab(
                 widget_blueprint_path, template_b64, warnings
             )
             if template_status == "restart":
-                return {
+                raise _EarlyResult({
                     "success": False,
                     "message": "Sidebar template staged under /Game but not yet visible to the Asset Registry (one-time step). Restart the editor, then re-run setup_sidebar_tab with the same arguments to finish.",
                     "template_staged": True,
                     "warnings": warnings,
-                }
+                })
             if template_status == "ok":
                 template_used = True
                 created_asset = True
@@ -196,139 +211,226 @@ def setup_sidebar_tab(
                     "parent_class": "EditorUtilityWidget",
                 })
             except Exception as exc:
-                return sidebar_creation_failure(unreal_text(exc), widget_blueprint_path)
+                raise _EarlyResult(sidebar_creation_failure(unreal_text(exc), widget_blueprint_path))
             if not create_result.get("success"):
                 reason = create_result.get("reason") or create_result.get("message") or "unknown"
-                return sidebar_creation_failure(reason, widget_blueprint_path)
+                raise _EarlyResult(sidebar_creation_failure(reason, widget_blueprint_path))
             created_asset = True
             try:
                 widget_blueprint = load_widget_blueprint(widget_blueprint_path)
             except Exception as exc:
-                return {
+                raise _EarlyResult({
                     "success": False,
                     "message": "Sidebar asset was created but could not be reloaded: {0}.".format(unreal_text(exc)),
-                }
+                })
+
+    return widget_blueprint, browser_widget_name, {
+        "created_asset": created_asset,
+        "template_used": template_used,
+    }
+
+
+def configure_sidebar_content(
+    widget_blueprint,
+    widget_blueprint_path,
+    url,
+    browser_widget_name,
+    warnings,
+):
+    """Canvas root + browser child + initial URL (configure half).
+
+    Returns a content dict with the canvas/browser/url flags plus the
+    live widget_tree and browser_widget the save step needs for
+    rollback. Raises _EarlyResult when no browser can be provided."""
+
+    created_browser = False
+    fill_applied = False
+    url_set = False
+    widget_tree = get_widget_tree(widget_blueprint)
+    root_widget = get_root_widget(widget_tree)
+    root_is_canvas = False
+    try:
+        root_is_canvas = bool(root_widget) and object_is_instance_of(root_widget, unreal.CanvasPanel)
+    except Exception:
+        root_is_canvas = False
+    if root_is_canvas:
+        canvas_widget = root_widget
+        canvas_name = get_widget_name(canvas_widget)
+    else:
+        canvas_result = ensure_canvas_root(widget_blueprint, "SidebarRootCanvas")
+        widget_tree = get_widget_tree(widget_blueprint)
+        canvas_widget = get_root_widget(widget_tree)
+        canvas_name = get_widget_name(canvas_widget)
+        warnings.append("Wrapped non-Canvas root under a CanvasPanel ({0}).".format(
+            canvas_result.get("previous_root_widget") or "unknown"
+        ))
+
+    browser_name = browser_widget_name or "DSHBrowser"
+    browser_widget = find_widget_in_tree(widget_tree, browser_name)
+    if browser_widget:
+        browser_label = get_widget_name(browser_widget)
+        fill_applied = apply_browser_fill(browser_widget, "reused", warnings)
+    else:
+        try:
+            browser_widget = create_widget_instance(widget_tree, "WebBrowser", browser_name)
+        except Exception as exc:
+            hint = ""
+            if "Could not find widget class" in unreal_text(exc):
+                hint = " Ensure the WebBrowserWidget plugin is enabled (Edit -> Plugins) and the editor was restarted afterwards."
+            raise _EarlyResult({
+                "success": False,
+                "message": "Could not create the WebBrowser widget: {0}.{1}".format(unreal_text(exc), hint),
+            })
+        slot = add_widget_to_tree(widget_tree, browser_widget, canvas_widget)
+        fill_applied = apply_browser_fill(browser_widget, "added", warnings, slot=slot)
+        created_browser = True
+        browser_label = get_widget_name(browser_widget)
 
     try:
-        widget_tree = get_widget_tree(widget_blueprint)
-        root_widget = get_root_widget(widget_tree)
-        root_is_canvas = False
+        asset_name = unreal_text(widget_blueprint_path).strip().rsplit("/", 1)[-1]
+        sub_path = "{0}.{1}:WidgetTree.{2}".format(widget_blueprint_path, asset_name, browser_label)
+        browser_object = unreal.load_object(None, sub_path)
+        if not browser_object:
+            raise ValueError("Could not load browser subobject for URL assignment.")
+        browser_object.set_editor_property("initial_url", unreal_text(url))
+        url_set = True
+    except Exception as exc:
+        warnings.append("Browser URL could not be set automatically ({0}); set Initial URL in the designer Details panel.".format(
+            unreal_text(exc)[:160]
+        ))
+
+    return {
+        "canvas_name": canvas_name,
+        "browser_widget": browser_widget,
+        "browser_label": browser_label,
+        "created_browser": created_browser,
+        "fill_applied": fill_applied,
+        "url_set": url_set,
+        "widget_tree": widget_tree,
+    }
+
+
+def finalize_sidebar_save(
+    widget_blueprint,
+    widget_tree,
+    browser_widget,
+    widget_blueprint_path,
+    created_asset,
+    created_browser,
+    warnings,
+):
+    """Save with rollback (finalize half). Raises _EarlyResult when the
+    save fails; returns True when the asset is saved."""
+
+    saved = bool(save_widget_blueprint(widget_blueprint))
+    if not saved:
+        rolled_back = False
+        deleted_asset = False
         try:
-            root_is_canvas = bool(root_widget) and object_is_instance_of(root_widget, unreal.CanvasPanel)
+            if created_browser and browser_widget:
+                remove_widget_from_blueprint_tree(widget_tree, browser_widget)
+                rolled_back = bool(save_widget_blueprint(widget_blueprint))
         except Exception:
-            root_is_canvas = False
-        if root_is_canvas:
-            canvas_widget = root_widget
-            canvas_name = get_widget_name(canvas_widget)
-        else:
-            canvas_result = ensure_canvas_root(widget_blueprint, "SidebarRootCanvas")
-            widget_tree = get_widget_tree(widget_blueprint)
-            canvas_widget = get_root_widget(widget_tree)
-            canvas_name = get_widget_name(canvas_widget)
-            warnings.append("Wrapped non-Canvas root under a CanvasPanel ({0}).".format(
-                canvas_result.get("previous_root_widget") or "unknown"
-            ))
-
-        browser_name = browser_widget_name or "DSHBrowser"
-        browser_widget = find_widget_in_tree(widget_tree, browser_name)
-        if browser_widget:
-            browser_label = get_widget_name(browser_widget)
-            fill_applied = apply_browser_fill(browser_widget, "reused", warnings)
-        else:
-            try:
-                browser_widget = create_widget_instance(widget_tree, "WebBrowser", browser_name)
-            except Exception as exc:
-                hint = ""
-                if "Could not find widget class" in unreal_text(exc):
-                    hint = " Ensure the WebBrowserWidget plugin is enabled (Edit -> Plugins) and the editor was restarted afterwards."
-                return {
-                    "success": False,
-                    "message": "Could not create the WebBrowser widget: {0}.{1}".format(unreal_text(exc), hint),
-                }
-            slot = add_widget_to_tree(widget_tree, browser_widget, canvas_widget)
-            fill_applied = apply_browser_fill(browser_widget, "added", warnings, slot=slot)
-            created_browser = True
-            browser_label = get_widget_name(browser_widget)
-
-        try:
-            asset_name = unreal_text(widget_blueprint_path).strip().rsplit("/", 1)[-1]
-            sub_path = "{0}.{1}:WidgetTree.{2}".format(widget_blueprint_path, asset_name, browser_label)
-            browser_object = unreal.load_object(None, sub_path)
-            if not browser_object:
-                raise ValueError("Could not load browser subobject for URL assignment.")
-            browser_object.set_editor_property("initial_url", unreal_text(url))
-            url_set = True
-        except Exception as exc:
-            warnings.append("Browser URL could not be set automatically ({0}); set Initial URL in the designer Details panel.".format(
-                unreal_text(exc)[:160]
-            ))
-
-        saved = bool(save_widget_blueprint(widget_blueprint))
-        if not saved:
             rolled_back = False
-            deleted_asset = False
-            try:
-                if created_browser and browser_widget:
-                    remove_widget_from_blueprint_tree(widget_tree, browser_widget)
-                    rolled_back = bool(save_widget_blueprint(widget_blueprint))
-            except Exception:
-                rolled_back = False
-            try:
-                if created_asset:
-                    deleted_asset = bool(unreal.EditorAssetLibrary.delete_asset(widget_blueprint_path))
-                    if not deleted_asset:
-                        warnings.append("New sidebar asset could not be removed after save failure; delete {0} in the Content Browser by hand.".format(
-                            widget_blueprint_path
-                        ))
-            except Exception as exc:
-                warnings.append("New sidebar asset could not be removed after save failure ({0}); delete {1} in the Content Browser by hand.".format(
-                    unreal_text(exc)[:160], widget_blueprint_path
-                ))
-            return {
-                "success": False,
-                "message": "Sidebar tab content was prepared but the widget blueprint could not be saved.",
-                "rolled_back_new_browser": rolled_back,
-                "deleted_new_asset": deleted_asset,
-                "warnings": warnings,
-            }
+        try:
+            if created_asset:
+                deleted_asset = bool(unreal.EditorAssetLibrary.delete_asset(widget_blueprint_path))
+                if not deleted_asset:
+                    warnings.append("New sidebar asset could not be removed after save failure; delete {0} in the Content Browser by hand.".format(
+                        widget_blueprint_path
+                    ))
+        except Exception as exc:
+            warnings.append("New sidebar asset could not be removed after save failure ({0}); delete {1} in the Content Browser by hand.".format(
+                unreal_text(exc)[:160], widget_blueprint_path
+            ))
+        raise _EarlyResult({
+            "success": False,
+            "message": "Sidebar tab content was prepared but the widget blueprint could not be saved.",
+            "rolled_back_new_browser": rolled_back,
+            "deleted_new_asset": deleted_asset,
+            "warnings": warnings,
+        })
+    return True
 
-        tab_state = None
-        tab_reason = "not requested"
-        if open_tab:
-            tab_state = False
-            tab_reason = ""
-            try:
-                subsystem = unreal.get_editor_subsystem(unreal.EditorUtilitySubsystem)
-                tab_state = bool(subsystem.spawn_and_register_tab(widget_blueprint))
-                if not tab_state:
-                    tab_reason = "spawn_and_register_tab reported failure"
-            except Exception as exc:
-                tab_reason = unreal_text(exc)[:200]
+
+def open_sidebar_tab(widget_blueprint, open_tab):
+    """Best-effort tab open. Returns (tab_state, tab_reason)."""
+
+    tab_state = None
+    tab_reason = "not requested"
+    if open_tab:
+        tab_state = False
+        tab_reason = ""
+        try:
+            subsystem = unreal.get_editor_subsystem(unreal.EditorUtilitySubsystem)
+            tab_state = bool(subsystem.spawn_and_register_tab(widget_blueprint))
+            if not tab_state:
+                tab_reason = "spawn_and_register_tab reported failure"
+        except Exception as exc:
+            tab_reason = unreal_text(exc)[:200]
+    return tab_state, tab_reason
+
+
+def setup_sidebar_tab(
+    widget_blueprint_path,
+    url,
+    browser_widget_name=None,
+    open_tab=True,
+    template_b64=None,
+    template_expected=None,
+):
+    warnings = []
+    try:
+        widget_blueprint, browser_widget_name, provision = provision_sidebar_asset(
+            widget_blueprint_path,
+            browser_widget_name,
+            template_b64,
+            template_expected,
+            warnings,
+        )
+        content = configure_sidebar_content(
+            widget_blueprint,
+            widget_blueprint_path,
+            url,
+            browser_widget_name,
+            warnings,
+        )
+        saved = finalize_sidebar_save(
+            widget_blueprint,
+            content["widget_tree"],
+            content["browser_widget"],
+            widget_blueprint_path,
+            provision["created_asset"],
+            content["created_browser"],
+            warnings,
+        )
+        tab_state, tab_reason = open_sidebar_tab(widget_blueprint, open_tab)
 
         next_steps = []
-        if created_asset or created_browser or fill_applied:
+        if provision["created_asset"] or content["created_browser"] or content["fill_applied"]:
             next_steps.append("Compile the widget blueprint in the designer if the opened tab looks stale, then dock the tab beside the viewport.")
 
         return {
             "success": True,
             "asset_path": widget_blueprint_path,
-            "created_asset": created_asset,
-            "template_used": template_used,
-            "canvas_widget_name": canvas_name,
-            "browser_widget_name": browser_label,
-            "created_browser": created_browser,
-            "fill_applied": fill_applied,
+            "created_asset": provision["created_asset"],
+            "template_used": provision["template_used"],
+            "canvas_widget_name": content["canvas_name"],
+            "browser_widget_name": content["browser_label"],
+            "created_browser": content["created_browser"],
+            "fill_applied": content["fill_applied"],
             "url": unreal_text(url),
-            "url_set": url_set,
+            "url_set": content["url_set"],
             "saved": saved,
             "tab_opened": tab_state,
             "tab_reason": tab_reason,
             "warnings": warnings,
             "next_steps": next_steps,
         }
+    except _EarlyResult as early:
+        return early.result
     except Exception as exc:
         return {"success": False, "message": "Failed to set up sidebar tab: {0}".format(unreal_text(exc))}
-
 
 def main():
     widget_blueprint_path = decode_template_json("""${widget_blueprint_path}""")
