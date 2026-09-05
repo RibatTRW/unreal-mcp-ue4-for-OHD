@@ -349,7 +349,7 @@ export function contentWidgetDescriptors(
 			},
 			setup_sidebar_tab: {
 				paramsSchema: requireWidgetBlueprintSelection({
-					url: z.string().describe("Initial URL loaded by the sidebar browser (e.g. the harness web GUI address)"),
+					url: z.string().describe("Initial URL loaded by the sidebar browser (e.g. the harness web GUI address). Accepts any page URL; DSH asset/browser names stay, non-DSH pages get no editor loop and face the 4.25 CEF gate"),
 					browser_widget_name: z.string().optional().describe("Optional browser child widget name (defaults to DSHBrowser)"),
 					name: z.string().optional().describe("Alias for browser_widget_name"),
 					open_tab: z.boolean().optional().describe("Open the widget as an editor tab when true (default)"),
