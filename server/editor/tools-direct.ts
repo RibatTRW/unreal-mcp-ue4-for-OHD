@@ -1,4 +1,6 @@
-import { jsonArg, renderScript } from "./tools-base.js"
+import fs from "node:fs"
+import path from "node:path"
+import { editorPreludes, jsonArg, renderScript } from "./tools-base.js"
 
 export const UEGetAssetInfo = (asset_path: string) =>
 	renderScript("./scripts/ue_get_asset_info.py", { asset_path: jsonArg(asset_path) })
@@ -228,3 +230,34 @@ export const UEUMGSetChildWidgetPosition = (
 		size: jsonArg(size),
 		z_order: jsonArg(z_order),
 	})
+
+/* Golden sidebar template (EUW + full-fill WebBrowser + the On Key Down
+ * shortcut fix). Shipped under server/editor/sidebar-template and copied
+ * into dist by scripts/build.mjs; read here at call time so the bytes
+ * travel inside the rendered script args (same machine, editor + server).
+ * Returns base64 text or null when the template is absent. */
+function readSidebarTemplate(): string | null {
+	try {
+		return fs
+			.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset"))
+			.toString("base64")
+	} catch (err) {
+		return null
+	}
+}
+
+export const UEUMGSetupSidebarTab = (
+	widget_blueprint_path: string,
+	url: string,
+	browser_widget_name?: string,
+	open_tab?: boolean,
+	use_template?: boolean,
+) =>
+	renderScript("./scripts/ue_umg_setup_sidebar_tab.py", {
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		url: jsonArg(url),
+		browser_widget_name: jsonArg(browser_widget_name),
+		open_tab: jsonArg(open_tab),
+		template_b64: jsonArg(use_template ? readSidebarTemplate() : null),
+		template_expected: jsonArg(use_template ? true : null),
+	}, editorPreludes.umg)

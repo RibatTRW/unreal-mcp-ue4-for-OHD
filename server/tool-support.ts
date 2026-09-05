@@ -111,7 +111,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_widget: {
 		status: "Partial",
-		note: "create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.",
+		note: "create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. setup_sidebar_tab builds a WebBrowser sidebar tab end to end (EUW asset, browser child, URL, open tab); use_template duplicates the golden template (browser + On Key Down shortcut fix included) instead of building from scratch. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.",
 	},
 	manage_texture: {
 		status: "Supported",

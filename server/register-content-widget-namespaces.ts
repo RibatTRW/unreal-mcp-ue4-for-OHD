@@ -347,6 +347,25 @@ export function contentWidgetDescriptors(
 						),
 					),
 			},
+			setup_sidebar_tab: {
+				paramsSchema: requireWidgetBlueprintSelection({
+					url: z.string().describe("Initial URL loaded by the sidebar browser (e.g. the harness web GUI address)"),
+					browser_widget_name: z.string().optional().describe("Optional browser child widget name (defaults to DSHBrowser)"),
+					name: z.string().optional().describe("Alias for browser_widget_name"),
+					open_tab: z.boolean().optional().describe("Open the widget as an editor tab when true (default)"),
+					use_template: z.boolean().optional().describe("Duplicate the golden sidebar template (EUW + browser + On Key Down shortcut fix) when the target is missing, instead of building from scratch. Existing targets are reused untouched. Falls back to scratch build with a warning when the template is unavailable."),
+				}),
+				handler: (params) =>
+					pythonDispatch(
+						editorTools.UEUMGSetupSidebarTab(
+							requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+							requiredStringParam(params, ["url"]),
+							optionalStringParam(params, ["browser_widget_name", "name"]),
+							typeof params.open_tab === "boolean" ? params.open_tab : undefined,
+							typeof params.use_template === "boolean" ? params.use_template : undefined,
+						),
+					),
+			},
 		}, options: { compactParamsSchema: true } },
 	]
 }
