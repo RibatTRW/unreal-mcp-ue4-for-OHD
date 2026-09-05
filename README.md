@@ -96,7 +96,7 @@ Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/
 
 ### 2. Register the server in your client
 
-Use the global examples when you installed with `npm install -g unreal-mcp-ue4`. Use the local source checkout examples when you are developing from a cloned repository.
+Use the global examples when you installed with `npm install -g unreal-mcp-ue4`. Use the local source checkout examples when you are developing from a cloned repository. Once registered, all three clients call the same tools over stdio (including `manage_widget.setup_sidebar_tab`); the sidebar `url` accepts any page URL and the golden template keeps its DSH asset/browser names on every client.
 
 <details><summary>Claude</summary>
 
@@ -913,7 +913,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>manage_widget</code></td>
 		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree inspection, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use inspect_tree to verify designer contents, add_child_widget for nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.</td>
-		<td width="30%">create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. setup_sidebar_tab builds a WebBrowser sidebar tab end to end (EUW asset, browser child, URL, open tab); use_template duplicates the golden template (browser + On Key Down shortcut fix included) instead of building from scratch. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.</td>
+		<td width="30%">create_widget_blueprint, inspect_tree, add_text_block, add_button, and ensure_canvas_root work; use add_child_widget for normal nested layout, and use ensure_canvas_root before CanvasPanel positioning or sizing if the root is another panel. setup_sidebar_tab builds a WebBrowser sidebar tab end to end (EUW asset, browser child, URL, open tab); use_template duplicates the golden template (browser + On Key Down shortcut fix included) instead of building from scratch. The sidebar url accepts any page URL (DSH web GUI is the convention); DSH asset/browser names stay, non-DSH pages get no editor loop and face the 4.25 CEF gate. add_to_viewport requires PIE; start_pie_if_needed can request PIE and may require a retry.</td>
 	</tr>
 	</tbody>
 </table>
