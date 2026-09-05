@@ -32,6 +32,17 @@ def staging_template_file():
     return os.path.join(unreal.Paths.project_content_dir(), "DSHSidebarTemplate.uasset")
 
 
+def delete_staging_template():
+    """Best-effort removal of the staged template object. Returns True when
+    the registry confirms the delete; False when it reports failure or the
+    delete raises. Callers keep their own warning text so the response
+    envelope stays unchanged."""
+    try:
+        return bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
+    except Exception:
+        return False
+
+
 def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
     """Duplicate the golden template into a missing target.
 
@@ -49,11 +60,7 @@ def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
         warnings.append("EditorAssetLibrary.duplicate_asset missing here; building from scratch.")
         return None, "scratch"
     if asset_exists(TEMPLATE_STAGING_OBJECT):
-        try:
-            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
-        except Exception:
-            staged_cleared = False
-        if not staged_cleared:
+        if not delete_staging_template():
             warnings.append("Stale staging template {0} could not be cleared; continuing anyway.".format(
                 TEMPLATE_STAGING_OBJECT
             ))
@@ -83,11 +90,7 @@ def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
         duplicate(TEMPLATE_STAGING_OBJECT, unreal_text(widget_blueprint_path) + "." + target_base)
         widget_blueprint = load_widget_blueprint(widget_blueprint_path)
     except Exception as exc:
-        try:
-            staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
-        except Exception:
-            staged_cleared = False
-        if not staged_cleared:
+        if not delete_staging_template():
             warnings.append("Staging template {0} left behind; delete it by hand.".format(
                 TEMPLATE_STAGING_OBJECT
             ))
@@ -95,11 +98,7 @@ def setup_sidebar_from_template(widget_blueprint_path, template_b64, warnings):
             unreal_text(exc)[:120]
         ))
         return None, "scratch"
-    try:
-        staged_cleared = bool(unreal.EditorAssetLibrary.delete_asset(TEMPLATE_STAGING_OBJECT))
-    except Exception:
-        staged_cleared = False
-    if not staged_cleared:
+    if not delete_staging_template():
         warnings.append("Staging template {0} left behind; delete it by hand.".format(
             TEMPLATE_STAGING_OBJECT
         ))
