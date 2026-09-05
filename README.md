@@ -227,6 +227,22 @@ Useful first natural-language requests:
 - `List the actors in the current level.`
 - `Spawn a StaticMeshActor named TestCube at 0,0,100.`
 
+### EUW sidebar tab
+
+The EUW (Editor Utility Widget) sidebar tab is an Editor Utility Widget asset plus a WebBrowser child that hosts a web page beside the viewport. It is the asset; the page loaded inside it (for example the DSH web GUI) is something else. One call sets it up end to end:
+
+- `manage_widget` with `action: "setup_sidebar_tab"`, params `widget_blueprint_path` (for example `/Game/DSHSidebar`), `url` (for example your harness web GUI address), and `use_template: true`.
+
+With `use_template`, a missing target is duplicated from the golden template instead of built from scratch: the template ships a full-fill browser plus the verified On Key Down shortcut fix, so new users never land in the Graph view. Re-running the same call is idempotent — missing targets are created, and existing targets are reused with the browser URL and layout refreshed.
+
+What to know before you run it:
+
+- The `url` accepts any page URL; the DSH web GUI is the convention, not a requirement. Non-DSH pages get no editor-driving loop — typing in them does nothing to the viewport.
+- The 4.25 web browser (CEF) gate still applies: modern web pages may render blank. A minimal page renders where a full app does not.
+- First template use stages a file under `/Game` that the 4.25 Asset Registry cannot see until the editor restarts: the call reports `template_staged`, you restart, and re-run with the same arguments to finish.
+- The template ships a fixed `DSHBrowser` child — a custom `browser_widget_name` is ignored on the template path with a warning, and DSH asset/browser names stay whatever page you load.
+- After setup, Compile the widget blueprint in the designer if the opened tab looks stale, then dock the tab beside the viewport.
+
 ### What the server can do
 
 - Read project, map, asset, and actor information from the open editor.
