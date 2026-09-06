@@ -10,10 +10,10 @@ import {
 	DEFAULT_RETRY_DELAY_MS,
 } from "./connection-session.js"
 
-const DEFAULT_MULTICAST_TTL = 1
-const DEFAULT_MULTICAST_ADDRESS = "239.0.0.1"
-const DEFAULT_MULTICAST_PORT = 6766
-const DEFAULT_COMMAND_PORT = 6776
+export const DEFAULT_MULTICAST_TTL = 1
+export const DEFAULT_MULTICAST_ADDRESS = "239.0.0.1"
+export const DEFAULT_MULTICAST_PORT = 6766
+export const DEFAULT_COMMAND_PORT = 6776
 
 const readIntegerEnv = (name: string, fallback: number) => {
 	const value = process.env[name]
