@@ -1,4 +1,8 @@
+import { Effect } from "effect"
 import { z } from "zod"
+
+import { runCompatPromise } from "./effect/connection-service.js"
+import type { ToolError } from "./effect/errors.js"
 
 import type { RegistrationDispatch } from "./registration-context.js"
 import { discoverPath } from "./remote-execution.js"
@@ -50,48 +54,63 @@ const describeTool = createToolDescriptionLookup(directToolEntries)
 export function registerDirectTools(ctx: RegistrationDispatch) {
 	const { editorTools, rawServerTool, registerPythonTool, textResponse } = ctx
 
-	rawServerTool("get_unreal_engine_path", describeTool("get_unreal_engine_path"), async () => {
-		const enginePath = await discoverPath(
-			[
-				"import os",
-				"import unreal",
-				'engine_dir = unreal.Paths.engine_dir() or ""',
-				"full_engine_dir = unreal.Paths.convert_relative_path_to_full(engine_dir) if engine_dir else ''",
-				"normalized = os.path.normpath(full_engine_dir) if full_engine_dir else ''",
-				"if normalized and os.path.basename(normalized).lower() == 'engine':",
-				"    print(os.path.dirname(normalized))",
-				"else:",
-				"    print(normalized)",
-			].join("\n"),
-			"Unable to resolve the active Unreal Engine path",
-		)
+	// Phase 5b (report §5): path discovery runs as an Effect
+	// program; runCompatPromise preserves the legacy rejection
+	// identity so discovery throws surface exactly as today.
+	rawServerTool("get_unreal_engine_path", describeTool("get_unreal_engine_path"), () =>
+		runCompatPromise(
+			Effect.tryPromise({
+				try: () =>
+					discoverPath(
+						[
+							"import os",
+							"import unreal",
+							'engine_dir = unreal.Paths.engine_dir() or ""',
+							"full_engine_dir = unreal.Paths.convert_relative_path_to_full(engine_dir) if engine_dir else ''",
+							"normalized = os.path.normpath(full_engine_dir) if full_engine_dir else ''",
+							"if normalized and os.path.basename(normalized).lower() == 'engine':",
+							"    print(os.path.dirname(normalized))",
+							"else:",
+							"    print(normalized)",
+						].join("\n"),
+						"Unable to resolve the active Unreal Engine path",
+					),
+				catch: (cause) => cause as ToolError,
+			}).pipe(Effect.map((enginePath) => textResponse(`Unreal Engine path: ${enginePath}`))),
+		),
+	)
 
-		return textResponse(`Unreal Engine path: ${enginePath}`)
-	})
+	rawServerTool("get_unreal_project_path", describeTool("get_unreal_project_path"), () =>
+		runCompatPromise(
+			Effect.tryPromise({
+				try: () =>
+					discoverPath(
+						[
+							"import os",
+							"import unreal",
+							'project_file = unreal.Paths.get_project_file_path() or ""',
+							"full_project_file = unreal.Paths.convert_relative_path_to_full(project_file) if project_file else ''",
+							"print(os.path.normpath(full_project_file) if full_project_file else '')",
+						].join("\n"),
+						"Unable to resolve the active Unreal project path",
+					),
+				catch: (cause) => cause as ToolError,
+			}).pipe(Effect.map((projectPath) => textResponse(`Unreal Project path: ${projectPath}`))),
+		),
+	)
 
-	rawServerTool("get_unreal_project_path", describeTool("get_unreal_project_path"), async () => {
-		const projectPath = await discoverPath(
-			[
-				"import os",
-				"import unreal",
-				'project_file = unreal.Paths.get_project_file_path() or ""',
-				"full_project_file = unreal.Paths.convert_relative_path_to_full(project_file) if project_file else ''",
-				"print(os.path.normpath(full_project_file) if full_project_file else '')",
-			].join("\n"),
-			"Unable to resolve the active Unreal project path",
-		)
-
-		return textResponse(`Unreal Project path: ${projectPath}`)
-	})
-
-	rawServerTool("get_unreal_version", describeTool("get_unreal_version"), async () => {
-		const engineVersion = await discoverPath(
-			["import unreal", "print(unreal.SystemLibrary.get_engine_version() or '')"].join("\n"),
-			"Unable to resolve the active Unreal Engine version",
-		)
-
-		return textResponse(`Unreal version: ${engineVersion}`)
-	})
+	rawServerTool("get_unreal_version", describeTool("get_unreal_version"), () =>
+		runCompatPromise(
+			Effect.tryPromise({
+				try: () =>
+					discoverPath(
+						["import unreal", "print(unreal.SystemLibrary.get_engine_version() or '')"].join("\n"),
+						"Unable to resolve the active Unreal Engine version",
+					),
+				catch: (cause) => cause as ToolError,
+			}).pipe(Effect.map((engineVersion) => textResponse(`Unreal version: ${engineVersion}`))),
+		),
+	)
 
 	/// Core Direct Tools
 	registerPythonTool(

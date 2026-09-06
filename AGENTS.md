@@ -4,7 +4,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration (phases 0-4, 5a)
+## Effect migration (phases 0-4, 5a-5b)
 
 - Phase 5a pilot (`register-core-system-namespaces.ts` [shared-actions only, no change],
   `register-core-inspection-namespaces.ts`, `register-world-lighting-namespaces.ts`): handlers return
@@ -13,6 +13,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   around throwing param-helper/builder thunks: `succeed` evaluates eagerly (throw escapes the Effect)
   and `sync` turns the throw into a defect that sails past dispatch's `Effect.catchAll` as FiberFailure;
   only `Effect.try` lands it in the failure channel for the identical envelope.
+- Phase 5b small wave (`register-core-editor-namespaces.ts`, `register-core-tools-namespaces.ts`
+  [`directDispatch` handlers wrap identically; the unknown-namespace `success:false` stays a payload,
+  not a channel failure], `register-core-source-control-namespaces.ts` [provider-degraded `success:false`
+  payloads stay payloads], `register-direct-tools.ts`): the three `discoverPath` callbacks run as
+  `Effect.tryPromise` programs executed via `runCompatPromise`, preserving legacy rejection identity
+  (discoverPath throws surface exactly as today). The `registerPythonTool` buildCommands stay pure
+  sync string builders — no envelope path exists there (dispatch keeps promise semantics), so no
+  channel to join.
 
 - Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
   prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently

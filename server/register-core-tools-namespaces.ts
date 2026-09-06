@@ -1,4 +1,7 @@
+import { Effect } from "effect"
 import { z } from "zod"
+
+import type { ToolError } from "./effect/errors.js"
 
 import { requireAtLeastOneValue } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
@@ -104,24 +107,36 @@ export function coreToolsDescriptors(
 			description: describeTool("manage_tools"),
 			actions: {
 				list_namespaces: {
+					// Phase 5b (report §5): handler returns Effect; throws become
+					// channel failures via Effect.try (Effect.sync would defect
+					// past dispatch's catchAll and break the identical envelope),
+					// rendered verbatim downstream.
 					handler: () =>
-						directDispatch({
-							success: true,
-							namespaces: Array.from(toolNamespaceRegistry.entries())
-								.map(([toolNamespace, info]) => ({
-									tool_namespace: toolNamespace,
-									description: info.description,
-									supported_actions: info.supportedActions,
-								}))
-								.sort((left, right) => left.tool_namespace.localeCompare(right.tool_namespace)),
+						Effect.try({
+							try: () =>
+								directDispatch({
+									success: true,
+									namespaces: Array.from(toolNamespaceRegistry.entries())
+										.map(([toolNamespace, info]) => ({
+											tool_namespace: toolNamespace,
+											description: info.description,
+											supported_actions: info.supportedActions,
+										}))
+										.sort((left, right) => left.tool_namespace.localeCompare(right.tool_namespace)),
+								}),
+							catch: (cause) => cause as ToolError,
 						}),
 				},
 				tool_status: {
 					handler: () =>
-						directDispatch({
-							success: true,
-							tool_namespace_count: toolNamespaceRegistry.size,
-							tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
+						Effect.try({
+							try: () =>
+								directDispatch({
+									success: true,
+									tool_namespace_count: toolNamespaceRegistry.size,
+									tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
+								}),
+							catch: (cause) => cause as ToolError,
 						}),
 				},
 				describe_namespace: {
@@ -136,25 +151,29 @@ export function coreToolsDescriptors(
 						["tool_name", "namespace_name", "name"],
 						"Provide tool_name, namespace_name, or name.",
 					),
-					handler: (params) => {
-						const toolName = requiredStringParam(params, ["tool_name", "namespace_name", "name"])
-						const info = toolNamespaceRegistry.get(toolName)
-						return directDispatch(
-							info
-								? {
-										success: true,
-										tool_namespace: toolName,
-										description: info.description,
-										supported_actions: info.supportedActions,
-										parameter_hints: namespaceParameterHints[toolName],
-									}
-								: {
-										success: false,
-										message: `Unknown tool namespace: ${toolName}`,
-										available_tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
-									},
-						)
-					},
+					handler: (params) =>
+						Effect.try({
+							try: () => {
+								const toolName = requiredStringParam(params, ["tool_name", "namespace_name", "name"])
+								const info = toolNamespaceRegistry.get(toolName)
+								return directDispatch(
+									info
+										? {
+												success: true,
+												tool_namespace: toolName,
+												description: info.description,
+												supported_actions: info.supportedActions,
+												parameter_hints: namespaceParameterHints[toolName],
+											}
+										: {
+												success: false,
+												message: `Unknown tool namespace: ${toolName}`,
+												available_tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
+											},
+								)
+							},
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},
