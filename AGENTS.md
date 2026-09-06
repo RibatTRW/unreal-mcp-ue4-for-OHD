@@ -4,7 +4,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration (phases 0-4, 5a-5b)
+## Effect migration (phases 0-4, 5a-5c)
 
 - Phase 5a pilot (`register-core-system-namespaces.ts` [shared-actions only, no change],
   `register-core-inspection-namespaces.ts`, `register-world-lighting-namespaces.ts`): handlers return
@@ -21,6 +21,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   (discoverPath throws surface exactly as today). The `registerPythonTool` buildCommands stay pure
   sync string builders — no envelope path exists there (dispatch keeps promise semantics), so no
   channel to join.
+- Phase 5c mid wave (`register-world-building-namespaces.ts` [the `worldAction` helper wraps once,
+  covering every preset-construction action; `list_actors` wraps inline; shared `map_info`/`world_outliner`
+  untouched], `register-world-navigation-volume-namespaces.ts`,
+  `register-world-effects-splines-namespaces.ts` [block-body handlers wrap as `try: () => { ... }`,
+  returns preserved inside], `register-gameplay-namespaces.ts`,
+  `register-content-blueprint-namespaces.ts`): same mechanical wrap; no `success:false` degraded branches
+  exist in these files (blueprint optional-fallbacks stay inline expressions inside `try`), paramsSchema stays
+  frozen Zod so the surface snapshot does not move.
 
 - Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
   prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently
