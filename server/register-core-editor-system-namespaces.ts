@@ -1,18 +1,14 @@
 import { z } from "zod"
 
 import {
-	actorNameShape,
 	actorNameSchema,
+	actorNameShape,
 	assetLookupSchema,
 	blueprintNameShape,
 	requireAtLeastOneValue,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import {
-	RegistrationDispatch,
-	RegistrationParams,
-	RegistrationSchemas,
-} from "./registration-context.js"
+import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
@@ -21,7 +17,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		project_info: ["No params. Returns the active project summary."],
 		map_info: ["No params. Returns the current map summary."],
 		world_outliner: ["No params. Lists actors in the current editor world."],
-		run_python: ["Required: code. Use this for UE4.25 Python debugging or gaps not wrapped by a stable action. All code must be Python 2.7-compatible."],
+		run_python: [
+			"Required: code. Use this for UE4.25 Python debugging or gaps not wrapped by a stable action. All code must be Python 2.7-compatible.",
+		],
 		console_command: [
 			"Required: command. Console output is not captured reliably; use run_python when stdout is required.",
 		],
@@ -100,190 +98,200 @@ export function coreEditorSystemDescriptors(
 	const shared = sharedReadOnlyActions(ctx)
 
 	return [
-		{ name: "manage_editor", actions: {
-		run_python: {
-			paramsSchema: z
-				.object({
-					code: z.string(),
-				})
-				.strict(),
-			handler: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
-		},
-		console_command: shared.console_command,
-		project_info: { handler: () => pythonDispatch(editorTools.UEGetProjectInfo()) },
-		map_info: shared.map_info,
-		world_outliner: shared.world_outliner,
-		is_pie_running: {
-			paramsSchema: z
-				.object({
-					timeout_seconds: z.number().optional(),
-					poll_interval: z.number().optional(),
-				})
-				.strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEPIETool("get_pie_status", {
-						timeout_seconds: params.timeout_seconds,
-						poll_interval: params.poll_interval,
-					}),
-				),
-		},
-		start_pie: {
-			paramsSchema: z
-				.object({
-					timeout_seconds: z.number().optional(),
-					poll_interval: z.number().optional(),
-				})
-				.strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEPIETool("start_pie", {
-						timeout_seconds: params.timeout_seconds,
-						poll_interval: params.poll_interval,
-					}),
-				),
-		},
-		stop_pie: {
-			paramsSchema: z
-				.object({
-					timeout_seconds: z.number().optional(),
-					poll_interval: z.number().optional(),
-				})
-				.strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEPIETool("stop_pie", {
-						timeout_seconds: params.timeout_seconds,
-						poll_interval: params.poll_interval,
-					}),
-				),
-		},
-		get_console_variable: shared.get_console_variable,
-		screenshot: { handler: () => pythonDispatch(editorTools.UETakeScreenshot()) },
-		move_camera: {
-			paramsSchema: z.object(vector3TransformShape).strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEMoveCamera(
-						toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
-						toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
-					),
-				),
-		},
-		} },
-		{ name: "manage_system", actions: {
-		console_command: shared.console_command,
-		get_console_variable: shared.get_console_variable,
-		validate_assets: shared.validate_assets,
-		} },
-		{ name: "manage_inspection", actions: {
-		asset: {
-			paramsSchema: assetLookupSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
-		},
-		asset_references: {
-			paramsSchema: assetLookupSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
-				),
-		},
-		actor: {
-			paramsSchema: actorNameSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("get_actor_properties", {
-						name: actorNameParam(params),
-					}),
-				),
-		},
-		actor_materials: {
-			paramsSchema: actorNameSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("get_actor_material_info", {
-						name: actorNameParam(params),
-					}),
-				),
-		},
-		blueprint: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...blueprintNameShape,
-						include_nodes: z.boolean().optional(),
-					})
-					.strict(),
-				["blueprint_name", "asset_path", "name"],
-				"Provide blueprint_name, asset_path, or name.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
-						blueprint_name: blueprintNameParam(params),
-						include_nodes: Boolean(params.include_nodes),
-					}),
-				),
-		},
-		map: shared.map_info,
-		} },
-		{ name: "manage_tools", actions: {
-		list_namespaces: {
-			handler: () =>
-				directDispatch({
-					success: true,
-					namespaces: Array.from(toolNamespaceRegistry.entries())
-						.map(([toolNamespace, info]) => ({
-							tool_namespace: toolNamespace,
-							description: info.description,
-							supported_actions: info.supportedActions,
-						}))
-						.sort((left, right) => left.tool_namespace.localeCompare(right.tool_namespace)),
-				}),
-		},
-		tool_status: {
-			handler: () =>
-				directDispatch({
-					success: true,
-					tool_namespace_count: toolNamespaceRegistry.size,
-					tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
-				}),
-		},
-		describe_namespace: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						tool_name: z.string().optional(),
-						namespace_name: z.string().optional(),
-						name: z.string().optional(),
-					})
-					.strict(),
-				["tool_name", "namespace_name", "name"],
-				"Provide tool_name, namespace_name, or name.",
-			),
-			handler: (params) => {
-				const toolName = requiredStringParam(params, ["tool_name", "namespace_name", "name"])
-				const info = toolNamespaceRegistry.get(toolName)
-				return directDispatch(
-					info
-						? {
-								success: true,
-								tool_namespace: toolName,
-								description: info.description,
-								supported_actions: info.supportedActions,
-								parameter_hints: namespaceParameterHints[toolName],
-							}
-						: {
-								success: false,
-								message: `Unknown tool namespace: ${toolName}`,
-								available_tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
-							},
-				)
+		{
+			name: "manage_editor",
+			actions: {
+				run_python: {
+					paramsSchema: z
+						.object({
+							code: z.string(),
+						})
+						.strict(),
+					handler: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
+				},
+				console_command: shared.console_command,
+				project_info: { handler: () => pythonDispatch(editorTools.UEGetProjectInfo()) },
+				map_info: shared.map_info,
+				world_outliner: shared.world_outliner,
+				is_pie_running: {
+					paramsSchema: z
+						.object({
+							timeout_seconds: z.number().optional(),
+							poll_interval: z.number().optional(),
+						})
+						.strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEPIETool("get_pie_status", {
+								timeout_seconds: params.timeout_seconds,
+								poll_interval: params.poll_interval,
+							}),
+						),
+				},
+				start_pie: {
+					paramsSchema: z
+						.object({
+							timeout_seconds: z.number().optional(),
+							poll_interval: z.number().optional(),
+						})
+						.strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEPIETool("start_pie", {
+								timeout_seconds: params.timeout_seconds,
+								poll_interval: params.poll_interval,
+							}),
+						),
+				},
+				stop_pie: {
+					paramsSchema: z
+						.object({
+							timeout_seconds: z.number().optional(),
+							poll_interval: z.number().optional(),
+						})
+						.strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEPIETool("stop_pie", {
+								timeout_seconds: params.timeout_seconds,
+								poll_interval: params.poll_interval,
+							}),
+						),
+				},
+				get_console_variable: shared.get_console_variable,
+				screenshot: { handler: () => pythonDispatch(editorTools.UETakeScreenshot()) },
+				move_camera: {
+					paramsSchema: z.object(vector3TransformShape).strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEMoveCamera(
+								toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
+								toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
+							),
+						),
+				},
 			},
 		},
-		} },
+		{
+			name: "manage_system",
+			actions: {
+				console_command: shared.console_command,
+				get_console_variable: shared.get_console_variable,
+				validate_assets: shared.validate_assets,
+			},
+		},
+		{
+			name: "manage_inspection",
+			actions: {
+				asset: {
+					paramsSchema: assetLookupSchema,
+					handler: (params) =>
+						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+				},
+				asset_references: {
+					paramsSchema: assetLookupSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
+						),
+				},
+				actor: {
+					paramsSchema: actorNameSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("get_actor_properties", {
+								name: actorNameParam(params),
+							}),
+						),
+				},
+				actor_materials: {
+					paramsSchema: actorNameSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("get_actor_material_info", {
+								name: actorNameParam(params),
+							}),
+						),
+				},
+				blueprint: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...blueprintNameShape,
+								include_nodes: z.boolean().optional(),
+							})
+							.strict(),
+						["blueprint_name", "asset_path", "name"],
+						"Provide blueprint_name, asset_path, or name.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
+								blueprint_name: blueprintNameParam(params),
+								include_nodes: Boolean(params.include_nodes),
+							}),
+						),
+				},
+				map: shared.map_info,
+			},
+		},
+		{
+			name: "manage_tools",
+			actions: {
+				list_namespaces: {
+					handler: () =>
+						directDispatch({
+							success: true,
+							namespaces: Array.from(toolNamespaceRegistry.entries())
+								.map(([toolNamespace, info]) => ({
+									tool_namespace: toolNamespace,
+									description: info.description,
+									supported_actions: info.supportedActions,
+								}))
+								.sort((left, right) => left.tool_namespace.localeCompare(right.tool_namespace)),
+						}),
+				},
+				tool_status: {
+					handler: () =>
+						directDispatch({
+							success: true,
+							tool_namespace_count: toolNamespaceRegistry.size,
+							tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
+						}),
+				},
+				describe_namespace: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								tool_name: z.string().optional(),
+								namespace_name: z.string().optional(),
+								name: z.string().optional(),
+							})
+							.strict(),
+						["tool_name", "namespace_name", "name"],
+						"Provide tool_name, namespace_name, or name.",
+					),
+					handler: (params) => {
+						const toolName = requiredStringParam(params, ["tool_name", "namespace_name", "name"])
+						const info = toolNamespaceRegistry.get(toolName)
+						return directDispatch(
+							info
+								? {
+										success: true,
+										tool_namespace: toolName,
+										description: info.description,
+										supported_actions: info.supportedActions,
+										parameter_hints: namespaceParameterHints[toolName],
+									}
+								: {
+										success: false,
+										message: `Unknown tool namespace: ${toolName}`,
+										available_tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
+									},
+						)
+					},
+				},
+			},
+		},
 	]
 }

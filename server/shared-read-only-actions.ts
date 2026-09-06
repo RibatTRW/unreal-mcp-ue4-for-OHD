@@ -1,11 +1,7 @@
 import { z } from "zod"
 
 import { requireAtLeastOneValue } from "./namespace-action-schema-fragments.js"
-import {
-	RegistrationDispatch,
-	RegistrationParams,
-	RegistrationSchemas,
-} from "./registration-context.js"
+import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import type { NamespaceActionRegistration } from "./registration-context.js"
 
 export function sharedReadOnlyActions(
@@ -21,8 +17,7 @@ export function sharedReadOnlyActions(
 					command: z.string(),
 				})
 				.strict(),
-			handler: (params) =>
-				pythonDispatch(editorTools.UEConsoleCommand(requiredStringParam(params, ["command"]))),
+			handler: (params) => pythonDispatch(editorTools.UEConsoleCommand(requiredStringParam(params, ["command"]))),
 		},
 		get_console_variable: {
 			paramsSchema: requireAtLeastOneValue(
@@ -38,10 +33,8 @@ export function sharedReadOnlyActions(
 			),
 			handler: (params) =>
 				pythonDispatch(
-					editorTools.UEGetConsoleVariable(
-						requiredStringParam(params, ["variable_name", "name", "console_variable"]),
-					),
-			),
+					editorTools.UEGetConsoleVariable(requiredStringParam(params, ["variable_name", "name", "console_variable"])),
+				),
 		},
 		map_info: {
 			handler: () => pythonDispatch(editorTools.UEGetMapInfo()),

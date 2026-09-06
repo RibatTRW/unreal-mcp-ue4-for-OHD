@@ -1,21 +1,17 @@
 import { z } from "zod"
 
 import {
-	actorNameShape,
 	actorNameSchema,
-	assetLookupShape,
+	actorNameShape,
 	assetLookupSchema,
+	assetLookupShape,
 	assetSourceLookupShape,
 	blueprintNameShape,
 	requireAtLeastOneValue,
 	searchAssetsShape,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import {
-	RegistrationDispatch,
-	RegistrationParams,
-	RegistrationSchemas,
-} from "./registration-context.js"
+import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
@@ -72,332 +68,340 @@ export function coreAssetActorDescriptors(
 		pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params)))
 
 	return [
-		{ name: "manage_asset", actions: {
-		list: {
-			paramsSchema: z
-				.object({
-					root_path: z.string().optional(),
-					path: z.string().optional(),
-					recursive: z.boolean().optional(),
-					limit: z.number().optional(),
-				})
-				.strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEListAssets(
-						optionalStringParam(params, ["root_path", "path"]) ?? "/Game",
-						typeof params.recursive === "boolean" ? params.recursive : true,
-						typeof params.limit === "number" ? params.limit : undefined,
+		{
+			name: "manage_asset",
+			actions: {
+				list: {
+					paramsSchema: z
+						.object({
+							root_path: z.string().optional(),
+							path: z.string().optional(),
+							recursive: z.boolean().optional(),
+							limit: z.number().optional(),
+						})
+						.strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEListAssets(
+								optionalStringParam(params, ["root_path", "path"]) ?? "/Game",
+								typeof params.recursive === "boolean" ? params.recursive : true,
+								typeof params.limit === "number" ? params.limit : undefined,
+							),
+						),
+				},
+				search: {
+					paramsSchema: z.object(searchAssetsShape).strict(),
+					handler: (params) => pythonDispatch(searchAssetsCommand(params)),
+				},
+				info: {
+					paramsSchema: assetLookupSchema,
+					handler: (params) =>
+						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+				},
+				references: {
+					paramsSchema: assetLookupSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
+						),
+				},
+				exists: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...assetLookupShape,
+								asset_paths: z.array(z.string()).optional(),
+							})
+							.strict(),
+						["asset_path", "path", "name", "asset_paths"],
+						"Provide asset_path, path, name, or asset_paths.",
+					).describe("Provide asset_path/path/name for one asset, or asset_paths for multiple assets."),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEAssetManagementTool("exists", {
+								asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+								asset_paths: params.asset_paths,
+							}),
+						),
+				},
+				duplicate: {
+					paramsSchema: assetMutationParamsSchema,
+					handler: assetMutationHandler("duplicate"),
+				},
+				rename: {
+					paramsSchema: assetMutationParamsSchema,
+					handler: assetMutationHandler("rename"),
+				},
+				move: {
+					paramsSchema: assetMutationParamsSchema,
+					handler: assetMutationHandler("move"),
+				},
+				delete: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...assetLookupShape,
+								asset_paths: z.array(z.string()).optional(),
+							})
+							.strict(),
+						["asset_path", "path", "name", "asset_paths"],
+						"Provide asset_path, path, name, or asset_paths.",
 					),
-				),
-		},
-		search: {
-			paramsSchema: z.object(searchAssetsShape).strict(),
-			handler: (params) => pythonDispatch(searchAssetsCommand(params)),
-		},
-		info: {
-			paramsSchema: assetLookupSchema,
-			handler: (params) =>
-				pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-		},
-		references: {
-			paramsSchema: assetLookupSchema,
-			handler: (params) =>
-				pythonDispatch(editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"]))),
-		},
-		exists: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...assetLookupShape,
-						asset_paths: z.array(z.string()).optional(),
-					})
-					.strict(),
-				["asset_path", "path", "name", "asset_paths"],
-				"Provide asset_path, path, name, or asset_paths.",
-			).describe("Provide asset_path/path/name for one asset, or asset_paths for multiple assets."),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("exists", {
-						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
-						asset_paths: params.asset_paths,
-					}),
-				),
-		},
-		duplicate: {
-			paramsSchema: assetMutationParamsSchema,
-			handler: assetMutationHandler("duplicate"),
-		},
-		rename: {
-			paramsSchema: assetMutationParamsSchema,
-			handler: assetMutationHandler("rename"),
-		},
-		move: {
-			paramsSchema: assetMutationParamsSchema,
-			handler: assetMutationHandler("move"),
-		},
-		delete: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...assetLookupShape,
-						asset_paths: z.array(z.string()).optional(),
-					})
-					.strict(),
-				["asset_path", "path", "name", "asset_paths"],
-				"Provide asset_path, path, name, or asset_paths.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("delete", {
-						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
-						asset_paths: params.asset_paths,
-					}),
-				),
-		},
-		save: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...assetLookupShape,
-						asset_paths: z.array(z.string()).optional(),
-						only_if_is_dirty: z.boolean().optional(),
-					})
-					.strict(),
-				["asset_path", "path", "name", "asset_paths"],
-				"Provide asset_path, path, name, or asset_paths.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("save", {
-						asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
-						asset_paths: params.asset_paths,
-						only_if_is_dirty: typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
-					}),
-				),
-		},
-		create_folder: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						directory_path: z.string().optional(),
-						folder_path: z.string().optional(),
-						path: z.string().optional(),
-					})
-					.strict(),
-				["directory_path", "folder_path", "path"],
-				"Provide directory_path, folder_path, or path.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("create_folder", {
-						directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
-					}),
-				),
-		},
-		list_folder: {
-			paramsSchema: z
-				.object({
-					directory_path: z.string().optional(),
-					folder_path: z.string().optional(),
-					path: z.string().optional(),
-					recursive: z.boolean().optional(),
-				})
-				.strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("list_folder", {
-						directory_path: optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
-						recursive: typeof params.recursive === "boolean" ? params.recursive : undefined,
-					}),
-				),
-		},
-		delete_folder: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						directory_path: z.string().optional(),
-						folder_path: z.string().optional(),
-						path: z.string().optional(),
-					})
-					.strict(),
-				["directory_path", "folder_path", "path"],
-				"Provide directory_path, folder_path, or path.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEAssetManagementTool("delete_folder", {
-						directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
-					}),
-				),
-		},
-		export: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...assetLookupShape,
-						destination_path: z.string().optional(),
-						file_path: z.string().optional(),
-						output_path: z.string().optional(),
-						overwrite: z.boolean().optional(),
-					})
-					.strict(),
-				["asset_path", "path", "name"],
-				"Provide asset_path, path, or name.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEExportAsset(
-						requiredStringParam(params, ["asset_path", "path", "name"]),
-						optionalStringParam(params, ["destination_path", "file_path", "output_path"]),
-						typeof params.overwrite === "boolean" ? params.overwrite : true,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEAssetManagementTool("delete", {
+								asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+								asset_paths: params.asset_paths,
+							}),
+						),
+				},
+				save: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...assetLookupShape,
+								asset_paths: z.array(z.string()).optional(),
+								only_if_is_dirty: z.boolean().optional(),
+							})
+							.strict(),
+						["asset_path", "path", "name", "asset_paths"],
+						"Provide asset_path, path, name, or asset_paths.",
 					),
-				),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEAssetManagementTool("save", {
+								asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+								asset_paths: params.asset_paths,
+								only_if_is_dirty: typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
+							}),
+						),
+				},
+				create_folder: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								directory_path: z.string().optional(),
+								folder_path: z.string().optional(),
+								path: z.string().optional(),
+							})
+							.strict(),
+						["directory_path", "folder_path", "path"],
+						"Provide directory_path, folder_path, or path.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEAssetManagementTool("create_folder", {
+								directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
+							}),
+						),
+				},
+				list_folder: {
+					paramsSchema: z
+						.object({
+							directory_path: z.string().optional(),
+							folder_path: z.string().optional(),
+							path: z.string().optional(),
+							recursive: z.boolean().optional(),
+						})
+						.strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEAssetManagementTool("list_folder", {
+								directory_path: optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
+								recursive: typeof params.recursive === "boolean" ? params.recursive : undefined,
+							}),
+						),
+				},
+				delete_folder: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								directory_path: z.string().optional(),
+								folder_path: z.string().optional(),
+								path: z.string().optional(),
+							})
+							.strict(),
+						["directory_path", "folder_path", "path"],
+						"Provide directory_path, folder_path, or path.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEAssetManagementTool("delete_folder", {
+								directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
+							}),
+						),
+				},
+				export: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...assetLookupShape,
+								destination_path: z.string().optional(),
+								file_path: z.string().optional(),
+								output_path: z.string().optional(),
+								overwrite: z.boolean().optional(),
+							})
+							.strict(),
+						["asset_path", "path", "name"],
+						"Provide asset_path, path, or name.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEExportAsset(
+								requiredStringParam(params, ["asset_path", "path", "name"]),
+								optionalStringParam(params, ["destination_path", "file_path", "output_path"]),
+								typeof params.overwrite === "boolean" ? params.overwrite : true,
+							),
+						),
+				},
+				validate: shared.validate_assets,
+			},
 		},
-		validate: shared.validate_assets,
-		} },
-		{ name: "manage_actor", actions: {
-		list: {
-			handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+		{
+			name: "manage_actor",
+			actions: {
+				list: {
+					handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+				},
+				find: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								pattern: z.string().optional(),
+								name: z.string().optional(),
+							})
+							.strict(),
+						["pattern", "name"],
+						"Provide pattern or name.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("find_actors_by_name", {
+								pattern: requiredStringParam(params, ["pattern", "name"]),
+							}),
+						),
+				},
+				spawn: {
+					paramsSchema: z
+						.object({
+							type: z.string().optional(),
+							actor_type: z.string().optional(),
+							class_name: z.string().optional(),
+							...actorNameShape,
+							location: z
+								.union([
+									z.object({ x: z.number(), y: z.number(), z: z.number() }),
+									z.tuple([z.number(), z.number(), z.number()]),
+								])
+								.optional(),
+							rotation: z
+								.union([
+									z.object({ pitch: z.number(), yaw: z.number(), roll: z.number() }),
+									z.tuple([z.number(), z.number(), z.number()]),
+								])
+								.optional(),
+						})
+						.strict(),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("spawn_actor", {
+								type: optionalStringParam(params, ["type", "actor_type", "class_name"]) ?? "StaticMeshActor",
+								name: optionalStringParam(params, ["name", "actor_name"]),
+								location: toVector3Array(params.location),
+								rotation: toRotatorArray(params.rotation),
+							}),
+						),
+				},
+				spawn_blueprint: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...blueprintTargetNoNameShape,
+								...actorNameShape,
+								...vector3TransformShape,
+								properties: z.record(z.any()).optional(),
+							})
+							.strict(),
+						["blueprint_name", "asset_path"],
+						"Provide blueprint_name or asset_path.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("spawn_blueprint_actor", {
+								blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
+								name: optionalStringParam(params, ["name", "actor_name"]),
+								location: toVector3Array(params.location),
+								rotation: toRotatorArray(params.rotation),
+								scale: toVector3Array(params.scale),
+								properties: params.properties,
+							}),
+						),
+				},
+				delete: {
+					paramsSchema: actorNameSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("delete_actor", {
+								name: actorNameParam(params),
+							}),
+						),
+				},
+				transform: {
+					paramsSchema: requireAtLeastOneValue(
+						z.object({ ...actorNameShape, ...vector3TransformShape }).strict(),
+						["name", "actor_name"],
+						"Provide name or actor_name.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("set_actor_transform", {
+								name: actorNameParam(params),
+								location: toVector3Array(params.location),
+								rotation: toRotatorArray(params.rotation),
+								scale: toVector3Array(params.scale),
+							}),
+						),
+				},
+				get_properties: {
+					paramsSchema: actorNameSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("get_actor_properties", {
+								name: actorNameParam(params),
+							}),
+						),
+				},
+				set_property: {
+					paramsSchema: requireAtLeastOneValue(
+						z
+							.object({
+								...actorNameShape,
+								property_name: z.string(),
+								property_value: z.any().optional(),
+							})
+							.strict(),
+						["name", "actor_name"],
+						"Provide name or actor_name.",
+					),
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("set_actor_property", {
+								name: actorNameParam(params),
+								property_name: requiredStringParam(params, ["property_name"]),
+								property_value: params.property_value,
+							}),
+						),
+				},
+				get_material_info: {
+					paramsSchema: actorNameSchema,
+					handler: (params) =>
+						pythonDispatch(
+							editorTools.UEActorTool("get_actor_material_info", {
+								name: actorNameParam(params),
+							}),
+						),
+				},
+			},
 		},
-		find: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						pattern: z.string().optional(),
-						name: z.string().optional(),
-					})
-					.strict(),
-				["pattern", "name"],
-				"Provide pattern or name.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("find_actors_by_name", {
-						pattern: requiredStringParam(params, ["pattern", "name"]),
-					}),
-				),
-		},
-		spawn: {
-			paramsSchema: z
-				.object({
-					type: z.string().optional(),
-					actor_type: z.string().optional(),
-					class_name: z.string().optional(),
-					...actorNameShape,
-					location: z
-						.union([
-							z.object({ x: z.number(), y: z.number(), z: z.number() }),
-							z.tuple([z.number(), z.number(), z.number()]),
-						])
-						.optional(),
-					rotation: z
-						.union([
-							z.object({ pitch: z.number(), yaw: z.number(), roll: z.number() }),
-							z.tuple([z.number(), z.number(), z.number()]),
-						])
-						.optional(),
-				})
-				.strict(),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("spawn_actor", {
-						type: optionalStringParam(params, ["type", "actor_type", "class_name"]) ?? "StaticMeshActor",
-						name: optionalStringParam(params, ["name", "actor_name"]),
-						location: toVector3Array(params.location),
-						rotation: toRotatorArray(params.rotation),
-					}),
-				),
-		},
-		spawn_blueprint: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...blueprintTargetNoNameShape,
-						...actorNameShape,
-						...vector3TransformShape,
-						properties: z.record(z.any()).optional(),
-					})
-					.strict(),
-				["blueprint_name", "asset_path"],
-				"Provide blueprint_name or asset_path.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("spawn_blueprint_actor", {
-						blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
-						name: optionalStringParam(params, ["name", "actor_name"]),
-						location: toVector3Array(params.location),
-						rotation: toRotatorArray(params.rotation),
-						scale: toVector3Array(params.scale),
-						properties: params.properties,
-					}),
-				),
-		},
-		delete: {
-			paramsSchema: actorNameSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("delete_actor", {
-						name: actorNameParam(params),
-					}),
-				),
-		},
-		transform: {
-			paramsSchema: requireAtLeastOneValue(
-				z.object({ ...actorNameShape, ...vector3TransformShape }).strict(),
-				["name", "actor_name"],
-				"Provide name or actor_name.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("set_actor_transform", {
-						name: actorNameParam(params),
-						location: toVector3Array(params.location),
-						rotation: toRotatorArray(params.rotation),
-						scale: toVector3Array(params.scale),
-					}),
-				),
-		},
-		get_properties: {
-			paramsSchema: actorNameSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("get_actor_properties", {
-						name: actorNameParam(params),
-					}),
-				),
-		},
-		set_property: {
-			paramsSchema: requireAtLeastOneValue(
-				z
-					.object({
-						...actorNameShape,
-						property_name: z.string(),
-						property_value: z.any().optional(),
-					})
-					.strict(),
-				["name", "actor_name"],
-				"Provide name or actor_name.",
-			),
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("set_actor_property", {
-						name: actorNameParam(params),
-						property_name: requiredStringParam(params, ["property_name"]),
-						property_value: params.property_value,
-					}),
-				),
-		},
-		get_material_info: {
-			paramsSchema: actorNameSchema,
-			handler: (params) =>
-				pythonDispatch(
-					editorTools.UEActorTool("get_actor_material_info", {
-						name: actorNameParam(params),
-					}),
-				),
-		},
-		} },
 	]
 }
