@@ -11,6 +11,7 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 export function worldNavigationVolumeDescriptors(
@@ -26,6 +27,7 @@ export function worldNavigationVolumeDescriptors(
 		toVector3Array,
 		toVector3Record,
 	} = ctx
+	const shared = sharedReadOnlyActions(ctx)
 
 	const volumeSpawnSchema = z
 		.object({
@@ -171,9 +173,7 @@ export function worldNavigationVolumeDescriptors(
 					),
 				),
 		},
-		inspect_navigation: {
-			handler: () => pythonDispatch(editorTools.UEGetMapInfo()),
-		},
+		inspect_navigation: shared.map_info,
 		} },
 	]
 }

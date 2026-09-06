@@ -10,6 +10,7 @@ import {
 	RegistrationParams,
 	RegistrationSchemas,
 } from "./registration-context.js"
+import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 export function worldLightingDescriptors(
@@ -23,6 +24,7 @@ export function worldLightingDescriptors(
 		toRotatorArray,
 		toVector3Array,
 	} = ctx
+	const shared = sharedReadOnlyActions(ctx)
 
 	const lightSpawnSchema = z
 		.object({
@@ -85,9 +87,7 @@ export function worldLightingDescriptors(
 					}),
 				),
 		},
-		inspect_lighting: {
-			handler: () => pythonDispatch(editorTools.UEGetMapInfo()),
-		},
+		inspect_lighting: shared.map_info,
 		} },
 	]
 }
