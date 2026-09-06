@@ -1,3 +1,4 @@
+import { RenderError } from "../effect/errors.js"
 import { editorPreludes, readEditorScript } from "./prelude-loader.js"
 
 /**
@@ -29,7 +30,16 @@ function substituteTemplateArgs(filePath: string, source: string, vars: Record<s
 		return vars[name]
 	})
 	if (missing.size > 0) {
-		throw new Error(`Missing template arg(s) ${[...missing].join(", ")} for ${filePath}`)
+		const detail = `Missing template arg(s) ${[...missing].join(", ")} for ${filePath}`
+		// Phase 3 (report §4.2, §4.5): the missing-arg throw is a RenderError,
+		// still thrown synchronously so renderEditorScript stays a pure
+		// string -> string function with no Effect in its signature.
+		// Data.TaggedError defaults .message to "", so it is aligned onto
+		// detail — the codec harness and legacy catch sites keep reading the
+		// exact legacy text naming the file and the missing arg(s).
+		const error = new RenderError({ file: filePath, detail })
+		error.message = detail
+		throw error
 	}
 	return rendered
 }

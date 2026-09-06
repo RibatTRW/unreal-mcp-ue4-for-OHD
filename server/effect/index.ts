@@ -4,4 +4,5 @@
 export * from "./config.js"
 export * from "./connection-service.js"
 export * from "./errors.js"
+export * from "./prelude-service.js"
 export * from "./schema-patterns.js"
