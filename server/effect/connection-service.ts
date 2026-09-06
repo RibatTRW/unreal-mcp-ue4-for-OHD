@@ -346,9 +346,13 @@ export const runCompatPromise = <A>(effect: Effect.Effect<A, unknown>): Promise<
 // (preserving rejection identity for connect failures); command/discovery
 // failures re-render the exact legacy messages.
 export const withCompatErrors = <A, E>(effect: Effect.Effect<A, E>): Effect.Effect<A, unknown> =>
-	Effect.catchAll(effect, (error) => {
+	Effect.catchAll(effect, (error): Effect.Effect<never, unknown> => {
 		if (error instanceof ConnectionError) {
-			return Effect.fail(error.cause)
+			return Effect.fail(
+				error.cause instanceof Error
+					? error.cause
+					: new Error("Unable to connect to your Unreal Engine Editor after multiple attempts"),
+			)
 		}
 		if (error instanceof CommandFailedError) {
 			return Effect.fail(new Error(`Command failed with: ${error.result}`))
