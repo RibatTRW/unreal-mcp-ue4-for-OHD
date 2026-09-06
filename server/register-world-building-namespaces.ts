@@ -1,5 +1,7 @@
+import { Effect } from "effect"
 import { z } from "zod"
 
+import type { ToolError } from "./effect/errors.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolCatalogEntry } from "./tool-catalog-types.js"
@@ -135,7 +137,15 @@ export function worldBuildingDescriptors(
 	})
 	const worldAction = (operation: string, paramsSchema: z.ZodTypeAny) => ({
 		paramsSchema,
-		handler: (params: Record<string, any>) => pythonDispatch(worldBuildCommand(operation, params)),
+		// Phase 5c (report §5): handler returns Effect; param-helper
+		// and builder throws become channel failures via Effect.try
+		// (Effect.sync would defect past dispatch's catchAll and break
+		// the identical envelope), rendered verbatim downstream.
+		handler: (params: Record<string, any>) =>
+			Effect.try({
+				try: () => pythonDispatch(worldBuildCommand(operation, params)),
+				catch: (cause) => cause as ToolError,
+			}),
 	})
 
 	return [
@@ -145,7 +155,13 @@ export function worldBuildingDescriptors(
 			actions: {
 				info: shared.map_info,
 				world_outliner: shared.world_outliner,
-				list_actors: { handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")) },
+				list_actors: {
+					handler: () =>
+						Effect.try({
+							try: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+							catch: (cause) => cause as ToolError,
+						}),
+				},
 				create_wall: worldAction("create_wall", createWallSchema),
 				create_maze: worldAction("create_maze", createMazeSchema),
 				create_pyramid: worldAction("create_pyramid", createPyramidSchema),
