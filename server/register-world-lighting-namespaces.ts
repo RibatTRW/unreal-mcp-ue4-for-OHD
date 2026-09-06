@@ -1,5 +1,7 @@
+import { Effect } from "effect"
 import { z } from "zod"
 
+import type { ToolError } from "./effect/errors.js"
 import { actorNameShape, requireAtLeastOneValue, vector3TransformShape } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
@@ -42,39 +44,55 @@ export function worldLightingDescriptors(
 			actions: {
 				spawn_directional_light: {
 					paramsSchema: lightSpawnSchema,
+					// Phase 5a: handler returns Effect; param-helper and builder
+					// throws become channel failures via Effect.try (Effect.sync
+					// would defect past dispatch's catchAll and break the
+					// identical envelope), rendered verbatim downstream.
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("spawn_actor", {
-								type: "DirectionalLight",
-								name: optionalStringParam(params, ["name", "actor_name"]) ?? "DirectionalLight",
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("spawn_actor", {
+										type: "DirectionalLight",
+										name: optionalStringParam(params, ["name", "actor_name"]) ?? "DirectionalLight",
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				spawn_point_light: {
 					paramsSchema: lightSpawnSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("spawn_actor", {
-								type: "PointLight",
-								name: optionalStringParam(params, ["name", "actor_name"]) ?? "PointLight",
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("spawn_actor", {
+										type: "PointLight",
+										name: optionalStringParam(params, ["name", "actor_name"]) ?? "PointLight",
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				spawn_spot_light: {
 					paramsSchema: lightSpawnSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("spawn_actor", {
-								type: "SpotLight",
-								name: optionalStringParam(params, ["name", "actor_name"]) ?? "SpotLight",
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("spawn_actor", {
+										type: "SpotLight",
+										name: optionalStringParam(params, ["name", "actor_name"]) ?? "SpotLight",
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				transform_light: {
 					paramsSchema: requireAtLeastOneValue(
@@ -83,14 +101,18 @@ export function worldLightingDescriptors(
 						"Provide name or actor_name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("set_actor_transform", {
-								name: actorNameParam(params),
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-								scale: toVector3Array(params.scale),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("set_actor_transform", {
+										name: actorNameParam(params),
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+										scale: toVector3Array(params.scale),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				inspect_lighting: shared.map_info,
 			},
