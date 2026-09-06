@@ -65,7 +65,7 @@ graph TD
 
 ## MCP Client Setup
 
-This is the most important setup step: your MCP client must know how to launch `unreal-mcp-ue4`.
+This is the most important setup step: your MCP client must know how to launch `unreal-mcp-ue4`. Autonomous agents setting up unattended: follow the ordered agent setup guide in [docs/agent-setup.md](docs/agent-setup.md).
 
 ### 1. Install the server
 
