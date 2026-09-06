@@ -4,7 +4,15 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration (phases 0-4)
+## Effect migration (phases 0-4, 5a)
+
+- Phase 5a pilot (`register-core-system-namespaces.ts` [shared-actions only, no change],
+  `register-core-inspection-namespaces.ts`, `register-world-lighting-namespaces.ts`): handlers return
+  `Effect.try({ try: () => pythonDispatch(...), catch: (cause) => cause as ToolError })` with paramsSchema
+  left as frozen Zod, so the listTools surface snapshot does not move. Never `Effect.sync`/`Effect.succeed`
+  around throwing param-helper/builder thunks: `succeed` evaluates eagerly (throw escapes the Effect)
+  and `sync` turns the throw into a defect that sails past dispatch's `Effect.catchAll` as FiberFailure;
+  only `Effect.try` lands it in the failure channel for the identical envelope.
 
 - Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
   prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently

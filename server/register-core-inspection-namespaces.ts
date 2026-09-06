@@ -1,5 +1,7 @@
+import { Effect } from "effect"
 import { z } from "zod"
 
+import type { ToolError } from "./effect/errors.js"
 import {
 	actorNameSchema,
 	assetLookupSchema,
@@ -39,33 +41,53 @@ export function coreInspectionDescriptors(
 			actions: {
 				asset: {
 					paramsSchema: assetLookupSchema,
+					// Phase 5a (report §5): handler returns Effect; param-helper
+					// and builder throws become channel failures via Effect.try
+					// (Effect.sync would defect past dispatch's catchAll and break
+					// the identical envelope), rendered verbatim downstream.
 					handler: (params) =>
-						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+						Effect.try({
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				asset_references: {
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				actor: {
 					paramsSchema: actorNameSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("get_actor_properties", {
-								name: actorNameParam(params),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("get_actor_properties", {
+										name: actorNameParam(params),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				actor_materials: {
 					paramsSchema: actorNameSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("get_actor_material_info", {
-								name: actorNameParam(params),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("get_actor_material_info", {
+										name: actorNameParam(params),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				blueprint: {
 					paramsSchema: requireAtLeastOneValue(
@@ -79,12 +101,16 @@ export function coreInspectionDescriptors(
 						"Provide blueprint_name, asset_path, or name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
-								blueprint_name: blueprintNameParam(params),
-								include_nodes: Boolean(params.include_nodes),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
+										blueprint_name: blueprintNameParam(params),
+										include_nodes: Boolean(params.include_nodes),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				map: shared.map_info,
 			},
