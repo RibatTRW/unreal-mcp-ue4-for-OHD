@@ -57,12 +57,15 @@ if (configFile.error) {
 const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath))
 failWithDiagnostics(parsedConfig.errors ?? [])
 
+// NOTE: there is no esbuild bundling step in this repo (esbuild is only a
+// transitive dev tool via tsx); the emit language level is controlled here.
+// Keep in sync with tsconfig.json "target" — dist/ must run on engines.node (>=18).
 const compilerOptions = {
 	...parsedConfig.options,
 	module: ts.ModuleKind.CommonJS,
 	outDir: distDir,
 	rootDir: serverDir,
-	target: ts.ScriptTarget.ES2018,
+	target: ts.ScriptTarget.ES2022,
 }
 
 const program = ts.createProgram({

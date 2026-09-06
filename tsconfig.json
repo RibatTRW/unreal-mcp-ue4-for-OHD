@@ -14,7 +14,12 @@
     "preserveWatchOutput": true,
     "strictNullChecks": true,
     "module": "commonjs",
-    "target": "es2015",
+    "target": "es2022",
+    // Pin legacy class-field assignment semantics: the ES2022 target would
+    // otherwise flip useDefineForClassFields to true and change runtime emit
+    // for existing classes (connection-session.ts, remote-execution.ts).
+    // Phase-0 scaffolding must not change runtime behavior.
+    "useDefineForClassFields": false,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true

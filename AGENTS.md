@@ -4,6 +4,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
+## Effect migration scaffold (Phase 0)
+
+- Pattern catalog + error channel live in `server/effect/` (not wired in yet);
+  Zod stays at the MCP SDK call-site permanently (SDK throws on non-Zod).
+- `test:no-unreal` also runs `scripts/check-tool-surface.mjs` (listTools snapshot
+  in `scripts/__snapshots__/`) and `scripts/check-schema-parity.mjs` (Zod↔Schema matrix).
+- Emit target is ES2022 (`tsconfig.json` + `scripts/build.mjs` override), proven on Node 18.
+
 ## Tool catalog (W3)
 
 - Tool name/category/description live co-located with registration in `server/register-*.ts`
