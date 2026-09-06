@@ -4,10 +4,11 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration (phases 0-3)
+## Effect migration (phases 0-4)
 
-- Pattern catalog + error channel + Config env readers + connection service + prelude service live in `server/effect/`;
-  Zod stays at the MCP SDK call-site permanently (SDK throws on non-Zod).
+- Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
+  prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently
+  (SDK throws on non-Zod).
 - Session policy (`server/connection-session.ts`, `server/remote-execution.ts`) is Effect-backed
   (`server/effect/connection-service.ts`: custom 1.5x retry schedule, Clock/TestClock sleeps,
   cached acquisitions, one `Schedule.once` stale retry, Layer singleton) behind Promise-typed
@@ -21,10 +22,24 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   moved behind memoized-once cells (`getEditorPreludes`/`getDomainDispatchHarness`, lazy-getter `editorPreludes`
   preserving key order) composed into the `PreludeServiceLive` Layer (Phase 6 wires it at startup); sidebar-template
   read is a scoped Effect run synchronously inside the unchanged `UEUMGSetupSidebarTab` builder.
+- Registration framework (`server/registration-context-*.ts`, `server/namespace-action-schema-fragments.ts`,
+  `server/shared-read-only-actions.ts`): dispatch runs as an Effect program with `Effect.catchAll` rendering
+  the identical `{success:false, tool, action, message}` envelope; per-action `paramsSchema` accepts
+  `z.ZodTypeAny | Schema.Schema.AnyNoContext` (Zod validates via `safeParseAsync`, Schemas via strict decode).
+  Sharp edges: discriminate Zod-vs-Schema by duck-typing `safeParseAsync`, never `instanceof z.ZodType`
+  (ESM/CJS dual zod instances in harnesses break instanceof); resolving our callbacks against the SDK's
+  conditional `ToolCallback` explodes tsc (excessively-deep) — use the shallow `Sdk*Like` seams in
+  `server/registration-context.ts`; Schema-validated actions contribute a permissive record to the SDK
+  `inputSchema` (SDK pre-validates before our callback — strict check runs inside), so the surface
+  snapshot will move when Phase 5 migrates the first action; handler params are `ActionParams`
+  (`Record<string, unknown>`), param-helper throws are `MissingParamError` with `.message` aligned.
 - `test:no-unreal` also runs `scripts/check-tool-surface.mjs` (listTools snapshot
   in `scripts/__snapshots__/`), `scripts/check-schema-parity.mjs` (Zod↔Schema matrix),
   `scripts/check-connection-session.mjs` (legacy fake-transport scenarios, unchanged) and
-  `scripts/check-connection-session-effect.mjs` (TestClock timing: 1.5x gaps, MAX cap, stale-once).
+  `scripts/check-connection-session-effect.mjs` (TestClock timing: 1.5x gaps, MAX cap, stale-once) and
+  `scripts/check-dispatch-envelope.mjs` (live invalid-params + handler-throw envelopes snapshotted in
+  `scripts/__snapshots__/dispatch-envelope.snapshot.json`, plus dispatch-unit coverage of the Zod/Schema/
+  throw/Effect-handler paths).
 - Emit target is ES2022 (`tsconfig.json` + `scripts/build.mjs` override), proven on Node 18.
 
 ## Tool catalog (W3)

@@ -1,4 +1,14 @@
+import { Schema } from "effect"
 import { z } from "zod"
+
+// ---------------------------------------------------------------------------
+// FROZEN ZOD BOUNDARY (report §4.4). The Zod schemas below are the exact
+// SDK call-site surface: registrars build action paramsSchemas from them
+// and dispatch derives the registered inputSchema union from those. They
+// stay byte-identical (locked by scripts/__snapshots__/list-tools.snapshot.json).
+// Validation behind that line migrates to the effect/Schema mirrors further
+// down, per the Phase-0 parity mappings in server/effect/schema-patterns.ts.
+// ---------------------------------------------------------------------------
 
 export const vector2InputSchema = z.union([
 	z.object({ x: z.number(), y: z.number() }),
@@ -40,6 +50,16 @@ export interface RegistrationSchemas {
 		material_path: z.ZodTypeAny
 		prefix: z.ZodTypeAny
 	}
+	// Phase-4 effect/Schema mirrors (report §4.1): canonical validation
+	// forms for migrated code. Struct-field positions use Schema.optional;
+	// see the OPTIONAL NOTE in server/effect/schema-patterns.ts.
+	colorSchema: typeof colorSchema
+	recordSchemaEffect: typeof recordSchemaEffect
+	rotatorSchema: typeof rotatorSchema
+	stringListSchemaEffect: typeof stringListSchemaEffect
+	vector2Schema: typeof vector2Schema
+	vector3Schema: typeof vector3Schema
+	worldBuildBaseSchemaEffect: typeof worldBuildBaseSchemaEffect
 	toColorArray: (value?: unknown) => number[] | undefined
 	toColorRecord: (value?: unknown) => { a: number; b: number; g: number; r: number } | undefined
 	toRotatorArray: (value?: unknown) => number[] | undefined
@@ -54,6 +74,57 @@ export const worldBuildBaseSchema = {
 	location: vector3InputSchema.optional().describe("Optional world location"),
 	material_path: z.string().optional().describe("Optional material path to apply"),
 	prefix: z.string().optional().describe("Optional actor label prefix"),
+}
+
+// ---------------------------------------------------------------------------
+// effect/Schema mirrors (report §4.1 mapping rows). Behavioral parity with
+// the frozen Zod forms above is pinned by scripts/check-schema-parity.mjs:
+// same accept/reject inputs, `.strict()` excess rejection via the strict
+// decode options in dispatch (Structs strip unknown keys by default), and
+// `.describe` text via annotations (descriptions flow into listTools output
+// and are covered by the surface snapshot).
+// ---------------------------------------------------------------------------
+
+export const vector2Schema = Schema.Union(
+	Schema.Struct({ x: Schema.Number, y: Schema.Number }),
+	Schema.Tuple(Schema.Number, Schema.Number),
+)
+
+export const vector3Schema = Schema.Union(
+	Schema.Struct({ x: Schema.Number, y: Schema.Number, z: Schema.Number }),
+	Schema.Tuple(Schema.Number, Schema.Number, Schema.Number),
+)
+
+export const rotatorSchema = Schema.Union(
+	Schema.Struct({ pitch: Schema.Number, yaw: Schema.Number, roll: Schema.Number }),
+	Schema.Tuple(Schema.Number, Schema.Number, Schema.Number),
+)
+
+export const colorSchema = Schema.Union(
+	Schema.Struct({
+		r: Schema.Number,
+		g: Schema.Number,
+		b: Schema.Number,
+		a: Schema.optional(Schema.Number),
+	}),
+	Schema.Tuple(Schema.Number, Schema.Number, Schema.Number, Schema.Number),
+)
+
+// Permissive by design (compactParamsSchema namespaces): must stay as
+// permissive as z.record(z.any()) or compact namespaces start rejecting
+// valid params (report §6 risk).
+export const recordSchemaEffect = Schema.Record({ key: Schema.String, value: Schema.Unknown })
+
+export const stringListSchemaEffect = Schema.NonEmptyArray(Schema.String.pipe(Schema.minLength(1)))
+
+// NOTE: Schema.optional is a struct-field constructor, not a full Schema —
+// it carries no annotations pipe. These mirrors are validation-only (the
+// frozen Zod forms above own the described SDK surface), so fields stay
+// bare; describe→annotations parity is pinned by check-schema-parity.mjs.
+export const worldBuildBaseSchemaEffect = {
+	location: Schema.optional(vector3Schema),
+	material_path: Schema.optional(Schema.String),
+	prefix: Schema.optional(Schema.String),
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -182,6 +253,13 @@ export function createRegistrationSchemaHelpers(): RegistrationSchemas {
 		vector2InputSchema,
 		vector3InputSchema,
 		worldBuildBaseSchema,
+		colorSchema,
+		recordSchemaEffect,
+		rotatorSchema,
+		stringListSchemaEffect,
+		vector2Schema,
+		vector3Schema,
+		worldBuildBaseSchemaEffect,
 		toColorArray,
 		toColorRecord,
 		toRotatorArray,
