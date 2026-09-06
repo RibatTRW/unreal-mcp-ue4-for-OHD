@@ -12,6 +12,7 @@ import {
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 const assetMutationParamsSchema = requireAtLeastOneValue(
@@ -40,7 +41,6 @@ export function coreAssetActorDescriptors(
 ): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
-		assetPathListParam,
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
@@ -50,6 +50,7 @@ export function coreAssetActorDescriptors(
 		toRotatorArray,
 		toVector3Array,
 	} = ctx
+	const shared = sharedReadOnlyActions(ctx)
 
 	const blueprintTargetNoNameShape = {
 		blueprint_name: z.string().optional(),
@@ -62,7 +63,6 @@ export function coreAssetActorDescriptors(
 		destination_path: optionalStringParam(params, ["destination_path"]),
 		new_name: optionalStringParam(params, ["new_name", "name"]),
 	})
-	const assetPathListInputSchema = z.union([z.string(), z.array(z.string())])
 
 	const assetMutationHandler = (operation: "duplicate" | "rename" | "move") => (params: Record<string, any>) =>
 		pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params)))
@@ -254,19 +254,7 @@ export function coreAssetActorDescriptors(
 							),
 						),
 				},
-				validate: {
-					paramsSchema: requireAtLeastOneValue(
-						z
-							.object({
-								asset_paths: assetPathListInputSchema.optional(),
-								paths: assetPathListInputSchema.optional(),
-							})
-							.strict(),
-						["asset_paths", "paths"],
-						"Provide asset_paths or paths as a string, comma-separated string, or string array.",
-					),
-					handler: (params) => pythonDispatch(editorTools.UEValidateAssets(assetPathListParam(params))),
-				},
+				validate: shared.validate_assets,
 			},
 		},
 		{

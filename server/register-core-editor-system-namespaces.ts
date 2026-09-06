@@ -9,6 +9,7 @@ import {
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 const namespaceParameterHints: Record<string, Record<string, string[]>> = {
@@ -85,7 +86,6 @@ export function coreEditorSystemDescriptors(
 ): ToolNamespaceDescriptor[] {
 	const {
 		actorNameParam,
-		assetPathListParam,
 		blueprintNameParam,
 		directDispatch,
 		editorTools,
@@ -95,7 +95,7 @@ export function coreEditorSystemDescriptors(
 		toVector3Record,
 		toolNamespaceRegistry,
 	} = ctx
-	const assetPathListInputSchema = z.union([z.string(), z.array(z.string())])
+	const shared = sharedReadOnlyActions(ctx)
 
 	return [
 		{
@@ -109,17 +109,10 @@ export function coreEditorSystemDescriptors(
 						.strict(),
 					handler: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
 				},
-				console_command: {
-					paramsSchema: z
-						.object({
-							command: z.string(),
-						})
-						.strict(),
-					handler: (params) => pythonDispatch(editorTools.UEConsoleCommand(requiredStringParam(params, ["command"]))),
-				},
+				console_command: shared.console_command,
 				project_info: { handler: () => pythonDispatch(editorTools.UEGetProjectInfo()) },
-				map_info: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
-				world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
+				map_info: shared.map_info,
+				world_outliner: shared.world_outliner,
 				is_pie_running: {
 					paramsSchema: z
 						.object({
@@ -165,25 +158,7 @@ export function coreEditorSystemDescriptors(
 							}),
 						),
 				},
-				get_console_variable: {
-					paramsSchema: requireAtLeastOneValue(
-						z
-							.object({
-								variable_name: z.string().optional(),
-								name: z.string().optional(),
-								console_variable: z.string().optional(),
-							})
-							.strict(),
-						["variable_name", "name", "console_variable"],
-						"Provide variable_name, name, or console_variable.",
-					),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEGetConsoleVariable(
-								requiredStringParam(params, ["variable_name", "name", "console_variable"]),
-							),
-						),
-				},
+				get_console_variable: shared.get_console_variable,
 				screenshot: { handler: () => pythonDispatch(editorTools.UETakeScreenshot()) },
 				move_camera: {
 					paramsSchema: z.object(vector3TransformShape).strict(),
@@ -200,46 +175,9 @@ export function coreEditorSystemDescriptors(
 		{
 			name: "manage_system",
 			actions: {
-				console_command: {
-					paramsSchema: z
-						.object({
-							command: z.string(),
-						})
-						.strict(),
-					handler: (params) => pythonDispatch(editorTools.UEConsoleCommand(requiredStringParam(params, ["command"]))),
-				},
-				get_console_variable: {
-					paramsSchema: requireAtLeastOneValue(
-						z
-							.object({
-								variable_name: z.string().optional(),
-								name: z.string().optional(),
-								console_variable: z.string().optional(),
-							})
-							.strict(),
-						["variable_name", "name", "console_variable"],
-						"Provide variable_name, name, or console_variable.",
-					),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEGetConsoleVariable(
-								requiredStringParam(params, ["variable_name", "name", "console_variable"]),
-							),
-						),
-				},
-				validate_assets: {
-					paramsSchema: requireAtLeastOneValue(
-						z
-							.object({
-								asset_paths: assetPathListInputSchema.optional(),
-								paths: assetPathListInputSchema.optional(),
-							})
-							.strict(),
-						["asset_paths", "paths"],
-						"Provide asset_paths or paths as a string, comma-separated string, or string array.",
-					),
-					handler: (params) => pythonDispatch(editorTools.UEValidateAssets(assetPathListParam(params))),
-				},
+				console_command: shared.console_command,
+				get_console_variable: shared.get_console_variable,
+				validate_assets: shared.validate_assets,
 			},
 		},
 		{
@@ -294,7 +232,7 @@ export function coreEditorSystemDescriptors(
 							}),
 						),
 				},
-				map: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
+				map: shared.map_info,
 			},
 		},
 		{
