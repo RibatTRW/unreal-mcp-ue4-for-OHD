@@ -2,11 +2,9 @@ import type { IRemoteExecutionMessageCommandOutputData, RemoteExecutionNode } fr
 
 // Explicit connection session over an injected transport seam
 // (candidate 8). All retry/backoff/stale-connection policy moved here
-// verbatim from remote-execution.ts — behavior identical, including the two
-// known smells noted below (follow-ups, NOT fixed here):
-// (a) when the stale retry in runCommand returns !success, the throw
-//     surfaces the ORIGINAL error, not the retry's;
-// (b) backoff state lives in the mutated retryDelay local.
+// verbatim from remote-execution.ts — behavior identical, including the
+// known smell noted below (follow-up, NOT fixed here):
+// (a) backoff state lives in the mutated retryDelay local.
 
 export const DEFAULT_RETRY_COUNT = 3
 export const DEFAULT_RETRY_DELAY_MS = 2000
@@ -208,7 +206,7 @@ export class ConnectionSession {
 			const retryRuntime = await this.ensureConnection()
 			const retryResult = await retryRuntime.runCommand(command)
 			if (!retryResult.success) {
-				throw error instanceof Error ? error : new Error(String(error))
+				throw new Error(`Command failed with: ${retryResult.result}`)
 			}
 
 			return retryResult.output.map((line) => line.output).join("\n")
