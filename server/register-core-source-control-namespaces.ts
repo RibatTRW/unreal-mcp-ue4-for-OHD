@@ -9,7 +9,23 @@ import {
 	sourceControlPackagesShape,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const coreSourceControlEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_source_control",
+		category: "Core Tool Namespaces",
+		description: "Source-control tool namespace for provider inspection and file or package source-control operations.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(coreSourceControlEntries)
 
 export function coreSourceControlDescriptors(
 	ctx: RegistrationParams & RegistrationDispatch,
@@ -27,6 +43,7 @@ export function coreSourceControlDescriptors(
 	return [
 		{
 			name: "manage_source_control",
+			description: describeTool("manage_source_control"),
 			actions: {
 				provider_info: {
 					handler: () => pythonDispatch(editorTools.UESourceControlTool("get_source_control_provider")),

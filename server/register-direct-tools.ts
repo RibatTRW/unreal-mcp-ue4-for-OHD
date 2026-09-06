@@ -2,11 +2,55 @@ import { z } from "zod"
 
 import type { RegistrationDispatch } from "./registration-context.js"
 import { discoverPath } from "./remote-execution.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
+
+/**
+ * Catalog entries co-located with the direct-tool registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const directToolEntries: ToolCatalogEntry[] = [
+	{
+		name: "get_unreal_engine_path",
+		category: "Editor Session Info",
+		description: "Get the active Unreal Engine root path from the connected editor session",
+	},
+	{
+		name: "get_unreal_project_path",
+		category: "Editor Session Info",
+		description: "Get the active Unreal project file path from the connected editor session",
+	},
+	{
+		name: "get_unreal_version",
+		category: "Editor Session Info",
+		description: "Get the active Unreal Engine version string from the connected editor session",
+	},
+	{
+		name: "editor_create_object",
+		category: "Core Direct Tools",
+		description:
+			"Create a new object/actor in the world\n\nExample output: {'success': true, 'actor_name': 'StaticMeshActor_1', 'actor_label': 'MyCube', 'class': 'StaticMeshActor', 'location': {'x': 100.0, 'y': 200.0, 'z': 0.0}, 'rotation': {'pitch': 0.0, 'yaw': 45.0, 'roll': 0.0}, 'scale': {'x': 1.0, 'y': 1.0, 'z': 1.0}}\n\nReturns created actor details with final transform values.",
+	},
+	{
+		name: "editor_update_object",
+		category: "Core Direct Tools",
+		description:
+			"Update an existing object/actor in the world\n\nExample output: {'success': true, 'actor_name': 'StaticMeshActor_1', 'actor_label': 'UpdatedCube', 'class': 'StaticMeshActor', 'location': {'x': 150.0, 'y': 200.0, 'z': 50.0}, 'rotation': {'pitch': 0.0, 'yaw': 90.0, 'roll': 0.0}, 'scale': {'x': 2.0, 'y': 2.0, 'z': 2.0}}\n\nReturns updated actor details with new transform values.",
+	},
+	{
+		name: "editor_delete_object",
+		category: "Core Direct Tools",
+		description:
+			"Delete an object/actor from the world\n\nExample output: {'success': true, 'message': 'Successfully deleted actor: MyCube', 'deleted_actor': {'actor_name': 'StaticMeshActor_1', 'actor_label': 'MyCube', 'class': 'StaticMeshActor', 'location': {'x': 100.0, 'y': 200.0, 'z': 0.0}}}\n\nReturns deletion confirmation with details of the deleted actor.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(directToolEntries)
 
 export function registerDirectTools(ctx: RegistrationDispatch) {
-	const { editorTools, rawServerTool, registerPythonTool, textResponse, toolDescription } = ctx
+	const { editorTools, rawServerTool, registerPythonTool, textResponse } = ctx
 
-	rawServerTool("get_unreal_engine_path", toolDescription("get_unreal_engine_path"), async () => {
+	rawServerTool("get_unreal_engine_path", describeTool("get_unreal_engine_path"), async () => {
 		const enginePath = await discoverPath(
 			[
 				"import os",
@@ -25,7 +69,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 		return textResponse(`Unreal Engine path: ${enginePath}`)
 	})
 
-	rawServerTool("get_unreal_project_path", toolDescription("get_unreal_project_path"), async () => {
+	rawServerTool("get_unreal_project_path", describeTool("get_unreal_project_path"), async () => {
 		const projectPath = await discoverPath(
 			[
 				"import os",
@@ -40,7 +84,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 		return textResponse(`Unreal Project path: ${projectPath}`)
 	})
 
-	rawServerTool("get_unreal_version", toolDescription("get_unreal_version"), async () => {
+	rawServerTool("get_unreal_version", describeTool("get_unreal_version"), async () => {
 		const engineVersion = await discoverPath(
 			["import unreal", "print(unreal.SystemLibrary.get_engine_version() or '')"].join("\n"),
 			"Unable to resolve the active Unreal Engine version",
@@ -52,7 +96,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 	/// Core Direct Tools
 	registerPythonTool(
 		"editor_create_object",
-		toolDescription("editor_create_object"),
+		describeTool("editor_create_object"),
 		{
 			object_class: z.string().describe("Unreal class name (e.g., 'StaticMeshActor', 'DirectionalLight')"),
 			object_name: z.string().describe("Name/label for the created object"),
@@ -93,7 +137,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 
 	registerPythonTool(
 		"editor_update_object",
-		toolDescription("editor_update_object"),
+		describeTool("editor_update_object"),
 		{
 			actor_name: z.string().describe("Name or label of the actor to update"),
 			location: z
@@ -134,7 +178,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 
 	registerPythonTool(
 		"editor_delete_object",
-		toolDescription("editor_delete_object"),
+		describeTool("editor_delete_object"),
 		{
 			actor_names: z.string(),
 		},

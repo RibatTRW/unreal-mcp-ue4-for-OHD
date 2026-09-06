@@ -2,7 +2,24 @@ import { z } from "zod"
 
 import { requireAtLeastOneValue } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const coreToolsEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_tools",
+		category: "Core Tool Namespaces",
+		description:
+			"Tool-namespace registry for listing registered tool namespaces and describing supported actions. Use this as the discovery entry point for the namespace-first MCP surface.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(coreToolsEntries)
 
 // Parameter hints served by manage_tools.describe_namespace. Entries cover
 // namespaces whose descriptors live in other registrar files; the map stays
@@ -84,6 +101,7 @@ export function coreToolsDescriptors(
 	return [
 		{
 			name: "manage_tools",
+			description: describeTool("manage_tools"),
 			actions: {
 				list_namespaces: {
 					handler: () =>

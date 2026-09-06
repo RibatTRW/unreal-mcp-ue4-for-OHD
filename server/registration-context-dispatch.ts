@@ -41,7 +41,6 @@ export interface RegistrationDispatch {
 	) => void
 	registerZeroArgPythonTool: (name: string, description: string, buildCommand: () => string) => void
 	textResponse: (text: string) => TextResponse
-	toolDescription: (name: string) => string
 	toolNamespaceRegistry: Map<string, { description: string; supportedActions: string[] }>
 }
 
@@ -51,20 +50,12 @@ interface DispatchHelperOptions {
 	rawServerTool: (...args: any[]) => unknown
 	recordSchema: z.ZodRecord<z.ZodString, z.ZodAny>
 	textResponse: (text: string) => TextResponse
-	toolDescription: (name: string) => string
 	toolNamespaceRegistry: Map<string, { description: string; supportedActions: string[] }>
 }
 
 export function createDispatchHelpers(options: DispatchHelperOptions): RegistrationDispatch {
-	const {
-		editorTools,
-		rawServerRegisterTool,
-		rawServerTool,
-		recordSchema,
-		textResponse,
-		toolDescription,
-		toolNamespaceRegistry,
-	} = options
+	const { editorTools, rawServerRegisterTool, rawServerTool, recordSchema, textResponse, toolNamespaceRegistry } =
+		options
 
 	const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
 	const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
@@ -247,7 +238,6 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 		registerToolNamespace,
 		registerZeroArgPythonTool,
 		textResponse,
-		toolDescription,
 		toolNamespaceRegistry,
 	}
 }

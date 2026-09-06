@@ -2,7 +2,30 @@ import { z } from "zod"
 
 import { assetLookupSchema, requireAtLeastOneValue, searchAssetsShape } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const contentMediaEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_sequence",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Sequence tool namespace for creating, searching, inspecting, and editing LevelSequence assets, including bindings, tracks, sections, keys, camera cuts, playback ranges, and speed-track time calculations.",
+	},
+	{
+		name: "manage_audio",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Audio tool namespace for importing audio files, searching audio assets, and inspecting their asset metadata.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(contentMediaEntries)
 
 export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDispatch): ToolNamespaceDescriptor[] {
 	const { editorTools, optionalStringParam, pythonDispatch, requiredStringParam, searchAssetsCommand } = ctx
@@ -51,6 +74,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 	return [
 		{
 			name: "manage_sequence",
+			description: describeTool("manage_sequence"),
 			actions: {
 				sequence_support: {
 					description:
@@ -232,6 +256,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 		},
 		{
 			name: "manage_audio",
+			description: describeTool("manage_audio"),
 			actions: {
 				import_audio: {
 					paramsSchema: requireAtLeastOneValue(

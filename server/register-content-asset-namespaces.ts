@@ -10,7 +10,42 @@ import {
 	searchAssetsShape,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const contentAssetEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_skeleton",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.",
+	},
+	{
+		name: "manage_material",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.",
+	},
+	{
+		name: "manage_texture",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Texture tool namespace for searching texture assets, importing image files as textures, and reading their asset metadata.",
+	},
+	{
+		name: "manage_data",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Data tool namespace for searching data assets, creating common data containers, and inspecting their asset metadata.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(contentAssetEntries)
 
 export function contentAssetDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -29,6 +64,7 @@ export function contentAssetDescriptors(
 	return [
 		{
 			name: "manage_skeleton",
+			description: describeTool("manage_skeleton"),
 			actions: {
 				search_skeletons: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
@@ -47,6 +83,7 @@ export function contentAssetDescriptors(
 		},
 		{
 			name: "manage_material",
+			description: describeTool("manage_material"),
 			actions: {
 				list_materials: {
 					paramsSchema: z
@@ -151,6 +188,7 @@ export function contentAssetDescriptors(
 		},
 		{
 			name: "manage_texture",
+			description: describeTool("manage_texture"),
 			actions: {
 				search_textures: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
@@ -195,6 +233,7 @@ export function contentAssetDescriptors(
 		},
 		{
 			name: "manage_data",
+			description: describeTool("manage_data"),
 			actions: {
 				search_data_assets: {
 					paramsSchema: z
