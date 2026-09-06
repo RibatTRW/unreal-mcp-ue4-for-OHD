@@ -40,10 +40,24 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
   prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently
   (SDK throws on non-Zod).
+- Phase 6 composition root + entry (`server/index.ts` exports `MainLive`; `server/bin.ts` forkDaemons
+  `Layer.launch(MainLive)` and joins it, interrupting the fiber on signals/exit so scope finalizers
+  run the connection shutdown — interrupt idempotency replaces the shutdown flag, and main's catch
+  ignores the join failure when the fiber was cleared by an intentional shutdown). index owns the
+  `StdioServerTransport`+connect; `--version`, the ECONNRESET guard, and the four `process.once`
+  handlers are unchanged. Removed the remote-execution.ts Promise singleton shims
+  (`tryRunCommand`/`discoverPath`/`shutdownRemoteExecution`); dispatch + direct tools run the
+  injected `ConnectionSessionService` Effects directly (`withCompatErrors` keeps envelopes
+  byte-identical, `runCompatPromise` stays as the SDK-boundary runner).
+  Sharp edges: `Effect.fork` children die with the `runPromise` scope (structured concurrency) —
+  forkDaemon is required for the server fiber; curried `Layer.provide(that)` mis-resolves
+  overloads here, use data-first `Layer.provide(self, that)`; `Layer.launch` builds in-scope then
+  runs `never`, so signals must interrupt the fiber (scope close runs finalizers).
 - Session policy (`server/connection-session.ts`, `server/remote-execution.ts`) is Effect-backed
   (`server/effect/connection-service.ts`: custom 1.5x retry schedule, Clock/TestClock sleeps,
-  cached acquisitions, one `Schedule.once` stale retry, Layer singleton) behind Promise-typed
-  shims. Sharp edges: `tapOutput` fires on the terminal Done step (guard the final sleep/log by
+  cached acquisitions, one `Schedule.once` stale retry, scoped Layer) behind the Promise-typed
+  `ConnectionSession` boundary (the module-singleton shims went away in Phase 6). Sharp edges:
+  `tapOutput` fires on the terminal Done step (guard the final sleep/log by
   state); `Effect.runPromise` rejects with FiberFailure (unwrap via `runPromiseExit`+`Cause.squash`
   to preserve rejection identity).
 - Renderer purity (`server/editor/*`, `server/effect/prelude-service.ts`): `script-renderer.ts`/`tools-base.ts`/
@@ -66,7 +80,8 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   (`Record<string, unknown>`), param-helper throws are `MissingParamError` with `.message` aligned.
 - `test:no-unreal` also runs `scripts/check-tool-surface.mjs` (listTools snapshot
   in `scripts/__snapshots__/`), `scripts/check-schema-parity.mjs` (Zod↔Schema matrix),
-  `scripts/check-connection-session.mjs` (legacy fake-transport scenarios, unchanged) and
+  `scripts/check-connection-session.mjs` (fake-transport scenarios over the `ConnectionSession`
+  compat boundary, plus the composition-surface check: scoped layer present, shims absent) and
   `scripts/check-connection-session-effect.mjs` (TestClock timing: 1.5x gaps, MAX cap, stale-once) and
   `scripts/check-dispatch-envelope.mjs` (live invalid-params + handler-throw envelopes snapshotted in
   `scripts/__snapshots__/dispatch-envelope.snapshot.json`, plus dispatch-unit coverage of the Zod/Schema/

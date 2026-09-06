@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import type { z } from "zod"
 import * as editorTools from "./editor/tools.js"
+import type { ConnectionSessionServiceShape } from "./effect/connection-service.js"
 import {
 	type DispatchHelperOptions,
 	type NamespaceActionRegistration,
@@ -47,7 +48,13 @@ interface SdkToolLike {
 	(name: string, description: string, cb: (args: never) => unknown): unknown
 }
 
-export function createRegistrationContext(server: McpServer): RegistrationContext {
+// Phase 6: the live ConnectionSessionService is threaded in from the
+// composition root (index.ts MainLive) — dispatch and direct tools run
+// its Effects per call instead of reaching a module-global singleton.
+export function createRegistrationContext(
+	server: McpServer,
+	commands: ConnectionSessionServiceShape,
+): RegistrationContext {
 	// Typed SDK-boundary wrappers (report §4.4): the old `bind` + `as` casts
 	// that erased SDK types down to `any` are gone. Zod stays at this exact
 	// call-site permanently (locked by the list-tools surface snapshot).
@@ -93,6 +100,7 @@ export function createRegistrationContext(server: McpServer): RegistrationContex
 	const schemaHelpers = createRegistrationSchemaHelpers()
 	const paramHelpers = createRegistrationParamHelpers(editorTools, schemaHelpers)
 	const dispatchHelpers = createDispatchHelpers({
+		commands,
 		editorTools,
 		rawServerRegisterTool,
 		rawServerTool,

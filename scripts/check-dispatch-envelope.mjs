@@ -154,7 +154,17 @@ async function runDispatchUnit() {
 	const toolNamespaceRegistry = new Map()
 	const captured = new Map()
 
+	// Phase 6: dispatch runs the injected command service for the python
+	// path. These unit namespaces never touch it (direct/validation/throw
+	// only), so a never-called stub proves the wiring without an editor.
+	const unreachableCommands = (label) => () =>
+		Effect.fail(new Error(`unit scope must not reach ${label} without an editor`))
 	const dispatch = createDispatchHelpers({
+		commands: {
+			runCommand: unreachableCommands("runCommand"),
+			discoverPath: unreachableCommands("discoverPath"),
+			shutdown: Effect.void,
+		},
 		editorTools,
 		rawServerRegisterTool: (name, config, cb) => {
 			captured.set(name, { config, cb })

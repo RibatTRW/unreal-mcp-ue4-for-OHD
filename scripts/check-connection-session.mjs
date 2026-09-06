@@ -3,7 +3,8 @@
 // Unreal-free assertions over the connection-session seam (candidate 8).
 // Drives the BUILT ConnectionSession with a scripted fake transport and
 // asserts the retry/backoff/reconnect policy, the recoverable-error
-// predicate, discoverPath semantics, and the singleton compat surface.
+// predicate, discoverPath semantics, and the composition surface (scoped
+// Layer export present, Promise singleton shims absent).
 // Fails non-zero on the first broken scenario.
 import fs from "node:fs"
 import { createRequire } from "node:module"
@@ -224,12 +225,16 @@ check("string-not-recoverable", isRecoverableConnectionError("ECONNRESET") === f
 	check("discover-empty-throws", emptyThrew)
 }
 
-// 8. singleton compat surface: same three names, same kinds.
+// 8. composition surface (Phase 6): the Promise singleton shims are gone —
+// startup owns the lifecycle through the scoped Layer, and dispatch/direct
+// tools run the service Effects directly. Lock both directions: the scoped
+// layer is exported, the three shim names are not.
 check(
-	"singleton-compat-surface",
-	typeof adapter.tryRunCommand === "function" &&
-		typeof adapter.discoverPath === "function" &&
-		typeof adapter.shutdownRemoteExecution === "function",
+	"composition-surface",
+	typeof adapter.SharedConnectionSessionLive === "object" &&
+		typeof adapter.tryRunCommand === "undefined" &&
+		typeof adapter.discoverPath === "undefined" &&
+		typeof adapter.shutdownRemoteExecution === "undefined",
 	Object.keys(adapter).sort().join(","),
 )
 
