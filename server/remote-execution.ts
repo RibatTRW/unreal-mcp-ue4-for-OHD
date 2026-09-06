@@ -1,14 +1,17 @@
 import os from "node:os"
 
+import { Effect } from "effect"
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
 import type { IRemoteExecutionMessageCommandOutputData, RemoteExecutionNode } from "unreal-remote-execution"
 
+import { type ConnectionTransport, DEFAULT_RETRY_COUNT, DEFAULT_RETRY_DELAY_MS } from "./connection-session.js"
 import {
-	ConnectionSession,
-	type ConnectionTransport,
-	DEFAULT_RETRY_COUNT,
-	DEFAULT_RETRY_DELAY_MS,
-} from "./connection-session.js"
+	type ConnectionSessionServiceShape,
+	makeConnectionSessionLayer,
+	makeConnectionSessionService,
+	runCompatPromise,
+	withCompatErrors,
+} from "./effect/connection-service.js"
 
 export const DEFAULT_MULTICAST_TTL = 1
 export const DEFAULT_MULTICAST_ADDRESS = "239.0.0.1"
@@ -114,18 +117,25 @@ const createSessionTransport = () => {
 	return new RealRemoteExecutionTransport(new RemoteExecution(config))
 }
 
-let session: ConnectionSession | undefined = undefined
+const createSharedServiceOptions = () => ({
+	transport: createSessionTransport(),
+	createTransport: createSessionTransport,
+	readRetryPolicy: () => ({
+		maxRetries: readIntegerEnv("UNREAL_MCP_RETRY_COUNT", DEFAULT_RETRY_COUNT),
+		retryDelayMs: readIntegerEnv("UNREAL_MCP_RETRY_DELAY_MS", DEFAULT_RETRY_DELAY_MS),
+	}),
+})
+
+// Singleton as a Layer (Phase 2, report §4.3): the shared service is built
+// from this layer. Kept lazy — the layer (and its transport) is only
+// constructed on first tryRunCommand/discoverPath, never at import.
+export const makeSharedConnectionSessionLayer = () => makeConnectionSessionLayer(createSharedServiceOptions())
+
+let session: ConnectionSessionServiceShape | undefined = undefined
 
 const getSharedSession = () => {
 	if (!session) {
-		session = new ConnectionSession({
-			transport: createSessionTransport(),
-			createTransport: createSessionTransport,
-			readRetryPolicy: () => ({
-				maxRetries: readIntegerEnv("UNREAL_MCP_RETRY_COUNT", DEFAULT_RETRY_COUNT),
-				retryDelayMs: readIntegerEnv("UNREAL_MCP_RETRY_DELAY_MS", DEFAULT_RETRY_DELAY_MS),
-			}),
-		})
+		session = Effect.runSync(makeConnectionSessionService(createSharedServiceOptions()))
 	}
 
 	return session
@@ -139,13 +149,13 @@ export const shutdownRemoteExecution = async () => {
 		return
 	}
 
-	await runtime.shutdown()
+	await runCompatPromise(runtime.shutdown)
 }
 
 export const tryRunCommand = async (command: string): Promise<string> => {
-	return getSharedSession().runCommand(command)
+	return runCompatPromise(withCompatErrors(getSharedSession().runCommand(command)))
 }
 
 export const discoverPath = async (command: string, errorMessage: string) => {
-	return getSharedSession().discoverPath(command, errorMessage)
+	return runCompatPromise(withCompatErrors(getSharedSession().discoverPath(command, errorMessage)))
 }

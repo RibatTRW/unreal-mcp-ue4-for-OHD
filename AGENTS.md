@@ -4,12 +4,20 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration scaffold (Phase 0)
+## Effect migration (phases 0-2)
 
-- Pattern catalog + error channel + Config env readers live in `server/effect/` (not wired in yet);
+- Pattern catalog + error channel + Config env readers + connection service live in `server/effect/`;
   Zod stays at the MCP SDK call-site permanently (SDK throws on non-Zod).
+- Session policy (`server/connection-session.ts`, `server/remote-execution.ts`) is Effect-backed
+  (`server/effect/connection-service.ts`: custom 1.5x retry schedule, Clock/TestClock sleeps,
+  cached acquisitions, one `Schedule.once` stale retry, Layer singleton) behind Promise-typed
+  shims. Sharp edges: `tapOutput` fires on the terminal Done step (guard the final sleep/log by
+  state); `Effect.runPromise` rejects with FiberFailure (unwrap via `runPromiseExit`+`Cause.squash`
+  to preserve rejection identity).
 - `test:no-unreal` also runs `scripts/check-tool-surface.mjs` (listTools snapshot
-  in `scripts/__snapshots__/`) and `scripts/check-schema-parity.mjs` (Zod↔Schema matrix).
+  in `scripts/__snapshots__/`), `scripts/check-schema-parity.mjs` (Zod↔Schema matrix),
+  `scripts/check-connection-session.mjs` (legacy fake-transport scenarios, unchanged) and
+  `scripts/check-connection-session-effect.mjs` (TestClock timing: 1.5x gaps, MAX cap, stale-once).
 - Emit target is ES2022 (`tsconfig.json` + `scripts/build.mjs` override), proven on Node 18.
 
 ## Tool catalog (W3)
