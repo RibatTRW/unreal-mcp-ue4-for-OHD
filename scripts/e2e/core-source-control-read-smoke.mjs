@@ -1,9 +1,5 @@
 export async function runCoreSourceControlReadScenarios(ctx) {
-	const {
-		runStep,
-		callJsonTool,
-		assert,
-	} = ctx
+	const { runStep, callJsonTool, assert } = ctx
 
 	await runStep("Read source control provider info", async () => {
 		const sourceControlInfo = await callJsonTool("manage_source_control", {
@@ -33,8 +29,7 @@ export async function runCoreSourceControlReadScenarios(ctx) {
 		assert(Array.isArray(sourceControlStates.states), "manage_source_control query_states did not return a states list")
 		assert(
 			sourceControlStates.states.every(
-				(state) =>
-					typeof state?.filename === "string" && typeof state?.is_valid === "boolean",
+				(state) => typeof state?.filename === "string" && typeof state?.is_valid === "boolean",
 			),
 			"manage_source_control query_states returned an invalid state entry",
 		)

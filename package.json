@@ -25,18 +25,8 @@
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",
     "set:version": "node scripts/set-version.mjs"
   },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "unreal",
-    "mcp",
-    "modelcontextprotocol",
-    "unreal-mcp",
-    "ue4",
-    "ue4.25",
-    "ohd"
-  ],
+  "files": ["dist"],
+  "keywords": ["unreal", "mcp", "modelcontextprotocol", "unreal-mcp", "ue4", "ue4.25", "ohd"],
   "author": "Seungjee Baek (conaman)",
   "license": "MIT",
   "packageManager": "npm@10.8.1",

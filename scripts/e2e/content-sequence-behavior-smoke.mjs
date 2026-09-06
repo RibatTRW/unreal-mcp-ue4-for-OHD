@@ -1,13 +1,5 @@
 export async function runContentSequenceBehaviorScenarios(state) {
-	const {
-		options,
-		runStep,
-		callJsonTool,
-		assert,
-		firstAssetPathFromSearch,
-		sequencePath,
-		behaviorTreePath,
-	} = state
+	const { options, runStep, callJsonTool, assert, firstAssetPathFromSearch, sequencePath, behaviorTreePath } = state
 
 	await runStep("Create a LevelSequence through manage_sequence", async () => {
 		const sequenceCreateResult = await callJsonTool("manage_sequence", {
@@ -39,11 +31,11 @@ export async function runContentSequenceBehaviorScenarios(state) {
 			action: "sequence_info",
 			params: { asset_path: sequencePath },
 		})
-		assert(Array.isArray(sequenceInfo) && sequenceInfo.length === 1, "manage_sequence sequence_info did not return one asset record")
 		assert(
-			sequenceInfo[0].package === sequencePath,
-			"manage_sequence sequence_info returned the wrong asset package",
+			Array.isArray(sequenceInfo) && sequenceInfo.length === 1,
+			"manage_sequence sequence_info did not return one asset record",
 		)
+		assert(sequenceInfo[0].package === sequencePath, "manage_sequence sequence_info returned the wrong asset package")
 	})
 
 	await runStep("Create a BehaviorTree through manage_behavior_tree", async () => {
@@ -64,7 +56,10 @@ export async function runContentSequenceBehaviorScenarios(state) {
 			action: "search_behavior_trees",
 			params: { search_term: options.prefix },
 		})
-		assert(Array.isArray(behaviorTreeSearchResult.assets), "manage_behavior_tree search_behavior_trees did not return an asset list")
+		assert(
+			Array.isArray(behaviorTreeSearchResult.assets),
+			"manage_behavior_tree search_behavior_trees did not return an asset list",
+		)
 		assert(
 			firstAssetPathFromSearch(behaviorTreeSearchResult) === behaviorTreePath,
 			"manage_behavior_tree search_behavior_trees did not find the created BehaviorTree",
@@ -76,7 +71,10 @@ export async function runContentSequenceBehaviorScenarios(state) {
 			action: "search_ai_assets",
 			params: { search_term: options.prefix },
 		})
-		assert(Array.isArray(aiAssetSearchResult.assets), "manage_behavior_tree search_ai_assets did not return an asset list")
+		assert(
+			Array.isArray(aiAssetSearchResult.assets),
+			"manage_behavior_tree search_ai_assets did not return an asset list",
+		)
 		assert(
 			firstAssetPathFromSearch(aiAssetSearchResult) === behaviorTreePath,
 			"manage_behavior_tree search_ai_assets did not find the created BehaviorTree",
@@ -88,7 +86,10 @@ export async function runContentSequenceBehaviorScenarios(state) {
 			action: "behavior_tree_info",
 			params: { asset_path: behaviorTreePath },
 		})
-		assert(Array.isArray(behaviorTreeInfo) && behaviorTreeInfo.length === 1, "manage_behavior_tree behavior_tree_info did not return one asset record")
+		assert(
+			Array.isArray(behaviorTreeInfo) && behaviorTreeInfo.length === 1,
+			"manage_behavior_tree behavior_tree_info did not return one asset record",
+		)
 		assert(
 			behaviorTreeInfo[0].package === behaviorTreePath,
 			"manage_behavior_tree behavior_tree_info returned the wrong asset package",

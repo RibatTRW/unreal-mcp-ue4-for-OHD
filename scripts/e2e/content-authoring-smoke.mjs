@@ -1,5 +1,5 @@
-import { runContentBlueprintAnimationScenarios } from "./content-blueprint-animation-smoke.mjs"
 import { runContentAssetScenarios } from "./content-asset-smoke.mjs"
+import { runContentBlueprintAnimationScenarios } from "./content-blueprint-animation-smoke.mjs"
 import { runContentWidgetPieScenarios } from "./content-widget-pie-smoke.mjs"
 import { runSourceControlMutationScenarios } from "./source-control-mutation-smoke.mjs"
 
@@ -12,11 +12,7 @@ export async function runContentAuthoringScenarios(ctx) {
 		addCleanup,
 		safeDeleteAssets,
 		projectRepoHasGitRemote,
-		paths: {
-			basicShapeMaterialPath,
-			actorTintMaterialPath,
-			debugTintMaterialPath,
-		},
+		paths: { basicShapeMaterialPath, actorTintMaterialPath, debugTintMaterialPath },
 		getProjectInfo,
 		getProjectFilePath,
 	} = ctx
@@ -88,10 +84,7 @@ export async function runContentAuthoringScenarios(ctx) {
 	fs.writeFileSync(tempAudioFile, createSilenceWavBuffer())
 
 	if (!options.keepAssets) {
-		addCleanup(
-			`Delete assets for ${options.prefix}`,
-			() => safeDeleteAssets(generatedAssetPaths),
-		)
+		addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets(generatedAssetPaths))
 		addCleanup(`Delete temp image ${tempTextureFile}`, async () => {
 			try {
 				fs.unlinkSync(tempTextureFile)

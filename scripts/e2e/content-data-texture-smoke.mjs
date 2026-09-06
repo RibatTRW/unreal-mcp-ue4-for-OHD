@@ -2,15 +2,7 @@ import { runContentDataInputScenarios } from "./content-data-input-smoke.mjs"
 import { runContentTextureExportScenarios } from "./content-texture-export-smoke.mjs"
 
 export async function runContentDataTextureScenarios(state) {
-	const {
-		options,
-		blueprintPath,
-		dataAssetPath,
-		dataTablePath,
-		stringTablePath,
-		texturePath,
-		tempTextureFile,
-	} = state
+	const { options, blueprintPath, dataAssetPath, dataTablePath, stringTablePath, texturePath, tempTextureFile } = state
 
 	await runContentDataInputScenarios(state)
 	await runContentTextureExportScenarios(state)

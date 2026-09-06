@@ -4,12 +4,14 @@ export const worldEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_lighting",
 		category: "World & Environment Tool Namespaces",
-		description: "Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state.",
+		description:
+			"Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state.",
 	},
 	{
 		name: "manage_level_structure",
 		category: "World & Environment Tool Namespaces",
-		description: "Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
+		description:
+			"Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
 	},
 	{
 		name: "manage_volumes",
@@ -19,17 +21,20 @@ export const worldEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_navigation",
 		category: "World & Environment Tool Namespaces",
-		description: "Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
+		description:
+			"Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
 	},
 	{
 		name: "manage_environment",
 		category: "World & Environment Tool Namespaces",
-		description: "Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
+		description:
+			"Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
 	},
 	{
 		name: "manage_splines",
 		category: "World & Environment Tool Namespaces",
-		description: "Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
+		description:
+			"Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
 	},
 	{
 		name: "manage_geometry",
@@ -39,6 +44,7 @@ export const worldEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_effect",
 		category: "World & Environment Tool Namespaces",
-		description: "Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
+		description:
+			"Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
 	},
 ]

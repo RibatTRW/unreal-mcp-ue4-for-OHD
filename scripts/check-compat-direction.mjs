@@ -28,11 +28,17 @@ function own(name, tier, file) {
 	else owners.set(name, { tier, file })
 }
 
-for (const dir of fs.readdirSync(scriptsDir).filter((x) => !x.startsWith(".")).sort()) {
+for (const dir of fs
+	.readdirSync(scriptsDir)
+	.filter((x) => !x.startsWith("."))
+	.sort()) {
 	const abs = path.join(scriptsDir, dir)
 	if (!fs.statSync(abs).isDirectory()) continue
 	const tier = Object.hasOwn(TIERS, dir) ? dir : "top"
-	for (const f of fs.readdirSync(abs).filter((x) => x.endsWith(".py")).sort()) {
+	for (const f of fs
+		.readdirSync(abs)
+		.filter((x) => x.endsWith(".py"))
+		.sort()) {
 		const src = fs.readFileSync(path.join(abs, f), "utf8")
 		for (const m of src.matchAll(/^def\s+([A-Za-z_][A-Za-z0-9_]*)/gm)) {
 			own(m[1], tier, `${dir}/${f}`)
@@ -55,7 +61,10 @@ const violations = []
 for (const dir of Object.keys(TIERS)) {
 	const abs = path.join(scriptsDir, dir)
 	if (!fs.existsSync(abs)) continue
-	for (const f of fs.readdirSync(abs).filter((x) => x.endsWith(".py")).sort()) {
+	for (const f of fs
+		.readdirSync(abs)
+		.filter((x) => x.endsWith(".py"))
+		.sort()) {
 		const src = fs.readFileSync(path.join(abs, f), "utf8")
 		const ownDefs = new Set([...src.matchAll(/^def\s+([A-Za-z_][A-Za-z0-9_]*)/gm)].map((m) => m[1]))
 		const callerRank = TIERS[dir]

@@ -6,14 +6,14 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import {
 	assert,
+	StepSkipError,
+	ToolFailureError,
 	buildDeleteAssetsPython,
 	extractTextContent,
 	fail,
 	parseToolJson,
 	projectRepoHasGitRemote,
 	resolveLocalPath,
-	StepSkipError,
-	ToolFailureError,
 	withTimeout,
 } from "./harness-utils.mjs"
 
@@ -96,20 +96,12 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 	}
 
 	const callJsonTool = async (toolName, args = {}) => {
-		const result = await withTimeout(
-			client.callTool({ name: toolName, arguments: args }),
-			options.timeoutMs,
-			toolName,
-		)
+		const result = await withTimeout(client.callTool({ name: toolName, arguments: args }), options.timeoutMs, toolName)
 		return parseToolJson(toolName, result)
 	}
 
 	const callTextTool = async (toolName, args = {}) => {
-		const result = await withTimeout(
-			client.callTool({ name: toolName, arguments: args }),
-			options.timeoutMs,
-			toolName,
-		)
+		const result = await withTimeout(client.callTool({ name: toolName, arguments: args }), options.timeoutMs, toolName)
 
 		if (result?.isError) {
 			fail(`Tool ${toolName} returned an MCP error: ${extractTextContent(result)}`)
@@ -232,12 +224,7 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 		}
 
 		for (const asset of searchResult.assets) {
-			for (const candidate of [
-				asset?.package_name,
-				asset?.path,
-				asset?.asset_path,
-				asset?.package,
-			]) {
+			for (const candidate of [asset?.package_name, asset?.path, asset?.asset_path, asset?.package]) {
 				if (typeof candidate === "string" && candidate.length > 0) {
 					return candidate
 				}

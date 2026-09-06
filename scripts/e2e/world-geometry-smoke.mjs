@@ -1,11 +1,6 @@
 export async function runWorldGeometryScenarios(ctx, state) {
 	const { addCleanup, runStep, callJsonTool, assert, safeDeleteActors } = ctx
-	const {
-		geometryPrefix,
-		geometryArchPrefix,
-		geometryWallPrefix,
-		geometryPyramidPrefix,
-	} = state
+	const { geometryPrefix, geometryArchPrefix, geometryWallPrefix, geometryPyramidPrefix } = state
 
 	await runStep("Create a staircase through manage_geometry", async () => {
 		const geometryResult = await callJsonTool("manage_geometry", {
@@ -19,11 +14,16 @@ export async function runWorldGeometryScenarios(ctx, state) {
 				step_depth: 90,
 			},
 		})
-		assert(geometryResult.structure === "create_staircase", "manage_geometry create_staircase returned the wrong structure")
-		assert(Number(geometryResult.actor_count) === 4, "manage_geometry create_staircase did not spawn the expected actor count")
-		addCleanup(
-			`Delete geometry actors for ${geometryPrefix}`,
-			() => safeDeleteActors((geometryResult.actors || []).map((actor) => actor.label || actor.name)),
+		assert(
+			geometryResult.structure === "create_staircase",
+			"manage_geometry create_staircase returned the wrong structure",
+		)
+		assert(
+			Number(geometryResult.actor_count) === 4,
+			"manage_geometry create_staircase did not spawn the expected actor count",
+		)
+		addCleanup(`Delete geometry actors for ${geometryPrefix}`, () =>
+			safeDeleteActors((geometryResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -41,9 +41,8 @@ export async function runWorldGeometryScenarios(ctx, state) {
 		})
 		assert(geometryArchResult.structure === "create_arch", "manage_geometry create_arch returned the wrong structure")
 		assert(Number(geometryArchResult.actor_count) > 0, "manage_geometry create_arch did not spawn any actors")
-		addCleanup(
-			`Delete geometry actors for ${geometryArchPrefix}`,
-			() => safeDeleteActors((geometryArchResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete geometry actors for ${geometryArchPrefix}`, () =>
+			safeDeleteActors((geometryArchResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -61,9 +60,8 @@ export async function runWorldGeometryScenarios(ctx, state) {
 		})
 		assert(geometryWallResult.structure === "create_wall", "manage_geometry create_wall returned the wrong structure")
 		assert(Number(geometryWallResult.actor_count) > 0, "manage_geometry create_wall did not spawn any actors")
-		addCleanup(
-			`Delete geometry actors for ${geometryWallPrefix}`,
-			() => safeDeleteActors((geometryWallResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete geometry actors for ${geometryWallPrefix}`, () =>
+			safeDeleteActors((geometryWallResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -77,11 +75,13 @@ export async function runWorldGeometryScenarios(ctx, state) {
 				block_size: 120,
 			},
 		})
-		assert(geometryPyramidResult.structure === "create_pyramid", "manage_geometry create_pyramid returned the wrong structure")
+		assert(
+			geometryPyramidResult.structure === "create_pyramid",
+			"manage_geometry create_pyramid returned the wrong structure",
+		)
 		assert(Number(geometryPyramidResult.actor_count) > 0, "manage_geometry create_pyramid did not spawn any actors")
-		addCleanup(
-			`Delete geometry actors for ${geometryPyramidPrefix}`,
-			() => safeDeleteActors((geometryPyramidResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete geometry actors for ${geometryPyramidPrefix}`, () =>
+			safeDeleteActors((geometryPyramidResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 }

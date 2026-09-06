@@ -1,9 +1,3 @@
-import type {
-	NamespaceActionRegistration,
-	RegistrationDispatch,
-	RegistrationParams,
-	RegistrationSchemas,
-} from "./registration-context.js"
 import { contentAssetDescriptors } from "./register-content-asset-namespaces.js"
 import { contentBlueprintDescriptors } from "./register-content-blueprint-namespaces.js"
 import { contentMediaDescriptors } from "./register-content-media-namespaces.js"
@@ -16,6 +10,12 @@ import { worldBuildingDescriptors } from "./register-world-building-namespaces.j
 import { worldEffectsSplineDescriptors } from "./register-world-effects-splines-namespaces.js"
 import { worldLightingDescriptors } from "./register-world-lighting-namespaces.js"
 import { worldNavigationVolumeDescriptors } from "./register-world-navigation-volume-namespaces.js"
+import type {
+	NamespaceActionRegistration,
+	RegistrationDispatch,
+	RegistrationParams,
+	RegistrationSchemas,
+} from "./registration-context.js"
 
 export interface ToolNamespaceDescriptor {
 	name: string

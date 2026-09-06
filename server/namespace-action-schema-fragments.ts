@@ -98,7 +98,8 @@ export const widgetBlueprintAssetShape = {
 	asset_path: z.string().optional(),
 }
 export const widgetBlueprintAssetKeys = ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]
-export const widgetBlueprintAssetMessage = "Provide widget_blueprint_path, widget_blueprint, widget_path, or asset_path."
+export const widgetBlueprintAssetMessage =
+	"Provide widget_blueprint_path, widget_blueprint, widget_path, or asset_path."
 
 export const widgetNameKeys = ["widget_name", "name"]
 export const widgetNameMessage = "Provide widget_name or name."

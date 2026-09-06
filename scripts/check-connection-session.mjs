@@ -111,11 +111,7 @@ const makeSession = (script, extra = {}) => {
 	const out = await session.runCommand("print(1)")
 	check("connect-retry-succeeds", out === "", `out=${JSON.stringify(out)}`)
 	check("backoff-recorded", JSON.stringify(sleeps) === JSON.stringify([2000, 3000]), `sleeps=${JSON.stringify(sleeps)}`)
-	check(
-		"init-probe-command",
-		transport.calls.includes('runCommand:print("rrmcp:init")'),
-		transport.calls.join(","),
-	)
+	check("init-probe-command", transport.calls.includes('runCommand:print("rrmcp:init")'), transport.calls.join(","))
 	check(
 		"three-attempts",
 		transport.calls.filter((c) => c === "getFirstRemoteNode").length === 3,
@@ -182,8 +178,7 @@ check("string-not-recoverable", isRecoverableConnectionError("ECONNRESET") === f
 		runCommand: [okRun(lineOut("noise", "C:\\Engine"))],
 	})
 	check("discover-last-line", (await session.discoverPath("cmd", "nope")) === "C:\\Engine")
-	const mk = (out) =>
-		makeSession({ hasCommandConnection: () => true, runCommand: [okRun(lineOut(out))] }).session
+	const mk = (out) => makeSession({ hasCommandConnection: () => true, runCommand: [okRun(lineOut(out))] }).session
 	let noneThrew = false
 	try {
 		await mk("None").discoverPath("cmd", "ERR-NONE")

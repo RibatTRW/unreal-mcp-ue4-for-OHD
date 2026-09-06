@@ -1,11 +1,5 @@
 export async function runCoreAssetReadScenarios(ctx) {
-	const {
-		runStep,
-		callJsonTool,
-		assert,
-		firstAssetPathFromSearch,
-		StepSkipError,
-	} = ctx
+	const { runStep, callJsonTool, assert, firstAssetPathFromSearch, StepSkipError } = ctx
 
 	await runStep("Search assets through manage_asset", async () => {
 		const searchResult = await callJsonTool("manage_asset", {
@@ -44,8 +38,14 @@ export async function runCoreAssetReadScenarios(ctx) {
 			action: "asset",
 			params: { asset_path: "/Engine/BasicShapes/Cube" },
 		})
-		assert(Array.isArray(assetInfo) && assetInfo.length === 1, "manage_inspection asset did not return one asset record")
-		assert(assetInfo[0].package === "/Engine/BasicShapes/Cube", "manage_inspection asset returned the wrong asset package")
+		assert(
+			Array.isArray(assetInfo) && assetInfo.length === 1,
+			"manage_inspection asset did not return one asset record",
+		)
+		assert(
+			assetInfo[0].package === "/Engine/BasicShapes/Cube",
+			"manage_inspection asset returned the wrong asset package",
+		)
 	})
 
 	await runStep("Inspect asset references through manage_inspection", async () => {
@@ -75,7 +75,10 @@ export async function runCoreAssetReadScenarios(ctx) {
 			action: "search_skeletal_meshes",
 			params: { search_term: "" },
 		})
-		assert(Array.isArray(skeletalMeshSearchResult.assets), "manage_skeleton search_skeletal_meshes did not return an asset list")
+		assert(
+			Array.isArray(skeletalMeshSearchResult.assets),
+			"manage_skeleton search_skeletal_meshes did not return an asset list",
+		)
 		skeletalMeshAssetPath = firstAssetPathFromSearch(skeletalMeshSearchResult)
 		if (!skeletalMeshAssetPath) {
 			throw new StepSkipError("No SkeletalMesh assets were found in the active project or engine content.")
@@ -91,7 +94,10 @@ export async function runCoreAssetReadScenarios(ctx) {
 			action: "asset_info",
 			params: { asset_path: skeletonInfoTarget },
 		})
-		assert(Array.isArray(skeletonInfo) && skeletonInfo.length === 1, "manage_skeleton asset_info did not return one asset record")
+		assert(
+			Array.isArray(skeletonInfo) && skeletonInfo.length === 1,
+			"manage_skeleton asset_info did not return one asset record",
+		)
 		assert(
 			skeletonInfo[0].package === skeletonInfoTarget,
 			"manage_skeleton asset_info returned the wrong asset package",

@@ -1,10 +1,5 @@
 export async function runContentBlueprintAuthoringScenarios(state) {
-	const {
-		runStep,
-		callJsonTool,
-		assert,
-		blueprintPath,
-	} = state
+	const { runStep, callJsonTool, assert, blueprintPath } = state
 
 	await runStep("Create a Blueprint asset", async () => {
 		const createResult = await callJsonTool("manage_blueprint", {
@@ -177,10 +172,7 @@ export async function runContentBlueprintAuthoringScenarios(state) {
 			Array.isArray(blueprintReadResult.blueprint?.components),
 			"manage_blueprint read did not return a components list",
 		)
-		assert(
-			Array.isArray(blueprintReadResult.blueprint?.graphs),
-			"manage_blueprint read did not return a graphs list",
-		)
+		assert(Array.isArray(blueprintReadResult.blueprint?.graphs), "manage_blueprint read did not return a graphs list")
 	})
 
 	await runStep("Inspect the Blueprint through manage_inspection", async () => {

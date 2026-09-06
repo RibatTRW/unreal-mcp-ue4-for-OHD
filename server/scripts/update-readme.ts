@@ -2,21 +2,21 @@ import fs from "node:fs"
 import path from "node:path"
 
 import {
+	type ExcludedCapabilityInfo,
+	type ToolCatalogEntry,
 	categoryOrder,
 	excludedCapabilities,
 	supportForTool,
 	toolCatalogEntries,
-	type ExcludedCapabilityInfo,
-	type ToolCatalogEntry,
 } from "../tool-catalog.js"
 
 const categoryOrderSet = new Set<string>(categoryOrder)
 
 function formatTableCell(value?: string): string {
-	return value && value.trim() ? value.replace(/\|/g, "\\|") : "-"
+	return value?.trim() ? value.replace(/\|/g, "\\|") : "-"
 }
 
-function escapeHtml(value?: string, emptyValue: string = "-"): string {
+function escapeHtml(value?: string, emptyValue = "-"): string {
 	if (!value || !value.trim()) {
 		return emptyValue
 	}
@@ -121,7 +121,7 @@ function insertToolsSection(content: string, toolsSection: string): string {
 	const insertPoint = insertPoints[0]
 	return insertPoint
 		? content.slice(0, insertPoint.found) + toolsSection + content.slice(insertPoint.found)
-		: content + "\n" + toolsSection
+		: `${content}\n${toolsSection}`
 }
 
 function updateReadmeWithTools() {

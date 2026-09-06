@@ -1,7 +1,7 @@
 import { z } from "zod"
 
+import type { RegistrationDispatch } from "./registration-context.js"
 import { discoverPath } from "./remote-execution.js"
-import { RegistrationDispatch } from "./registration-context.js"
 
 export function registerDirectTools(ctx: RegistrationDispatch) {
 	const { editorTools, rawServerTool, registerPythonTool, textResponse, toolDescription } = ctx

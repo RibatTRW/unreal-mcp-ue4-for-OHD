@@ -35,10 +35,7 @@ export async function runContentAudioGasScenarios(state) {
 			"manage_audio import_audio did not return the expected SoundCue path",
 		)
 		importedAudioCuePath = audioImportResult.sound_cue_path
-		for (const importedAssetPath of [
-			audioImportResult.sound_wave_path,
-			audioImportResult.sound_cue_path,
-		]) {
+		for (const importedAssetPath of [audioImportResult.sound_wave_path, audioImportResult.sound_cue_path]) {
 			if (
 				typeof importedAssetPath === "string" &&
 				importedAssetPath.length > 0 &&
@@ -66,11 +63,11 @@ export async function runContentAudioGasScenarios(state) {
 			action: "audio_info",
 			params: { asset_path: importedAudioCuePath },
 		})
-		assert(Array.isArray(audioInfo) && audioInfo.length === 1, "manage_audio audio_info did not return one asset record")
 		assert(
-			audioInfo[0].package === importedAudioCuePath,
-			"manage_audio audio_info returned the wrong asset package",
+			Array.isArray(audioInfo) && audioInfo.length === 1,
+			"manage_audio audio_info did not return one asset record",
 		)
+		assert(audioInfo[0].package === importedAudioCuePath, "manage_audio audio_info returned the wrong asset package")
 	})
 
 	let gasAbilityCreated = false
@@ -99,7 +96,9 @@ export async function runContentAudioGasScenarios(state) {
 
 	await runStep("Search GAS assets through manage_gas", async () => {
 		if (!gasAbilityCreated) {
-			throw new StepSkipError("GameplayAbility Blueprint creation is unavailable in this project or engine configuration.")
+			throw new StepSkipError(
+				"GameplayAbility Blueprint creation is unavailable in this project or engine configuration.",
+			)
 		}
 		const gasSearchResult = await callJsonTool("manage_gas", {
 			action: "search_gas_assets",
@@ -114,16 +113,18 @@ export async function runContentAudioGasScenarios(state) {
 
 	await runStep("Read GAS asset metadata through manage_gas", async () => {
 		if (!gasAbilityCreated) {
-			throw new StepSkipError("GameplayAbility Blueprint creation is unavailable in this project or engine configuration.")
+			throw new StepSkipError(
+				"GameplayAbility Blueprint creation is unavailable in this project or engine configuration.",
+			)
 		}
 		const gasAssetInfo = await callJsonTool("manage_gas", {
 			action: "asset_info",
 			params: { asset_path: gasAbilityPath },
 		})
-		assert(Array.isArray(gasAssetInfo) && gasAssetInfo.length === 1, "manage_gas asset_info did not return one asset record")
 		assert(
-			gasAssetInfo[0].package === gasAbilityPath,
-			"manage_gas asset_info returned the wrong asset package",
+			Array.isArray(gasAssetInfo) && gasAssetInfo.length === 1,
+			"manage_gas asset_info did not return one asset record",
 		)
+		assert(gasAssetInfo[0].package === gasAbilityPath, "manage_gas asset_info returned the wrong asset package")
 	})
 }

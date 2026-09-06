@@ -1,12 +1,6 @@
 export async function runWorldLevelScenarios(ctx, state) {
 	const { addCleanup, runStep, callJsonTool, assert, safeDeleteActors } = ctx
-	const {
-		levelPrefix,
-		levelMazePrefix,
-		levelPyramidPrefix,
-		levelBridgePrefix,
-		levelTownPrefix,
-	} = state
+	const { levelPrefix, levelMazePrefix, levelPyramidPrefix, levelBridgePrefix, levelTownPrefix } = state
 
 	await runStep("Create a wall through manage_level", async () => {
 		const levelResult = await callJsonTool("manage_level", {
@@ -21,9 +15,8 @@ export async function runWorldLevelScenarios(ctx, state) {
 		})
 		assert(levelResult.structure === "create_wall", "manage_level create_wall returned the wrong structure")
 		assert(Number(levelResult.actor_count) > 0, "manage_level create_wall did not spawn any actors")
-		addCleanup(
-			`Delete level actors for ${levelPrefix}`,
-			() => safeDeleteActors((levelResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level actors for ${levelPrefix}`, () =>
+			safeDeleteActors((levelResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -43,9 +36,8 @@ export async function runWorldLevelScenarios(ctx, state) {
 		})
 		assert(mazeResult.structure === "create_maze", "manage_level create_maze returned the wrong structure")
 		assert(Number(mazeResult.actor_count) > 0, "manage_level create_maze did not spawn any actors")
-		addCleanup(
-			`Delete level actors for ${levelMazePrefix}`,
-			() => safeDeleteActors((mazeResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level actors for ${levelMazePrefix}`, () =>
+			safeDeleteActors((mazeResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -61,9 +53,8 @@ export async function runWorldLevelScenarios(ctx, state) {
 		})
 		assert(pyramidResult.structure === "create_pyramid", "manage_level create_pyramid returned the wrong structure")
 		assert(Number(pyramidResult.actor_count) > 0, "manage_level create_pyramid did not spawn any actors")
-		addCleanup(
-			`Delete level actors for ${levelPyramidPrefix}`,
-			() => safeDeleteActors((pyramidResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level actors for ${levelPyramidPrefix}`, () =>
+			safeDeleteActors((pyramidResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -82,9 +73,8 @@ export async function runWorldLevelScenarios(ctx, state) {
 		})
 		assert(bridgeResult.structure === "create_bridge", "manage_level create_bridge returned the wrong structure")
 		assert(Number(bridgeResult.actor_count) > 0, "manage_level create_bridge did not spawn any actors")
-		addCleanup(
-			`Delete level actors for ${levelBridgePrefix}`,
-			() => safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level actors for ${levelBridgePrefix}`, () =>
+			safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -101,9 +91,8 @@ export async function runWorldLevelScenarios(ctx, state) {
 		})
 		assert(townResult.structure === "create_town", "manage_level create_town returned the wrong structure")
 		assert(Number(townResult.actor_count) >= 10, "manage_level create_town did not spawn enough actors")
-		addCleanup(
-			`Delete level actors for ${levelTownPrefix}`,
-			() => safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level actors for ${levelTownPrefix}`, () =>
+			safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 }

@@ -1,4 +1,4 @@
-import * as editorTools from "./editor/tools.js"
+import type * as editorTools from "./editor/tools.js"
 import type { RegistrationSchemas } from "./registration-context-schemas.js"
 
 export interface RegistrationParams {
@@ -108,8 +108,7 @@ export function createRegistrationParamHelpers(
 			params.limit,
 		)
 
-	const actorNameParam = (params: Record<string, any>) =>
-		requiredStringParam(params, ["name", "actor_name"])
+	const actorNameParam = (params: Record<string, any>) => requiredStringParam(params, ["name", "actor_name"])
 
 	const blueprintNameParam = (params: Record<string, any>) =>
 		requiredStringParam(params, ["blueprint_name", "asset_path", "name"])
@@ -141,20 +140,9 @@ export function createRegistrationParamHelpers(
 		])
 
 	const sourceControlPackageListParam = (params: Record<string, any>) =>
-		requiredStringListParam(params, [
-			"packages",
-			"package_names",
-			"paths",
-			"asset_paths",
-			"package",
-			"path",
-		])
+		requiredStringListParam(params, ["packages", "package_names", "paths", "asset_paths", "package", "path"])
 
-	const sourceControlFilesCommand = (
-		files: string[],
-		singleOperation?: string,
-		multiOperation?: string,
-	) => {
+	const sourceControlFilesCommand = (files: string[], singleOperation?: string, multiOperation?: string) => {
 		if (singleOperation && files.length === 1) {
 			return tools.UESourceControlTool(singleOperation, { file: files[0] })
 		}

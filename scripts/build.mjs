@@ -10,7 +10,9 @@ try {
 	fs.rmSync(distDir, { recursive: true, force: true })
 } catch (error) {
 	if (error && typeof error === "object" && "code" in error && error.code === "EPERM") {
-		console.warn(`Warning: could not remove ${distDir} before build (${error.code}). Continuing with in-place overwrite.`)
+		console.warn(
+			`Warning: could not remove ${distDir} before build (${error.code}). Continuing with in-place overwrite.`,
+		)
 	} else {
 		throw error
 	}
@@ -68,11 +70,9 @@ const emitResult = program.emit()
 failWithDiagnostics(emitResult.diagnostics ?? [])
 
 fs.mkdirSync(path.join(distDir, "editor"), { recursive: true })
-fs.cpSync(
-	path.join(rootDir, "server", "editor", "scripts"),
-	path.join(distDir, "editor", "scripts"),
-	{ recursive: true },
-)
+fs.cpSync(path.join(rootDir, "server", "editor", "scripts"), path.join(distDir, "editor", "scripts"), {
+	recursive: true,
+})
 // Golden EUW sidebar template (binary .uasset with the On Key Down fix);
 // read at runtime by UEUMGSetupSidebarTab for use_template setups.
 fs.cpSync(

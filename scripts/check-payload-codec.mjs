@@ -32,7 +32,7 @@ const { renderEditorScript, jsonArg } = require(scriptRendererPath)
 
 // Brutal by design: quotes, backslashes, JS-template and Python-quote
 // breakage attempts, newlines, non-ascii, and a triple-quote sequence.
-const ADV = "a\"b\\c${evil}`tick\nnewline М аセット \"\"\"triple"
+const ADV = 'a"b\\c${evil}`tick\nnewline М аセット """triple'
 
 const failures = []
 
@@ -78,11 +78,14 @@ checkBlobs(
 	direct.UECreateObject("StaticMeshActor", ADV, vec, rot, { x: 1, y: 1, z: 1 }, { StaticMesh: ADV }),
 	["StaticMeshActor", ADV, vec, rot, { x: 1, y: 1, z: 1 }, { StaticMesh: ADV }],
 )
-checkBlobs(
-	"UEUpdateObject",
-	direct.UEUpdateObject(ADV, undefined, undefined, undefined, { Material: ADV }, ""),
-	[ADV, null, null, null, { Material: ADV }, null],
-)
+checkBlobs("UEUpdateObject", direct.UEUpdateObject(ADV, undefined, undefined, undefined, { Material: ADV }, ""), [
+	ADV,
+	null,
+	null,
+	null,
+	{ Material: ADV },
+	null,
+])
 checkBlobs("UEDeleteObject", direct.UEDeleteObject(ADV), [ADV])
 // A list-literal string still crosses as a string; the delete call site
 // (normalize_actor_names) is where it explicitly expands to a list.
@@ -101,37 +104,54 @@ checkBlobs("UEGetProjectInfo", direct.UEGetProjectInfo(), [])
 checkBlobs("UEGetMapInfo", direct.UEGetMapInfo(), [])
 checkBlobs("UEGetWorldOutliner", direct.UEGetWorldOutliner(), [])
 checkBlobs("UETakeScreenshot", direct.UETakeScreenshot(), [])
-checkBlobs(
-	"UEUMGAddWidget",
-	direct.UEUMGAddWidget(ADV, ADV, ADV, ADV, pos2, size2, rgba, 5),
-	[ADV, ADV, ADV, ADV, pos2, size2, rgba, 5],
-)
+checkBlobs("UEUMGAddWidget", direct.UEUMGAddWidget(ADV, ADV, ADV, ADV, pos2, size2, rgba, 5), [
+	ADV,
+	ADV,
+	ADV,
+	ADV,
+	pos2,
+	size2,
+	rgba,
+	5,
+])
 checkBlobs("UEUMGRemoveWidget", direct.UEUMGRemoveWidget(ADV, ADV), [ADV, ADV])
-checkBlobs(
-	"UEUMGSetWidgetPosition",
-	direct.UEUMGSetWidgetPosition(ADV, ADV, pos2, size2, 5),
-	[ADV, ADV, pos2, size2, 5],
-)
-checkBlobs(
-	"UEUMGReparentWidget",
-	direct.UEUMGReparentWidget(ADV, ADV, ADV, pos2, size2, 5),
-	[ADV, ADV, ADV, pos2, size2, 5],
-)
-checkBlobs(
-	"UEUMGAddChildWidget",
-	direct.UEUMGAddChildWidget(ADV, ADV, ADV, ADV, pos2, size2, ADV, 14, rgba, rgba, 5),
-	[ADV, ADV, ADV, ADV, pos2, size2, ADV, 14, rgba, rgba, 5],
-)
-checkBlobs(
-	"UEUMGRemoveChildWidget",
-	direct.UEUMGRemoveChildWidget(ADV, ADV, ADV),
-	[ADV, ADV, ADV],
-)
-checkBlobs(
-	"UEUMGSetChildWidgetPosition",
-	direct.UEUMGSetChildWidgetPosition(ADV, ADV, ADV, pos2, size2, 5),
-	[ADV, ADV, ADV, pos2, size2, 5],
-)
+checkBlobs("UEUMGSetWidgetPosition", direct.UEUMGSetWidgetPosition(ADV, ADV, pos2, size2, 5), [
+	ADV,
+	ADV,
+	pos2,
+	size2,
+	5,
+])
+checkBlobs("UEUMGReparentWidget", direct.UEUMGReparentWidget(ADV, ADV, ADV, pos2, size2, 5), [
+	ADV,
+	ADV,
+	ADV,
+	pos2,
+	size2,
+	5,
+])
+checkBlobs("UEUMGAddChildWidget", direct.UEUMGAddChildWidget(ADV, ADV, ADV, ADV, pos2, size2, ADV, 14, rgba, rgba, 5), [
+	ADV,
+	ADV,
+	ADV,
+	ADV,
+	pos2,
+	size2,
+	ADV,
+	14,
+	rgba,
+	rgba,
+	5,
+])
+checkBlobs("UEUMGRemoveChildWidget", direct.UEUMGRemoveChildWidget(ADV, ADV, ADV), [ADV, ADV, ADV])
+checkBlobs("UEUMGSetChildWidgetPosition", direct.UEUMGSetChildWidgetPosition(ADV, ADV, ADV, pos2, size2, 5), [
+	ADV,
+	ADV,
+	ADV,
+	pos2,
+	size2,
+	5,
+])
 
 // Domain builders: (operation, args) pairs, all through the codec.
 for (const [label, build] of [

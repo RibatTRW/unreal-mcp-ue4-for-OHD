@@ -4,22 +4,26 @@ export const coreNamespaceEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_asset",
 		category: "Core Tool Namespaces",
-		description: "Asset tool namespace for listing, searching, inspecting, exporting, validating, duplicating, renaming, moving, deleting, saving, and folder-management actions.",
+		description:
+			"Asset tool namespace for listing, searching, inspecting, exporting, validating, duplicating, renaming, moving, deleting, saving, and folder-management actions.",
 	},
 	{
 		name: "manage_actor",
 		category: "Core Tool Namespaces",
-		description: "Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
+		description:
+			"Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
 	},
 	{
 		name: "manage_editor",
 		category: "Core Tool Namespaces",
-		description: "Editor tool namespace for run_python, console_command, project_info, map_info, world_outliner, is_pie_running, start_pie, stop_pie, screenshot, and move_camera actions.",
+		description:
+			"Editor tool namespace for run_python, console_command, project_info, map_info, world_outliner, is_pie_running, start_pie, stop_pie, screenshot, and move_camera actions.",
 	},
 	{
 		name: "manage_level",
 		category: "Core Tool Namespaces",
-		description: "Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
+		description:
+			"Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
 	},
 	{
 		name: "manage_system",
@@ -34,7 +38,8 @@ export const coreNamespaceEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_tools",
 		category: "Core Tool Namespaces",
-		description: "Tool-namespace registry for listing registered tool namespaces and describing supported actions. Use this as the discovery entry point for the namespace-first MCP surface.",
+		description:
+			"Tool-namespace registry for listing registered tool namespaces and describing supported actions. Use this as the discovery entry point for the namespace-first MCP surface.",
 	},
 	{
 		name: "manage_source_control",

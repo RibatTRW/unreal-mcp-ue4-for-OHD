@@ -65,10 +65,7 @@ export function parseToolJson(toolName, result) {
 		const parsed = JSON.parse(text)
 		if (parsed && typeof parsed === "object") {
 			if (parsed.success === false) {
-				throw new ToolFailureError(
-					parsed.message ?? `Tool ${toolName} reported success=false`,
-					parsed,
-				)
+				throw new ToolFailureError(parsed.message ?? `Tool ${toolName} reported success=false`, parsed)
 			}
 
 			if (typeof parsed.error === "string" && parsed.error) {
@@ -81,11 +78,7 @@ export function parseToolJson(toolName, result) {
 			throw error
 		}
 
-		fail(
-			`Tool ${toolName} returned non-JSON content: ${text.slice(0, 400)}${
-				text.length > 400 ? "..." : ""
-			}`,
-		)
+		fail(`Tool ${toolName} returned non-JSON content: ${text.slice(0, 400)}${text.length > 400 ? "..." : ""}`)
 	}
 }
 

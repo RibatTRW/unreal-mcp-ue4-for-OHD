@@ -4,7 +4,8 @@ export const gameplayEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_animation_physics",
 		category: "Gameplay & Systems Tool Namespaces",
-		description: "Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.",
+		description:
+			"Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.",
 	},
 	{
 		name: "manage_input",
@@ -19,6 +20,7 @@ export const gameplayEntries: ToolCatalogEntry[] = [
 	{
 		name: "manage_gas",
 		category: "Gameplay & Systems Tool Namespaces",
-		description: "GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.",
+		description:
+			"GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.",
 	},
 ]

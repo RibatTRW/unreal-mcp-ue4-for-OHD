@@ -1,10 +1,6 @@
 import { z } from "zod"
 
-import {
-	RegistrationDispatch,
-	RegistrationParams,
-	RegistrationSchemas,
-} from "./registration-context.js"
+import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 export function worldBuildingDescriptors(
@@ -107,40 +103,52 @@ export function worldBuildingDescriptors(
 	})
 
 	return [
-		{ name: "manage_level", actions: {
-		info: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
-		world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
-		list_actors: { handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")) },
-		create_wall: worldAction("create_wall", createWallSchema),
-		create_maze: worldAction("create_maze", createMazeSchema),
-		create_pyramid: worldAction("create_pyramid", createPyramidSchema),
-		create_bridge: worldAction("create_bridge", createBridgeSchema),
-		create_town: worldAction("create_town", createTownSchema),
-		} },
-		{ name: "manage_level_structure", actions: {
-		world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
-		create_town: worldAction("create_town", createTownSchema),
-		construct_house: worldAction("construct_house", constructHouseSchema),
-		construct_mansion: worldAction("construct_mansion", constructMansionSchema),
-		create_tower: worldAction("create_tower", createTowerSchema),
-		create_wall: worldAction("create_wall", createWallSchema),
-		create_bridge: worldAction("create_bridge", createBridgeSchema),
-		create_suspension_bridge: worldAction("create_suspension_bridge", createSuspensionBridgeSchema),
-		create_aqueduct: worldAction("create_aqueduct", createAqueductSchema),
-		create_castle_fortress: worldAction("create_castle_fortress", createCastleFortressSchema),
-		} },
-		{ name: "manage_environment", actions: {
-		create_town: worldAction("create_town", createTownSchema),
-		create_arch: worldAction("create_arch", createArchSchema),
-		create_staircase: worldAction("create_staircase", createStaircaseSchema),
-		create_pyramid: worldAction("create_pyramid", createPyramidSchema),
-		create_maze: worldAction("create_maze", createMazeSchema),
-		} },
-		{ name: "manage_geometry", actions: {
-		create_wall: worldAction("create_wall", createWallSchema),
-		create_arch: worldAction("create_arch", createArchSchema),
-		create_staircase: worldAction("create_staircase", createStaircaseSchema),
-		create_pyramid: worldAction("create_pyramid", createPyramidSchema),
-		} },
+		{
+			name: "manage_level",
+			actions: {
+				info: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
+				world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
+				list_actors: { handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")) },
+				create_wall: worldAction("create_wall", createWallSchema),
+				create_maze: worldAction("create_maze", createMazeSchema),
+				create_pyramid: worldAction("create_pyramid", createPyramidSchema),
+				create_bridge: worldAction("create_bridge", createBridgeSchema),
+				create_town: worldAction("create_town", createTownSchema),
+			},
+		},
+		{
+			name: "manage_level_structure",
+			actions: {
+				world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
+				create_town: worldAction("create_town", createTownSchema),
+				construct_house: worldAction("construct_house", constructHouseSchema),
+				construct_mansion: worldAction("construct_mansion", constructMansionSchema),
+				create_tower: worldAction("create_tower", createTowerSchema),
+				create_wall: worldAction("create_wall", createWallSchema),
+				create_bridge: worldAction("create_bridge", createBridgeSchema),
+				create_suspension_bridge: worldAction("create_suspension_bridge", createSuspensionBridgeSchema),
+				create_aqueduct: worldAction("create_aqueduct", createAqueductSchema),
+				create_castle_fortress: worldAction("create_castle_fortress", createCastleFortressSchema),
+			},
+		},
+		{
+			name: "manage_environment",
+			actions: {
+				create_town: worldAction("create_town", createTownSchema),
+				create_arch: worldAction("create_arch", createArchSchema),
+				create_staircase: worldAction("create_staircase", createStaircaseSchema),
+				create_pyramid: worldAction("create_pyramid", createPyramidSchema),
+				create_maze: worldAction("create_maze", createMazeSchema),
+			},
+		},
+		{
+			name: "manage_geometry",
+			actions: {
+				create_wall: worldAction("create_wall", createWallSchema),
+				create_arch: worldAction("create_arch", createArchSchema),
+				create_staircase: worldAction("create_staircase", createStaircaseSchema),
+				create_pyramid: worldAction("create_pyramid", createPyramidSchema),
+			},
+		},
 	]
 }

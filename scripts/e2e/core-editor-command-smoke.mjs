@@ -1,20 +1,13 @@
 export async function runCoreEditorCommandScenarios(ctx) {
-	const {
-		fs,
-		options,
-		addCleanup,
-		runStep,
-		callJsonTool,
-		callTextTool,
-		assert,
-		resolveLocalPath,
-	} = ctx
+	const { fs, options, addCleanup, runStep, callJsonTool, callTextTool, assert, resolveLocalPath } = ctx
 
 	await runStep("Take an editor screenshot through manage_editor", async () => {
-		const screenshotText = (await callTextTool("manage_editor", {
-			action: "screenshot",
-			params: {},
-		})).trim()
+		const screenshotText = (
+			await callTextTool("manage_editor", {
+				action: "screenshot",
+				params: {},
+			})
+		).trim()
 		assert(
 			screenshotText.length > 0 && !screenshotText.includes("Failed to take screenshot"),
 			"manage_editor screenshot did not return a screenshot path",
@@ -32,16 +25,15 @@ export async function runCoreEditorCommandScenarios(ctx) {
 
 	await runStep("Execute Python through manage_editor", async () => {
 		const marker = `${options.prefix}_run_python_ok`
-		const pythonOutput = (await callTextTool("manage_editor", {
-			action: "run_python",
-			params: {
-				code: `print("${marker}")`,
-			},
-		})).trim()
-		assert(
-			pythonOutput === marker,
-			`manage_editor run_python returned unexpected output: ${pythonOutput}`,
-		)
+		const pythonOutput = (
+			await callTextTool("manage_editor", {
+				action: "run_python",
+				params: {
+					code: `print("${marker}")`,
+				},
+			})
+		).trim()
+		assert(pythonOutput === marker, `manage_editor run_python returned unexpected output: ${pythonOutput}`)
 	})
 
 	const smokeConsoleVariableName = "t.MaxFPS"
@@ -77,9 +69,9 @@ export async function runCoreEditorCommandScenarios(ctx) {
 			"manage_editor get_console_variable returned the wrong variable name",
 		)
 		assert(
-			Math.abs(Number(consoleVariable.float_value ?? 0) - 87) < 0.5
-				|| Number(consoleVariable.int_value ?? -1) === 87
-				|| String(consoleVariable.string_value ?? "").includes("87"),
+			Math.abs(Number(consoleVariable.float_value ?? 0) - 87) < 0.5 ||
+				Number(consoleVariable.int_value ?? -1) === 87 ||
+				String(consoleVariable.string_value ?? "").includes("87"),
 			"manage_editor get_console_variable did not report the expected value",
 		)
 	})
@@ -105,9 +97,9 @@ export async function runCoreEditorCommandScenarios(ctx) {
 			"manage_system get_console_variable returned the wrong variable name",
 		)
 		assert(
-			Math.abs(Number(consoleVariable.float_value ?? 0) - 91) < 0.5
-				|| Number(consoleVariable.int_value ?? -1) === 91
-				|| String(consoleVariable.string_value ?? "").includes("91"),
+			Math.abs(Number(consoleVariable.float_value ?? 0) - 91) < 0.5 ||
+				Number(consoleVariable.int_value ?? -1) === 91 ||
+				String(consoleVariable.string_value ?? "").includes("91"),
 			"manage_system get_console_variable did not report the expected value",
 		)
 	})
