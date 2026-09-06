@@ -1,6 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
 
+import { PreludeError } from "../effect/errors.js"
+
 export function readEditorScript(filePath: string): string {
 	return fs.readFileSync(path.join(__dirname, filePath), "utf8")
 }
@@ -64,6 +66,16 @@ const preludeManifest: Record<string, string[]> = {
 	],
 }
 
+// Manifest-mismatch throws are PreludeError (report §4.2) with the legacy
+// text preserved verbatim in `detail`. Data.TaggedError defaults .message
+// to "", so it is aligned onto detail — legacy catch sites, logs, and the
+// dispatch envelope keep reading the exact same words.
+const throwPreludeError = (detail: string): never => {
+	const error = new PreludeError({ detail })
+	error.message = detail
+	throw error
+}
+
 export function buildOrderedPrelude(relativeDir: string): string {
 	const absoluteDir = path.join(__dirname, relativeDir)
 	if (!fs.existsSync(absoluteDir)) {
@@ -72,7 +84,7 @@ export function buildOrderedPrelude(relativeDir: string): string {
 
 	const listed = preludeManifest[path.basename(relativeDir)]
 	if (!listed) {
-		throw new Error(`No prelude manifest for package '${relativeDir}'`)
+		throwPreludeError(`No prelude manifest for package '${relativeDir}'`)
 	}
 
 	const onDisk = fs
@@ -81,28 +93,101 @@ export function buildOrderedPrelude(relativeDir: string): string {
 		.sort()
 	const unlisted = onDisk.filter((fileName) => listed.indexOf(fileName) === -1)
 	if (unlisted.length > 0) {
-		throw new Error(`Unlisted prelude file(s) in ${relativeDir}: ${unlisted.join(", ")} (add them to preludeManifest)`)
+		throwPreludeError(
+			`Unlisted prelude file(s) in ${relativeDir}: ${unlisted.join(", ")} (add them to preludeManifest)`,
+		)
 	}
 	const missing = listed.filter((fileName) => onDisk.indexOf(fileName) === -1)
 	if (missing.length > 0) {
-		throw new Error(`Prelude manifest lists missing file(s) in ${relativeDir}: ${missing.join(", ")}`)
+		throwPreludeError(`Prelude manifest lists missing file(s) in ${relativeDir}: ${missing.join(", ")}`)
 	}
 
 	return listed.map((fileName) => readEditorScript(`${relativeDir}/${fileName}`)).join("\n\n")
 }
 
-export const editorPreludes = {
-	actor: buildOrderedPrelude("./scripts/ue_actor"),
-	textCodec: buildOrderedPrelude("./scripts/ue_text_codec"),
-	objectAccess: buildOrderedPrelude("./scripts/ue_object_access"),
-	assetResolution: buildOrderedPrelude("./scripts/ue_asset_resolution"),
-	blueprint: buildOrderedPrelude("./scripts/ue_blueprint"),
-	contentFactory: buildOrderedPrelude("./scripts/ue_content_factory"),
-	data: buildOrderedPrelude("./scripts/ue_data"),
-	material: buildOrderedPrelude("./scripts/ue_material"),
-	sourceControl: buildOrderedPrelude("./scripts/ue_source_control"),
-	sequence: buildOrderedPrelude("./scripts/ue_sequence"),
-	umg: buildOrderedPrelude("./scripts/ue_umg"),
-	widgetTree: buildOrderedPrelude("./scripts/ue_widget_tree"),
-	worldBuilding: buildOrderedPrelude("./scripts/ue_world_building"),
+export interface EditorPreludes {
+	readonly actor: string
+	readonly textCodec: string
+	readonly objectAccess: string
+	readonly assetResolution: string
+	readonly blueprint: string
+	readonly contentFactory: string
+	readonly data: string
+	readonly material: string
+	readonly sourceControl: string
+	readonly sequence: string
+	readonly umg: string
+	readonly widgetTree: string
+	readonly worldBuilding: string
 }
+
+// The exact import-time literal, now loaded on demand: same packages, same
+// key order, same join semantics — only the timing moved.
+function loadEditorPreludes(): EditorPreludes {
+	return {
+		actor: buildOrderedPrelude("./scripts/ue_actor"),
+		textCodec: buildOrderedPrelude("./scripts/ue_text_codec"),
+		objectAccess: buildOrderedPrelude("./scripts/ue_object_access"),
+		assetResolution: buildOrderedPrelude("./scripts/ue_asset_resolution"),
+		blueprint: buildOrderedPrelude("./scripts/ue_blueprint"),
+		contentFactory: buildOrderedPrelude("./scripts/ue_content_factory"),
+		data: buildOrderedPrelude("./scripts/ue_data"),
+		material: buildOrderedPrelude("./scripts/ue_material"),
+		sourceControl: buildOrderedPrelude("./scripts/ue_source_control"),
+		sequence: buildOrderedPrelude("./scripts/ue_sequence"),
+		umg: buildOrderedPrelude("./scripts/ue_umg"),
+		widgetTree: buildOrderedPrelude("./scripts/ue_widget_tree"),
+		worldBuilding: buildOrderedPrelude("./scripts/ue_world_building"),
+	}
+}
+
+// Memoized-once cells (report §4.5): importing this module performs no
+// filesystem reads. The first render — or the first PreludeServiceLive
+// build at startup once Phase 6 wires the composition root — loads each
+// file set exactly once per process; the Layer memoizes per build on top
+// of these cells, so the bytes stay single-sourced either way.
+let memoizedPreludes: EditorPreludes | undefined
+let memoizedDispatchHarness: string | undefined
+
+export function getEditorPreludes(): EditorPreludes {
+	if (memoizedPreludes === undefined) {
+		memoizedPreludes = loadEditorPreludes()
+	}
+	return memoizedPreludes
+}
+
+export function getDomainDispatchHarness(): string {
+	if (memoizedDispatchHarness === undefined) {
+		memoizedDispatchHarness = readEditorScript("./scripts/ue_tools_dispatch.py")
+	}
+	return memoizedDispatchHarness
+}
+
+// Byte-identical ordering: the key sequence matches the original
+// import-time literal, so enumeration, spread, and destructuring observe
+// the same order with the same values — only the first read is deferred.
+const preludeKeys: ReadonlyArray<keyof EditorPreludes> = [
+	"actor",
+	"textCodec",
+	"objectAccess",
+	"assetResolution",
+	"blueprint",
+	"contentFactory",
+	"data",
+	"material",
+	"sourceControl",
+	"sequence",
+	"umg",
+	"widgetTree",
+	"worldBuilding",
+]
+
+const lazyPreludes = {} as EditorPreludes
+for (const key of preludeKeys) {
+	Object.defineProperty(lazyPreludes, key, {
+		enumerable: true,
+		get: (): string => getEditorPreludes()[key],
+	})
+}
+
+export const editorPreludes: EditorPreludes = lazyPreludes

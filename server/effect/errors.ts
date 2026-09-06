@@ -9,8 +9,8 @@
 //   ConnectionError    connection-session.ts:121,192,209 (connect/command)
 //   DiscoveryError     connection-session.ts:225 (discoverPath empty/"None")
 //   MissingParamError  registration-context-params.ts:56,98 (required*Param)
-//   RenderError        script-renderer.ts:32 (missing template args)
-//   PreludeError       prelude-loader.ts:75,84,88 (manifest mismatch)
+//   RenderError        script-renderer.ts:42 (missing template args)
+//   PreludeError       prelude-loader.ts:87,96,102 (manifest mismatch)
 //   CommandFailedError remote command failures surfaced via tryRunCommand
 //
 // Interop note: the dispatch `catch` becomes `Effect.catchAll` over this

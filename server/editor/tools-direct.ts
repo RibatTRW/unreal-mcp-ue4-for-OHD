@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
+import { Effect, type Scope } from "effect"
 import { editorPreludes, jsonArg, renderScript } from "./tools-base.js"
 
 export const UEGetAssetInfo = (asset_path: string) =>
@@ -223,12 +224,22 @@ export const UEUMGSetChildWidgetPosition = (
  * into dist by scripts/build.mjs; read here at call time so the bytes
  * travel inside the rendered script args (same machine, editor + server).
  * Returns base64 text or null when the template is absent. */
+// Phase 3 (report §4.5): the call-time read is a scoped Effect, injected
+// into UEUMGSetupSidebarTab via the sync wrapper below. The builder keeps
+// its pure sync signature and the rendered bytes are unchanged.
+const readSidebarTemplateEffect: Effect.Effect<string | null, never, Scope.Scope> = Effect.acquireRelease(
+	Effect.sync((): string | null => {
+		try {
+			return fs.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset")).toString("base64")
+		} catch (err) {
+			return null
+		}
+	}),
+	() => Effect.void,
+)
+
 function readSidebarTemplate(): string | null {
-	try {
-		return fs.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset")).toString("base64")
-	} catch (err) {
-		return null
-	}
+	return Effect.runSync(Effect.scoped(readSidebarTemplateEffect))
 }
 
 export const UEUMGSetupSidebarTab = (
