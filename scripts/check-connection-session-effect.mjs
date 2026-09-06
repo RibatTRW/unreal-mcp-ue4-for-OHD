@@ -32,7 +32,6 @@ for (const required of [servicePath, sessionPath, adapterPath]) {
 const require = createRequire(import.meta.url)
 const serviceMod = require(servicePath)
 
-
 const {
 	ConnectionSessionService,
 	makeConnectionSessionLayer,
