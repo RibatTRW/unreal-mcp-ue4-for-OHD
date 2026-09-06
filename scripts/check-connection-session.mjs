@@ -184,7 +184,7 @@ const makeSession = (script, extra = {}) => {
 	check(
 		"stale-retry-error-surfaces",
 		thrown && thrown.message === "Command failed with: Error B",
-		String(thrown && thrown.message),
+		String(thrown?.message),
 	)
 	check(
 		"retry-attempted-after-stale",
