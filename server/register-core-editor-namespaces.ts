@@ -1,5 +1,7 @@
+import { Effect } from "effect"
 import { z } from "zod"
 
+import type { ToolError } from "./effect/errors.js"
 import { vector3TransformShape } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
@@ -39,10 +41,24 @@ export function coreEditorDescriptors(
 							code: z.string(),
 						})
 						.strict(),
-					handler: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
+					// Phase 5b (report §5): handler returns Effect; param-helper
+					// and builder throws become channel failures via Effect.try
+					// (Effect.sync would defect past dispatch's catchAll and break
+					// the identical envelope), rendered verbatim downstream.
+					handler: (params) =>
+						Effect.try({
+							try: () => pythonDispatch(requiredStringParam(params, ["code"])),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				console_command: shared.console_command,
-				project_info: { handler: () => pythonDispatch(editorTools.UEGetProjectInfo()) },
+				project_info: {
+					handler: () =>
+						Effect.try({
+							try: () => pythonDispatch(editorTools.UEGetProjectInfo()),
+							catch: (cause) => cause as ToolError,
+						}),
+				},
 				map_info: shared.map_info,
 				world_outliner: shared.world_outliner,
 				is_pie_running: {
@@ -53,12 +69,16 @@ export function coreEditorDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEPIETool("get_pie_status", {
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEPIETool("get_pie_status", {
+										timeout_seconds: params.timeout_seconds,
+										poll_interval: params.poll_interval,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				start_pie: {
 					paramsSchema: z
@@ -68,12 +88,16 @@ export function coreEditorDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEPIETool("start_pie", {
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEPIETool("start_pie", {
+										timeout_seconds: params.timeout_seconds,
+										poll_interval: params.poll_interval,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				stop_pie: {
 					paramsSchema: z
@@ -83,24 +107,38 @@ export function coreEditorDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEPIETool("stop_pie", {
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEPIETool("stop_pie", {
+										timeout_seconds: params.timeout_seconds,
+										poll_interval: params.poll_interval,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				get_console_variable: shared.get_console_variable,
-				screenshot: { handler: () => pythonDispatch(editorTools.UETakeScreenshot()) },
+				screenshot: {
+					handler: () =>
+						Effect.try({
+							try: () => pythonDispatch(editorTools.UETakeScreenshot()),
+							catch: (cause) => cause as ToolError,
+						}),
+				},
 				move_camera: {
 					paramsSchema: z.object(vector3TransformShape).strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEMoveCamera(
-								toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
-								toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEMoveCamera(
+										toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
+										toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},
