@@ -16,8 +16,10 @@ import {
 // server/effect/connection-service.ts (Effect.retry over a custom 1.5x
 // schedule, Clock sleeps, cached acquisitions, one Schedule.once stale
 // retry). This module keeps the Promise-typed class API, the pure
-// recoverable-error predicate, and the policy constants so unmigrated
-// callers and scripted scenarios keep compiling and passing unchanged.
+// recoverable-error predicate, and the policy constants. Phase 6 removed
+// the module-global singleton shims, but the class stays as the
+// injectable Promise-compat boundary (driven by the scripted scenarios
+// in scripts/check-connection-session.mjs).
 
 export const DEFAULT_RETRY_COUNT = 3
 export const DEFAULT_RETRY_DELAY_MS = 2000

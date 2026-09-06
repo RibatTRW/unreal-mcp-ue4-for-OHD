@@ -124,7 +124,7 @@ async function captureLiveEnvelopes() {
 		captured.invalid_params = parseEnvelope("live invalid-params", invalidResult)
 
 		// Handler throw without Unreal: "  " passes the Zod string check, then
-		// requiredStringParam rejects the blank command before tryRunCommand.
+		// requiredStringParam rejects the blank command before command execution.
 		const throwResult = await client.callTool({
 			name: "manage_system",
 			arguments: { action: "console_command", params: { command: "  " } },
@@ -154,7 +154,17 @@ async function runDispatchUnit() {
 	const toolNamespaceRegistry = new Map()
 	const captured = new Map()
 
+	// Phase 6: dispatch runs the injected command service for the python
+	// path. These unit namespaces never touch it (direct/validation/throw
+	// only), so a never-called stub proves the wiring without an editor.
+	const unreachableCommands = (label) => () =>
+		Effect.fail(new Error(`unit scope must not reach ${label} without an editor`))
 	const dispatch = createDispatchHelpers({
+		commands: {
+			runCommand: unreachableCommands("runCommand"),
+			discoverPath: unreachableCommands("discoverPath"),
+			shutdown: Effect.void,
+		},
 		editorTools,
 		rawServerRegisterTool: (name, config, cb) => {
 			captured.set(name, { config, cb })

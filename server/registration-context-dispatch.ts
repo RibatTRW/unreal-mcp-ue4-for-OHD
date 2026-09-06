@@ -14,7 +14,7 @@
 //     rendering the identical {success:false, tool, action, message} JSON
 //     envelope for validation failures, MissingParamError (param helpers),
 //     sync handler throws, async rejections, Effect-handler failures, and
-//     tryRunCommand failures.
+//     command-execution failures.
 //   - Handlers may also return Effect directly (Phase-5 pattern); such
 //     effects run inline so their ToolError failures hit the same envelope.
 //
@@ -25,9 +25,11 @@
 //     member there because the SDK pre-validates args before our callback
 //     runs — strict validation happens inside the callback. (Unreachable
 //     until Phase 5 migrates the first action; flagged loudly in the code.)
-//   - tryRunCommand/discoverPath Promise shims (remote-execution.ts) are
-//     kept so unmigrated registrars keep compiling; dispatch lifts them
-//     with Effect.tryPromise.
+//   - Phase 6: the remote-execution.ts Promise shims are gone. Dispatch
+//     runs the injected ConnectionSessionService Effects directly
+//     (failures still unwrapped to the legacy Errors via withCompatErrors,
+//     so envelopes are byte-identical); the SDK boundary stays
+//     Promise-typed via runCompatPromise.
 //   - registerPythonTool/registerZeroArgPythonTool keep their exact
 //     promise semantics (a buildCommand throw propagates to the SDK as
 //     today — there is no envelope on that path, so catchAll must not
@@ -37,6 +39,7 @@ import { Effect, type Schema } from "effect"
 import { z } from "zod"
 
 import type * as editorTools from "./editor/tools.js"
+import { type ConnectionSessionServiceShape, runCompatPromise, withCompatErrors } from "./effect/connection-service.js"
 import { InvalidParamsError, MissingParamError, type ToolError } from "./effect/errors.js"
 import {
 	invalidParamsMessage,
@@ -45,7 +48,6 @@ import {
 	strictDecodeSync,
 } from "./effect/schema-patterns.js"
 import type { ActionParams } from "./registration-context-params.js"
-import { tryRunCommand } from "./remote-execution.js"
 
 export type NamespaceDispatchResult = { kind: "python"; command: string } | { kind: "direct"; payload: unknown }
 
@@ -91,6 +93,7 @@ export interface RawServerTool {
 }
 
 export interface RegistrationDispatch {
+	commands: ConnectionSessionServiceShape
 	directDispatch: (payload: unknown) => NamespaceDispatchResult
 	editorTools: typeof editorTools
 	pythonDispatch: (command: string) => NamespaceDispatchResult
@@ -113,6 +116,7 @@ export interface RegistrationDispatch {
 }
 
 export interface DispatchHelperOptions {
+	commands: ConnectionSessionServiceShape
 	editorTools: typeof editorTools
 	rawServerRegisterTool: (
 		name: string,
@@ -141,8 +145,15 @@ const invalidParams = (tool: string, action: string, detail: string): InvalidPar
 }
 
 export function createDispatchHelpers(options: DispatchHelperOptions): RegistrationDispatch {
-	const { editorTools, rawServerRegisterTool, rawServerTool, recordSchema, textResponse, toolNamespaceRegistry } =
-		options
+	const {
+		commands,
+		editorTools,
+		rawServerRegisterTool,
+		rawServerTool,
+		recordSchema,
+		textResponse,
+		toolNamespaceRegistry,
+	} = options
 
 	const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
 	const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
@@ -156,11 +167,17 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 		schema: Record<string, z.ZodTypeAny>,
 		buildCommand: (args: ActionParams) => string,
 	) => {
-		rawServerTool(name, description, schema, async (args) => textResponse(await tryRunCommand(buildCommand(args))))
+		// buildCommand throws before any Effect is built, so the sync throw
+		// still rejects the callback raw (no envelope on this path, as today).
+		rawServerTool(name, description, schema, async (args) =>
+			textResponse(await runCompatPromise(withCompatErrors(commands.runCommand(buildCommand(args))))),
+		)
 	}
 
 	const registerZeroArgPythonTool = (name: string, description: string, buildCommand: () => string) => {
-		rawServerTool(name, description, async () => textResponse(await tryRunCommand(buildCommand())))
+		rawServerTool(name, description, async () =>
+			textResponse(await runCompatPromise(withCompatErrors(commands.runCommand(buildCommand())))),
+		)
 	}
 
 	const unsupportedNamespaceAction = (
@@ -176,10 +193,10 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 
 	const runNamespaceDispatchEffect = (result: NamespaceDispatchResult): Effect.Effect<TextResponse, unknown> => {
 		if (result.kind === "python") {
-			return Effect.tryPromise({
-				try: () => tryRunCommand(result.command),
-				catch: (cause) => cause,
-			}).pipe(Effect.map((output) => textResponse(output)))
+			// withCompatErrors unwraps the typed channel to the exact legacy
+			// Errors the removed tryRunCommand shim used to reject with, so
+			// the catchAll envelope below renders byte-identical text.
+			return withCompatErrors(commands.runCommand(result.command)).pipe(Effect.map((output) => textResponse(output)))
 		}
 
 		return Effect.succeed(textResponse(JSON.stringify(result.payload, null, 2)))
@@ -348,6 +365,7 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 	}
 
 	return {
+		commands,
 		directDispatch,
 		editorTools,
 		pythonDispatch,

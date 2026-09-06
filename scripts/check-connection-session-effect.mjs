@@ -4,8 +4,8 @@
 // TestClock (report §4.3): the custom 1.5x backoff timing — including the
 // MAX_RETRY_DELAY_MS cap and the anti-doubling check — the Schedule.once
 // single stale retry, and the Layer singleton shape. Complements
-// scripts/check-connection-session.mjs (which must pass unchanged and
-// covers the Promise-compat surface with injected fake sleeps); these
+// scripts/check-connection-session.mjs (which covers the Promise-compat
+// boundary with injected fake sleeps plus the composition surface); these
 // tests cover the Effect-native timing path (Clock.sleep) that the fakes
 // bypass. Fails non-zero on the first broken scenario.
 import fs from "node:fs"

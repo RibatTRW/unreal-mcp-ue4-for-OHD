@@ -1,17 +1,11 @@
 import os from "node:os"
 
-import { Effect } from "effect"
+import { Effect, Layer } from "effect"
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
 import type { IRemoteExecutionMessageCommandOutputData, RemoteExecutionNode } from "unreal-remote-execution"
 
 import { type ConnectionTransport, DEFAULT_RETRY_COUNT, DEFAULT_RETRY_DELAY_MS } from "./connection-session.js"
-import {
-	ConnectionSessionService,
-	type ConnectionSessionServiceShape,
-	makeConnectionSessionLayer,
-	runCompatPromise,
-	withCompatErrors,
-} from "./effect/connection-service.js"
+import { ConnectionSessionService, makeConnectionSessionService } from "./effect/connection-service.js"
 
 export const DEFAULT_MULTICAST_TTL = 1
 export const DEFAULT_MULTICAST_ADDRESS = "239.0.0.1"
@@ -126,39 +120,21 @@ const createSharedServiceOptions = () => ({
 	}),
 })
 
-// Singleton as a Layer (Phase 2, report §4.3): the shared service is built
-// from this layer. Kept lazy — the layer (and its transport) is only
-// constructed on first tryRunCommand/discoverPath, never at import.
-export const makeSharedConnectionSessionLayer = () => makeConnectionSessionLayer(createSharedServiceOptions())
-
-let sharedServicePromise: Promise<ConnectionSessionServiceShape> | undefined = undefined
-
-const getSharedService = () => {
-	if (!sharedServicePromise) {
-		sharedServicePromise = Effect.runPromise(
-			Effect.provide(ConnectionSessionService, makeSharedConnectionSessionLayer()),
-		)
-	}
-	return sharedServicePromise
-}
-
-export const shutdownRemoteExecution = async () => {
-	const service = sharedServicePromise
-	sharedServicePromise = undefined
-
-	if (!service) {
-		return
-	}
-
-	await runCompatPromise((await service).shutdown)
-}
-
-export const tryRunCommand = async (command: string): Promise<string> => {
-	const service = await getSharedService()
-	return runCompatPromise(withCompatErrors(service.runCommand(command)))
-}
-
-export const discoverPath = async (command: string, errorMessage: string) => {
-	const service = await getSharedService()
-	return runCompatPromise(withCompatErrors(service.discoverPath(command, errorMessage)))
-}
+// Shared service as a scoped Layer (Phase 6, report §5): the composition
+// root (index.ts MainLive) builds this once at startup, and shutdown runs
+// as a scope finalizer — bin.ts closes the scope on signals/exit instead
+// of calling a shutdown function. The Phase-2/4 Promise shims
+// (tryRunCommand/discoverPath/shutdownRemoteExecution over a lazy module
+// singleton) are gone: dispatch and direct tools run the service Effects
+// directly. Construction here stays side-effect-free (RemoteExecution
+// opens sockets in start(), never in its constructor); the transport
+// still only starts/connects on the first command (ensureStarted/
+// ensureConnection in the service).
+export const SharedConnectionSessionLive: Layer.Layer<ConnectionSessionService> = Layer.scoped(
+	ConnectionSessionService,
+	Effect.gen(function* () {
+		const service = yield* makeConnectionSessionService(createSharedServiceOptions())
+		yield* Effect.addFinalizer(() => service.shutdown)
+		return service
+	}),
+)

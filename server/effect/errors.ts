@@ -11,7 +11,7 @@
 //   MissingParamError  registration-context-params.ts:56,98 (required*Param)
 //   RenderError        script-renderer.ts:42 (missing template args)
 //   PreludeError       prelude-loader.ts:87,96,102 (manifest mismatch)
-//   CommandFailedError remote command failures surfaced via tryRunCommand
+//   CommandFailedError remote command failures surfaced through the service
 //   InvalidParamsError Phase-4 dispatch validation failures (Zod safeParse
 //                    or effect/Schema decode), rendered into the identical
 //                    `Invalid params for <tool>.<action>: ...` envelope.
