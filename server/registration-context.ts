@@ -8,7 +8,6 @@ import {
 } from "./registration-context-dispatch.js"
 import { type RegistrationParams, createRegistrationParamHelpers } from "./registration-context-params.js"
 import { type RegistrationSchemas, createRegistrationSchemaHelpers } from "./registration-context-schemas.js"
-import { toolDescription } from "./tool-catalog.js"
 
 export type {
 	NamespaceActionRegistration,
@@ -41,7 +40,6 @@ export function createRegistrationContext(server: McpServer): RegistrationContex
 		rawServerTool,
 		recordSchema: schemaHelpers.recordSchema,
 		textResponse,
-		toolDescription,
 		toolNamespaceRegistry,
 	})
 

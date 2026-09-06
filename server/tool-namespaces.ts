@@ -22,6 +22,7 @@ import type {
 
 export interface ToolNamespaceDescriptor {
 	name: string
+	description: string
 	actions: Record<string, NamespaceActionRegistration>
 	options?: { compactParamsSchema?: boolean }
 }
@@ -38,12 +39,7 @@ export function registerToolNamespaceDescriptors(ctx: FullRegistrationFacades, b
 				throw new Error(`Duplicate tool namespace: ${descriptor.name}`)
 			}
 			seen.add(descriptor.name)
-			ctx.registerToolNamespace(
-				descriptor.name,
-				ctx.toolDescription(descriptor.name),
-				descriptor.actions,
-				descriptor.options,
-			)
+			ctx.registerToolNamespace(descriptor.name, descriptor.description, descriptor.actions, descriptor.options)
 		}
 	}
 }

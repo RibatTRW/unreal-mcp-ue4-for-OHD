@@ -2,7 +2,41 @@ import { z } from "zod"
 
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const worldBuildingEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_level",
+		category: "Core Tool Namespaces",
+		description:
+			"Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
+	},
+	{
+		name: "manage_level_structure",
+		category: "World & Environment Tool Namespaces",
+		description:
+			"Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
+	},
+	{
+		name: "manage_environment",
+		category: "World & Environment Tool Namespaces",
+		description:
+			"Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
+	},
+	{
+		name: "manage_geometry",
+		category: "World & Environment Tool Namespaces",
+		description: "Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(worldBuildingEntries)
 
 export function worldBuildingDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -107,6 +141,7 @@ export function worldBuildingDescriptors(
 	return [
 		{
 			name: "manage_level",
+			description: describeTool("manage_level"),
 			actions: {
 				info: shared.map_info,
 				world_outliner: shared.world_outliner,
@@ -120,6 +155,7 @@ export function worldBuildingDescriptors(
 		},
 		{
 			name: "manage_level_structure",
+			description: describeTool("manage_level_structure"),
 			actions: {
 				world_outliner: shared.world_outliner,
 				create_town: worldAction("create_town", createTownSchema),
@@ -135,6 +171,7 @@ export function worldBuildingDescriptors(
 		},
 		{
 			name: "manage_environment",
+			description: describeTool("manage_environment"),
 			actions: {
 				create_town: worldAction("create_town", createTownSchema),
 				create_arch: worldAction("create_arch", createArchSchema),
@@ -145,6 +182,7 @@ export function worldBuildingDescriptors(
 		},
 		{
 			name: "manage_geometry",
+			description: describeTool("manage_geometry"),
 			actions: {
 				create_wall: worldAction("create_wall", createWallSchema),
 				create_arch: worldAction("create_arch", createArchSchema),

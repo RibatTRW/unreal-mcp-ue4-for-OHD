@@ -1,5 +1,6 @@
 import { categoryOrder } from "./tool-catalog-categories.js"
 import { type ToolCatalogEntry, toolCatalogEntries } from "./tool-catalog-entry-data.js"
+import { fallbackToolDescription } from "./tool-catalog-types.js"
 
 export { categoryOrder, toolCatalogEntries, type ToolCatalogEntry }
 
@@ -8,11 +9,4 @@ export const toolCatalog = Object.fromEntries(toolCatalogEntries.map((entry) => 
 	ToolCatalogEntry
 >
 
-export const toolDescription = (name: string) => {
-	const entry = toolCatalog[name]
-	if (!entry) {
-		throw new Error(`Unknown tool metadata: ${name}`)
-	}
-
-	return entry.description
-}
+export const toolDescription = (name: string) => toolCatalog[name]?.description ?? fallbackToolDescription(name)

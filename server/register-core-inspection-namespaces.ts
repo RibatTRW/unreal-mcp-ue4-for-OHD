@@ -8,7 +8,23 @@ import {
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const coreInspectionEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_inspection",
+		category: "Core Tool Namespaces",
+		description: "Inspection tool namespace for asset, actor, map, and basic Blueprint summary actions.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(coreInspectionEntries)
 
 export function coreInspectionDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -19,6 +35,7 @@ export function coreInspectionDescriptors(
 	return [
 		{
 			name: "manage_inspection",
+			description: describeTool("manage_inspection"),
 			actions: {
 				asset: {
 					paramsSchema: assetLookupSchema,

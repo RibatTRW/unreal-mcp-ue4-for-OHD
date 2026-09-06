@@ -8,7 +8,29 @@ import {
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const worldNavigationVolumeEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_volumes",
+		category: "World & Environment Tool Namespaces",
+		description: "Volume tool namespace for spawning common engine volumes and applying delete or transform actions.",
+	},
+	{
+		name: "manage_navigation",
+		category: "World & Environment Tool Namespaces",
+		description:
+			"Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(worldNavigationVolumeEntries)
 
 export function worldNavigationVolumeDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -38,6 +60,7 @@ export function worldNavigationVolumeDescriptors(
 	return [
 		{
 			name: "manage_volumes",
+			description: describeTool("manage_volumes"),
 			actions: {
 				spawn_trigger_volume: {
 					paramsSchema: volumeSpawnSchema,
@@ -124,6 +147,7 @@ export function worldNavigationVolumeDescriptors(
 		},
 		{
 			name: "manage_navigation",
+			description: describeTool("manage_navigation"),
 			actions: {
 				spawn_nav_mesh_bounds_volume: {
 					paramsSchema: volumeSpawnSchema,

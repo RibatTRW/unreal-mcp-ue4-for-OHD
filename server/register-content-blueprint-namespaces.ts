@@ -6,7 +6,24 @@ import {
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const contentBlueprintEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_blueprint",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Blueprint tool namespace for Blueprint creation, component editing, compilation, and basic Blueprint summary actions.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(contentBlueprintEntries)
 
 export function contentBlueprintDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -29,6 +46,7 @@ export function contentBlueprintDescriptors(
 	return [
 		{
 			name: "manage_blueprint",
+			description: describeTool("manage_blueprint"),
 			actions: {
 				create_blueprint: {
 					paramsSchema: requireAtLeastOneValue(

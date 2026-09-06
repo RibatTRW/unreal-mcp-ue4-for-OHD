@@ -18,7 +18,24 @@ import {
 	widgetNameMessage,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const contentWidgetEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_widget",
+		category: "Content & Authoring Tool Namespaces",
+		description:
+			"Widget tool namespace for UMG Blueprint creation, widget-tree inspection, widget-tree edits, CanvasPanel root normalization, and viewport spawning actions. Use inspect_tree to verify designer contents, add_child_widget for nested layout work, and ensure_canvas_root when absolute CanvasPanel positioning is required.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(contentWidgetEntries)
 
 export function contentWidgetDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -65,6 +82,7 @@ export function contentWidgetDescriptors(
 	return [
 		{
 			name: "manage_widget",
+			description: describeTool("manage_widget"),
 			actions: {
 				create_widget_blueprint: {
 					paramsSchema: requireAtLeastOneValue(

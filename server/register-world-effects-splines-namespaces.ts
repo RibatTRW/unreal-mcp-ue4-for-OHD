@@ -9,7 +9,30 @@ import {
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const worldEffectsSplinesEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_splines",
+		category: "World & Environment Tool Namespaces",
+		description:
+			"Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
+	},
+	{
+		name: "manage_effect",
+		category: "World & Environment Tool Namespaces",
+		description:
+			"Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(worldEffectsSplinesEntries)
 
 export function worldEffectsSplineDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
@@ -35,6 +58,7 @@ export function worldEffectsSplineDescriptors(
 	return [
 		{
 			name: "manage_splines",
+			description: describeTool("manage_splines"),
 			actions: {
 				spawn_actor: {
 					paramsSchema: z
@@ -103,6 +127,7 @@ export function worldEffectsSplineDescriptors(
 		},
 		{
 			name: "manage_effect",
+			description: describeTool("manage_effect"),
 			actions: {
 				spawn_debug_shape: {
 					paramsSchema: z

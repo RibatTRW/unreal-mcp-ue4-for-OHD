@@ -13,7 +13,30 @@ import {
 } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
+import type { ToolCatalogEntry } from "./tool-catalog-types.js"
+import { createToolDescriptionLookup } from "./tool-catalog-types.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
+
+/**
+ * Catalog entries co-located with the namespace registration below.
+ * Adding a tool here needs no edit to a separate catalog file.
+ */
+export const coreAssetActorEntries: ToolCatalogEntry[] = [
+	{
+		name: "manage_asset",
+		category: "Core Tool Namespaces",
+		description:
+			"Asset tool namespace for listing, searching, inspecting, exporting, validating, duplicating, renaming, moving, deleting, saving, and folder-management actions.",
+	},
+	{
+		name: "manage_actor",
+		category: "Core Tool Namespaces",
+		description:
+			"Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
+	},
+]
+
+const describeTool = createToolDescriptionLookup(coreAssetActorEntries)
 
 const assetMutationParamsSchema = requireAtLeastOneValue(
 	requireAtLeastOneValue(
@@ -70,6 +93,7 @@ export function coreAssetActorDescriptors(
 	return [
 		{
 			name: "manage_asset",
+			description: describeTool("manage_asset"),
 			actions: {
 				list: {
 					paramsSchema: z
@@ -259,6 +283,7 @@ export function coreAssetActorDescriptors(
 		},
 		{
 			name: "manage_actor",
+			description: describeTool("manage_actor"),
 			actions: {
 				list: {
 					handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
