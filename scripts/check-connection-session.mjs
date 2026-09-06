@@ -164,14 +164,43 @@ const makeSession = (script, extra = {}) => {
 	)
 }
 
-// 5. predicate classification.
+// 5. stale retry failure surfaces the retry's error, not the original.
+{
+	const { session, transport } = makeSession({
+		initiallyConnected: true,
+		runCommand: [
+			{ success: false, output: [], result: "Error A" },
+			okRun(lineOut('print("rrmcp:init")')),
+			{ success: false, output: [], result: "Error B" },
+		],
+		getFirstRemoteNode: [{ nodeId: "n2" }],
+	})
+	let thrown = null
+	try {
+		await session.runCommand("print(1)")
+	} catch (error) {
+		thrown = error
+	}
+	check(
+		"stale-retry-error-surfaces",
+		thrown && thrown.message === "Command failed with: Error B",
+		String(thrown && thrown.message),
+	)
+	check(
+		"retry-attempted-after-stale",
+		transport.calls.filter((c) => c === "runCommand:print(1)").length === 2,
+		transport.calls.join(","),
+	)
+}
+
+// 6. predicate classification.
 check("econnreset-recoverable", isRecoverableConnectionError({ code: "ECONNRESET" }) === true)
 check("epipe-not-recoverable", isRecoverableConnectionError({ code: "EPIPE" }) === false)
 check("plain-error-not-recoverable", isRecoverableConnectionError(new Error("x")) === false)
 check("null-not-recoverable", isRecoverableConnectionError(null) === false)
 check("string-not-recoverable", isRecoverableConnectionError("ECONNRESET") === false)
 
-// 6. discoverPath last-line + None/empty-throw.
+// 7. discoverPath last-line + None/empty-throw.
 {
 	const { session } = makeSession({
 		hasCommandConnection: () => true,
@@ -195,7 +224,7 @@ check("string-not-recoverable", isRecoverableConnectionError("ECONNRESET") === f
 	check("discover-empty-throws", emptyThrew)
 }
 
-// 7. singleton compat surface: same three names, same kinds.
+// 8. singleton compat surface: same three names, same kinds.
 check(
 	"singleton-compat-surface",
 	typeof adapter.tryRunCommand === "function" &&
@@ -204,7 +233,7 @@ check(
 	Object.keys(adapter).sort().join(","),
 )
 
-// 8. start failure drops the transport and rebuilds lazily on next use:
+// 9. start failure drops the transport and rebuilds lazily on next use:
 // the factory must NOT run inside the failure — only on the next ensure.
 {
 	const events = []
