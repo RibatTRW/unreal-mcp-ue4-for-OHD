@@ -12,15 +12,15 @@ if (cliArgs.includes("--version") || cliArgs.includes("-v")) {
 }
 
 let serverFiber: Fiber.RuntimeFiber<never, unknown> | undefined
+let shutdownRequested = false
 
 // Scoped shutdown (Phase 6, report §5): the launched layer owns the
 // shutdown finalizer (connection close/stop), so interrupting its fiber
 // closes the scope and runs teardown. Interrupt is idempotent, which
 // replaces the shutdownInProgress flag — concurrent signals/exit hooks
-// all join the same teardown. Clearing serverFiber first also tells
-// main's catch below that the failure is an intentional shutdown, not
-// a startup failure.
+// all join the same teardown.
 const shutdown = () => {
+	shutdownRequested = true
 	const fiber = serverFiber
 	serverFiber = undefined
 
@@ -84,11 +84,7 @@ process.once("exit", () => {
 })
 
 void main().catch((error) => {
-	// An intentional shutdown (signals/exit above) clears serverFiber
-	// before interrupting, so the join failure here is expected — the
-	// handler already owns process exit. Only genuine startup failures
-	// report and exit non-zero.
-	if (serverFiber === undefined) {
+	if (shutdownRequested) {
 		return
 	}
 
