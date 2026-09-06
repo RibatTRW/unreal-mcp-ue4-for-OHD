@@ -92,7 +92,8 @@ export function contentAssetDescriptors(
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
 						Effect.try({
-							try: () => pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 							catch: (cause) => cause as ToolError,
 						}),
 				},
@@ -235,7 +236,8 @@ export function contentAssetDescriptors(
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
 						Effect.try({
-							try: () => pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 							catch: (cause) => cause as ToolError,
 						}),
 				},
@@ -307,7 +309,8 @@ export function contentAssetDescriptors(
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
 						Effect.try({
-							try: () => pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 							catch: (cause) => cause as ToolError,
 						}),
 				},

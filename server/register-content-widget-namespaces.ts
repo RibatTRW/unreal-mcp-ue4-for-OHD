@@ -252,7 +252,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGAddWidget(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["widget_class"]),
 										requiredStringParam(params, ["widget_name", "name"]),
 										optionalStringParam(params, ["parent_widget_name"]),
@@ -275,7 +280,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGRemoveWidget(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["widget_name", "name"]),
 									),
 								),
@@ -297,7 +307,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGSetWidgetPosition(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["widget_name", "name"]),
 										toVector2Record(params.position),
 										toVector2Record(params.size),
@@ -319,7 +334,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGReparentWidget(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["widget_name", "name"]),
 										requiredStringParam(params, ["new_parent_widget_name"]),
 										toVector2Record(params.position),
@@ -351,7 +371,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGAddChildWidget(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["parent_widget_name"]),
 										requiredStringParam(params, ["child_widget_class"]),
 										requiredStringParam(params, ["child_widget_name", "name"]),
@@ -382,7 +407,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGRemoveChildWidget(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["parent_widget_name"]),
 										requiredStringParam(params, ["child_widget_name", "name"]),
 									),
@@ -410,7 +440,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGSetChildWidgetPosition(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["parent_widget_name"]),
 										requiredStringParam(params, ["child_widget_name", "name"]),
 										toVector2Record(params.position),
@@ -446,7 +481,12 @@ export function contentWidgetDescriptors(
 							try: () =>
 								pythonDispatch(
 									editorTools.UEUMGSetupSidebarTab(
-										requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
 										requiredStringParam(params, ["url"]),
 										optionalStringParam(params, ["browser_widget_name", "name"]),
 										typeof params.open_tab === "boolean" ? params.open_tab : undefined,

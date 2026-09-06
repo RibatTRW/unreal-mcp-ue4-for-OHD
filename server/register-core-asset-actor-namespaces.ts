@@ -138,7 +138,8 @@ export function coreAssetActorDescriptors(
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
 						Effect.try({
-							try: () => pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
 							catch: (cause) => cause as ToolError,
 						}),
 				},
@@ -230,7 +231,8 @@ export function coreAssetActorDescriptors(
 									editorTools.UEAssetManagementTool("save", {
 										asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
 										asset_paths: params.asset_paths,
-										only_if_is_dirty: typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
+										only_if_is_dirty:
+											typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
 									}),
 								),
 							catch: (cause) => cause as ToolError,
