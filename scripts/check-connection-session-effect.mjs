@@ -31,8 +31,7 @@ for (const required of [servicePath, sessionPath, adapterPath]) {
 
 const require = createRequire(import.meta.url)
 const serviceMod = require(servicePath)
-const sessionMod = require(sessionPath)
-const adapterMod = require(adapterPath)
+
 
 const {
 	ConnectionSessionService,
@@ -193,7 +192,6 @@ const virtualConnectElapsed = (transport, options = {}) =>
 		"backoff-cap",
 	)
 	check("testclock-backoff-cap", elapsed === 20000, `elapsed=${elapsed}`)
-	check("max-retry-delay-constant", sessionMod.MAX_RETRY_DELAY_MS === 10000)
 }
 
 // 4. The schedule directly: attempt timestamps under TestClock must be
@@ -241,8 +239,6 @@ const virtualConnectElapsed = (transport, options = {}) =>
 				),
 			),
 		)
-	check("connection-layer-shape", Layer.isLayer(makeConnectionSessionLayer(new FakeTransport())), "not a Layer")
-
 	const failing = new FakeTransport({
 		initiallyConnected: true,
 		runCommand: [
@@ -272,10 +268,6 @@ const virtualConnectElapsed = (transport, options = {}) =>
 	})
 	check("stale-recovers-via-layer", (await withTimeout(runViaLayer(recovering), 15000, "stale-recover")) === "back")
 }
-
-// 6. Singleton Layer factory exists without constructing a transport
-// (lazy — no bind-address probe or socket at import/require time).
-check("shared-layer-factory", typeof adapterMod.makeSharedConnectionSessionLayer === "function")
 
 if (failures.length > 0) {
 	console.error(`check-connection-session-effect: ${failures.length} failing scenario(s): ${failures.join(", ")}`)

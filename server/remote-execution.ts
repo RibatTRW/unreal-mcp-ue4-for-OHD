@@ -6,9 +6,9 @@ import type { IRemoteExecutionMessageCommandOutputData, RemoteExecutionNode } fr
 
 import { type ConnectionTransport, DEFAULT_RETRY_COUNT, DEFAULT_RETRY_DELAY_MS } from "./connection-session.js"
 import {
+	ConnectionSessionService,
 	type ConnectionSessionServiceShape,
 	makeConnectionSessionLayer,
-	makeConnectionSessionService,
 	runCompatPromise,
 	withCompatErrors,
 } from "./effect/connection-service.js"
@@ -131,31 +131,34 @@ const createSharedServiceOptions = () => ({
 // constructed on first tryRunCommand/discoverPath, never at import.
 export const makeSharedConnectionSessionLayer = () => makeConnectionSessionLayer(createSharedServiceOptions())
 
-let session: ConnectionSessionServiceShape | undefined = undefined
+let sharedServicePromise: Promise<ConnectionSessionServiceShape> | undefined = undefined
 
-const getSharedSession = () => {
-	if (!session) {
-		session = Effect.runSync(makeConnectionSessionService(createSharedServiceOptions()))
+const getSharedService = () => {
+	if (!sharedServicePromise) {
+		sharedServicePromise = Effect.runPromise(
+			Effect.provide(ConnectionSessionService, makeSharedConnectionSessionLayer()),
+		)
 	}
-
-	return session
+	return sharedServicePromise
 }
 
 export const shutdownRemoteExecution = async () => {
-	const runtime = session
-	session = undefined
+	const service = sharedServicePromise
+	sharedServicePromise = undefined
 
-	if (!runtime) {
+	if (!service) {
 		return
 	}
 
-	await runCompatPromise(runtime.shutdown)
+	await runCompatPromise((await service).shutdown)
 }
 
 export const tryRunCommand = async (command: string): Promise<string> => {
-	return runCompatPromise(withCompatErrors(getSharedSession().runCommand(command)))
+	const service = await getSharedService()
+	return runCompatPromise(withCompatErrors(service.runCommand(command)))
 }
 
 export const discoverPath = async (command: string, errorMessage: string) => {
-	return runCompatPromise(withCompatErrors(getSharedSession().discoverPath(command, errorMessage)))
+	const service = await getSharedService()
+	return runCompatPromise(withCompatErrors(service.discoverPath(command, errorMessage)))
 }
