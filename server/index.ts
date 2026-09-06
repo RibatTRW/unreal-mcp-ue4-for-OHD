@@ -1,12 +1,12 @@
-import { Effect, Layer } from "effect"
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
+import { Effect, Layer } from "effect"
 
 import { ConnectionSessionService } from "./effect/connection-service.js"
 import { PreludeService, PreludeServiceLive } from "./effect/prelude-service.js"
-import { SharedConnectionSessionLive } from "./remote-execution.js"
 import { registerDirectTools } from "./register-direct-tools.js"
 import { createRegistrationContext } from "./registration-context.js"
+import { SharedConnectionSessionLive } from "./remote-execution.js"
 import { registerAllToolNamespaces } from "./tool-namespaces.js"
 import { projectVersion } from "./version.js"
 

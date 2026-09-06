@@ -39,6 +39,7 @@ import { Effect, type Schema } from "effect"
 import { z } from "zod"
 
 import type * as editorTools from "./editor/tools.js"
+import { type ConnectionSessionServiceShape, runCompatPromise, withCompatErrors } from "./effect/connection-service.js"
 import { InvalidParamsError, MissingParamError, type ToolError } from "./effect/errors.js"
 import {
 	invalidParamsMessage,
@@ -47,7 +48,6 @@ import {
 	strictDecodeSync,
 } from "./effect/schema-patterns.js"
 import type { ActionParams } from "./registration-context-params.js"
-import { type ConnectionSessionServiceShape, runCompatPromise, withCompatErrors } from "./effect/connection-service.js"
 
 export type NamespaceDispatchResult = { kind: "python"; command: string } | { kind: "direct"; payload: unknown }
 

@@ -42,8 +42,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   (SDK throws on non-Zod).
 - Phase 6 composition root + entry (`server/index.ts` exports `MainLive`; `server/bin.ts` forkDaemons
   `Layer.launch(MainLive)` and joins it, interrupting the fiber on signals/exit so scope finalizers
-  run the connection shutdown — interrupt idempotency replaces the shutdown flag, and main's catch
-  ignores the join failure when the fiber was cleared by an intentional shutdown). index owns the
+  run the connection shutdown — interrupt idempotency replaces the shutdownInProgress guard,
+  and main's catch ignores the join failure only when the explicit `shutdownRequested` flag
+  was set (fiber-cleared alone is ambiguous: the fiber is also undefined when main fails
+  before assignment). index owns the
   `StdioServerTransport`+connect; `--version`, the ECONNRESET guard, and the four `process.once`
   handlers are unchanged. Removed the remote-execution.ts Promise singleton shims
   (`tryRunCommand`/`discoverPath`/`shutdownRemoteExecution`); dispatch + direct tools run the

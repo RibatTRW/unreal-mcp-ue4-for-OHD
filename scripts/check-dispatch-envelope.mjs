@@ -124,7 +124,7 @@ async function captureLiveEnvelopes() {
 		captured.invalid_params = parseEnvelope("live invalid-params", invalidResult)
 
 		// Handler throw without Unreal: "  " passes the Zod string check, then
-		// requiredStringParam rejects the blank command before tryRunCommand.
+		// requiredStringParam rejects the blank command before command execution.
 		const throwResult = await client.callTool({
 			name: "manage_system",
 			arguments: { action: "console_command", params: { command: "  " } },
