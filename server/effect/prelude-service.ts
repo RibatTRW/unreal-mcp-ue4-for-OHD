@@ -69,9 +69,7 @@ export const makePreludeService = (): Effect.Effect<PreludeServiceShape, Prelude
 		catch: (cause) =>
 			cause instanceof PreludeError
 				? cause
-				: failPrelude(
-						`Cannot load editor preludes: ${cause instanceof Error ? cause.message : String(cause)}`,
-					),
+				: failPrelude(`Cannot load editor preludes: ${cause instanceof Error ? cause.message : String(cause)}`),
 	})
 
 // Singleton-ready Layer: build once at startup (Phase 6 composition root)
