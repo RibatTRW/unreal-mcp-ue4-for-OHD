@@ -3,8 +3,11 @@ import { contentBlueprintDescriptors } from "./register-content-blueprint-namesp
 import { contentMediaDescriptors } from "./register-content-media-namespaces.js"
 import { contentWidgetDescriptors } from "./register-content-widget-namespaces.js"
 import { coreAssetActorDescriptors } from "./register-core-asset-actor-namespaces.js"
-import { coreEditorSystemDescriptors } from "./register-core-editor-system-namespaces.js"
+import { coreEditorDescriptors } from "./register-core-editor-namespaces.js"
+import { coreInspectionDescriptors } from "./register-core-inspection-namespaces.js"
 import { coreSourceControlDescriptors } from "./register-core-source-control-namespaces.js"
+import { coreSystemDescriptors } from "./register-core-system-namespaces.js"
+import { coreToolsDescriptors } from "./register-core-tools-namespaces.js"
 import { gameplayDescriptors } from "./register-gameplay-namespaces.js"
 import { worldBuildingDescriptors } from "./register-world-building-namespaces.js"
 import { worldEffectsSplineDescriptors } from "./register-world-effects-splines-namespaces.js"
@@ -48,7 +51,10 @@ export function registerToolNamespaceDescriptors(ctx: FullRegistrationFacades, b
 export function registerAllToolNamespaces(ctx: FullRegistrationFacades): void {
 	registerToolNamespaceDescriptors(ctx, [
 		coreAssetActorDescriptors,
-		coreEditorSystemDescriptors,
+		coreEditorDescriptors,
+		coreSystemDescriptors,
+		coreInspectionDescriptors,
+		coreToolsDescriptors,
 		coreSourceControlDescriptors,
 		worldLightingDescriptors,
 		worldNavigationVolumeDescriptors,

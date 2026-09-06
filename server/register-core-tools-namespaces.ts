@@ -1,17 +1,12 @@
 import { z } from "zod"
 
-import {
-	actorNameSchema,
-	actorNameShape,
-	assetLookupSchema,
-	blueprintNameShape,
-	requireAtLeastOneValue,
-	vector3TransformShape,
-} from "./namespace-action-schema-fragments.js"
+import { requireAtLeastOneValue } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
-import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
+// Parameter hints served by manage_tools.describe_namespace. Entries cover
+// namespaces whose descriptors live in other registrar files; the map stays
+// with its only consumer so the split keeps behavior identical.
 const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	manage_editor: {
 		project_info: ["No params. Returns the active project summary."],
@@ -81,160 +76,12 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	},
 }
 
-export function coreEditorSystemDescriptors(
+export function coreToolsDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
 ): ToolNamespaceDescriptor[] {
-	const {
-		actorNameParam,
-		blueprintNameParam,
-		directDispatch,
-		editorTools,
-		pythonDispatch,
-		requiredStringParam,
-		toRotatorRecord,
-		toVector3Record,
-		toolNamespaceRegistry,
-	} = ctx
-	const shared = sharedReadOnlyActions(ctx)
+	const { directDispatch, requiredStringParam, toolNamespaceRegistry } = ctx
 
 	return [
-		{
-			name: "manage_editor",
-			actions: {
-				run_python: {
-					paramsSchema: z
-						.object({
-							code: z.string(),
-						})
-						.strict(),
-					handler: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
-				},
-				console_command: shared.console_command,
-				project_info: { handler: () => pythonDispatch(editorTools.UEGetProjectInfo()) },
-				map_info: shared.map_info,
-				world_outliner: shared.world_outliner,
-				is_pie_running: {
-					paramsSchema: z
-						.object({
-							timeout_seconds: z.number().optional(),
-							poll_interval: z.number().optional(),
-						})
-						.strict(),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEPIETool("get_pie_status", {
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
-				},
-				start_pie: {
-					paramsSchema: z
-						.object({
-							timeout_seconds: z.number().optional(),
-							poll_interval: z.number().optional(),
-						})
-						.strict(),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEPIETool("start_pie", {
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
-				},
-				stop_pie: {
-					paramsSchema: z
-						.object({
-							timeout_seconds: z.number().optional(),
-							poll_interval: z.number().optional(),
-						})
-						.strict(),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEPIETool("stop_pie", {
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
-				},
-				get_console_variable: shared.get_console_variable,
-				screenshot: { handler: () => pythonDispatch(editorTools.UETakeScreenshot()) },
-				move_camera: {
-					paramsSchema: z.object(vector3TransformShape).strict(),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEMoveCamera(
-								toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
-								toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
-							),
-						),
-				},
-			},
-		},
-		{
-			name: "manage_system",
-			actions: {
-				console_command: shared.console_command,
-				get_console_variable: shared.get_console_variable,
-				validate_assets: shared.validate_assets,
-			},
-		},
-		{
-			name: "manage_inspection",
-			actions: {
-				asset: {
-					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-				},
-				asset_references: {
-					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
-						),
-				},
-				actor: {
-					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("get_actor_properties", {
-								name: actorNameParam(params),
-							}),
-						),
-				},
-				actor_materials: {
-					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("get_actor_material_info", {
-								name: actorNameParam(params),
-							}),
-						),
-				},
-				blueprint: {
-					paramsSchema: requireAtLeastOneValue(
-						z
-							.object({
-								...blueprintNameShape,
-								include_nodes: z.boolean().optional(),
-							})
-							.strict(),
-						["blueprint_name", "asset_path", "name"],
-						"Provide blueprint_name, asset_path, or name.",
-					),
-					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
-								blueprint_name: blueprintNameParam(params),
-								include_nodes: Boolean(params.include_nodes),
-							}),
-						),
-				},
-				map: shared.map_info,
-			},
-		},
 		{
 			name: "manage_tools",
 			actions: {
