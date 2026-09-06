@@ -2,12 +2,14 @@ import { z } from "zod"
 
 import { actorNameShape, requireAtLeastOneValue, vector3TransformShape } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 export function worldLightingDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
 ): ToolNamespaceDescriptor[] {
 	const { actorNameParam, editorTools, optionalStringParam, pythonDispatch, toRotatorArray, toVector3Array } = ctx
+	const shared = sharedReadOnlyActions(ctx)
 
 	const lightSpawnSchema = z
 		.object({
@@ -72,9 +74,7 @@ export function worldLightingDescriptors(
 							}),
 						),
 				},
-				inspect_lighting: {
-					handler: () => pythonDispatch(editorTools.UEGetMapInfo()),
-				},
+				inspect_lighting: shared.map_info,
 			},
 		},
 	]

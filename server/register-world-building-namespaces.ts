@@ -1,12 +1,14 @@
 import { z } from "zod"
 
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
+import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolNamespaceDescriptor } from "./tool-namespaces.js"
 
 export function worldBuildingDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
 ): ToolNamespaceDescriptor[] {
 	const { editorTools, pythonDispatch, worldBuildBaseSchema, worldBuildCommand } = ctx
+	const shared = sharedReadOnlyActions(ctx)
 
 	const worldSchema = (shape: z.ZodRawShape) =>
 		z
@@ -106,8 +108,8 @@ export function worldBuildingDescriptors(
 		{
 			name: "manage_level",
 			actions: {
-				info: { handler: () => pythonDispatch(editorTools.UEGetMapInfo()) },
-				world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
+				info: shared.map_info,
+				world_outliner: shared.world_outliner,
 				list_actors: { handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")) },
 				create_wall: worldAction("create_wall", createWallSchema),
 				create_maze: worldAction("create_maze", createMazeSchema),
@@ -119,7 +121,7 @@ export function worldBuildingDescriptors(
 		{
 			name: "manage_level_structure",
 			actions: {
-				world_outliner: { handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()) },
+				world_outliner: shared.world_outliner,
 				create_town: worldAction("create_town", createTownSchema),
 				construct_house: worldAction("construct_house", constructHouseSchema),
 				construct_mansion: worldAction("construct_mansion", constructMansionSchema),
