@@ -3,11 +3,13 @@
 import fs from "node:fs"
 import path from "node:path"
 
+// package.json is the single source of truth for the version.
+// This script updates package.json (and the npm lockfile) only;
+// server/version.ts and server.json are regenerated from package.json
+// by `npm run build` (scripts/sync-version.mjs). Do not edit them by hand.
 const repoRoot = process.cwd()
 const packageJsonPath = path.join(repoRoot, "package.json")
 const packageLockPath = path.join(repoRoot, "package-lock.json")
-const serverVersionPath = path.join(repoRoot, "server", "version.ts")
-const serverMetadataPath = path.join(repoRoot, "server.json")
 
 const requestedVersion = process.argv[2]
 
@@ -41,9 +43,16 @@ if (!nextVersion) {
 	process.exit(1)
 }
 
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"))
-packageJson.version = nextVersion
-fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+// Surgical text replacement (instead of a JSON round-trip) so biome's
+// compact-array formatting of package.json is preserved.
+const packageJsonText = fs.readFileSync(packageJsonPath, "utf8")
+const oldVersion = JSON.parse(packageJsonText).version
+const versionPattern = new RegExp(`("version":\\s*")${oldVersion.replace(/[.\-]/g, "\\$&")}(")`)
+if (!versionPattern.test(packageJsonText)) {
+	console.error(`Could not locate "version": "${oldVersion}" in ${packageJsonPath}`)
+	process.exit(1)
+}
+fs.writeFileSync(packageJsonPath, packageJsonText.replace(versionPattern, `$1${nextVersion}$2`))
 
 if (fs.existsSync(packageLockPath)) {
 	const packageLock = JSON.parse(fs.readFileSync(packageLockPath, "utf8"))
@@ -54,20 +63,5 @@ if (fs.existsSync(packageLockPath)) {
 	fs.writeFileSync(packageLockPath, `${JSON.stringify(packageLock, null, 2)}\n`)
 }
 
-const serverVersionSource = `export const projectVersion = "${nextVersion}"\n`
-fs.writeFileSync(serverVersionPath, serverVersionSource)
-
-if (fs.existsSync(serverMetadataPath)) {
-	const serverMetadata = JSON.parse(fs.readFileSync(serverMetadataPath, "utf8"))
-	serverMetadata.version = nextVersion
-	if (Array.isArray(serverMetadata.packages)) {
-		for (const pkg of serverMetadata.packages) {
-			if (pkg && typeof pkg === "object") {
-				pkg.version = nextVersion
-			}
-		}
-	}
-	fs.writeFileSync(serverMetadataPath, `${JSON.stringify(serverMetadata, null, 2)}\n`)
-}
-
 console.log(`Updated project version to ${nextVersion}`)
+console.log("Run `npm run build` to regenerate server/version.ts and server.json.")

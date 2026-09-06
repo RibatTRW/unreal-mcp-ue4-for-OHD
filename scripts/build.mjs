@@ -1,8 +1,14 @@
 import fs from "node:fs"
 import path from "node:path"
 import ts from "typescript"
+import { syncVersionFromPackageJson } from "./sync-version.mjs"
 
 const rootDir = process.cwd()
+
+// package.json is the single source of truth for the version; regenerate
+// server/version.ts and server.json from it before compiling so dist,
+// the generated files, and package.json can never drift apart.
+syncVersionFromPackageJson()
 const distDir = path.join(rootDir, "dist")
 const serverDir = path.join(rootDir, "server")
 
