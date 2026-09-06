@@ -58,14 +58,25 @@ const buildPrelude = (relativeDir: string): Effect.Effect<string, PreludeError> 
 					),
 	})
 
-export const makePreludeService = (): Effect.Effect<PreludeServiceShape> =>
-	Effect.sync(() => ({
-		preludes: getEditorPreludes(),
-		dispatchHarness: getDomainDispatchHarness(),
-		readScript,
-		buildPrelude,
-	}))
+export const makePreludeService = (): Effect.Effect<PreludeServiceShape, PreludeError> =>
+	Effect.try({
+		try: () => ({
+			preludes: getEditorPreludes(),
+			dispatchHarness: getDomainDispatchHarness(),
+			readScript,
+			buildPrelude,
+		}),
+		catch: (cause) =>
+			cause instanceof PreludeError
+				? cause
+				: failPrelude(
+						`Cannot load editor preludes: ${cause instanceof Error ? cause.message : String(cause)}`,
+					),
+	})
 
 // Singleton-ready Layer: build once at startup (Phase 6 composition root)
 // and the memoized cells underneath make repeat builds free.
-export const PreludeServiceLive: Layer.Layer<PreludeService> = Layer.effect(PreludeService, makePreludeService())
+export const PreludeServiceLive: Layer.Layer<PreludeService, PreludeError> = Layer.effect(
+	PreludeService,
+	makePreludeService(),
+)
