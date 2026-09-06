@@ -4,7 +4,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration (phases 0-4, 5a-5c)
+## Effect migration (phases 0-4, 5a-5d)
 
 - Phase 5a pilot (`register-core-system-namespaces.ts` [shared-actions only, no change],
   `register-core-inspection-namespaces.ts`, `register-world-lighting-namespaces.ts`): handlers return
@@ -29,6 +29,13 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `register-content-blueprint-namespaces.ts`): same mechanical wrap; no `success:false` degraded branches
   exist in these files (blueprint optional-fallbacks stay inline expressions inside `try`), paramsSchema stays
   frozen Zod so the surface snapshot does not move.
+- Phase 5d large wave (`register-content-media-namespaces.ts` [`add_key`'s custom-issue `superRefine`
+  ("Provide value.") untouched in frozen paramsSchema], `register-content-asset-namespaces.ts` [the nested
+  `requireAtLeastOneValue` composition on `create_data_table` untouched — both custom messages preserved
+  verbatim], `register-content-widget-namespaces.ts`, `register-core-asset-actor-namespaces.ts` [the
+  `assetMutationHandler` helper wraps once, covering duplicate/rename/move; zero-arg `list` wraps inline;
+  shared `validate_assets` untouched]): same mechanical wrap; no `success:false` degraded branches exist in
+  these files, paramsSchema stays frozen Zod so the surface snapshot does not move.
 
 - Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
   prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently

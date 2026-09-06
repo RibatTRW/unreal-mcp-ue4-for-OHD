@@ -1,4 +1,6 @@
+import { Effect } from "effect"
 import { z } from "zod"
+import type { ToolError } from "./effect/errors.js"
 
 import {
 	actorNameSchema,
@@ -87,8 +89,15 @@ export function coreAssetActorDescriptors(
 		new_name: optionalStringParam(params, ["new_name", "name"]),
 	})
 
+	// Phase 5d (report §5): handler returns Effect; param-helper
+	// and builder throws become channel failures via Effect.try
+	// (Effect.sync would defect past dispatch's catchAll and break
+	// the identical envelope), rendered verbatim downstream.
 	const assetMutationHandler = (operation: "duplicate" | "rename" | "move") => (params: Record<string, any>) =>
-		pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params)))
+		Effect.try({
+			try: () => pythonDispatch(editorTools.UEAssetManagementTool(operation, assetMutationPayload(params))),
+			catch: (cause) => cause as ToolError,
+		})
 
 	return [
 		{
@@ -105,29 +114,45 @@ export function coreAssetActorDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEListAssets(
-								optionalStringParam(params, ["root_path", "path"]) ?? "/Game",
-								typeof params.recursive === "boolean" ? params.recursive : true,
-								typeof params.limit === "number" ? params.limit : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEListAssets(
+										optionalStringParam(params, ["root_path", "path"]) ?? "/Game",
+										typeof params.recursive === "boolean" ? params.recursive : true,
+										typeof params.limit === "number" ? params.limit : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				search: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) => pythonDispatch(searchAssetsCommand(params)),
+					handler: (params) =>
+						Effect.try({
+							try: () => pythonDispatch(searchAssetsCommand(params)),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				info: {
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
-						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+						Effect.try({
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				references: {
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				exists: {
 					paramsSchema: requireAtLeastOneValue(
@@ -141,12 +166,16 @@ export function coreAssetActorDescriptors(
 						"Provide asset_path, path, name, or asset_paths.",
 					).describe("Provide asset_path/path/name for one asset, or asset_paths for multiple assets."),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEAssetManagementTool("exists", {
-								asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
-								asset_paths: params.asset_paths,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEAssetManagementTool("exists", {
+										asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+										asset_paths: params.asset_paths,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				duplicate: {
 					paramsSchema: assetMutationParamsSchema,
@@ -172,12 +201,16 @@ export function coreAssetActorDescriptors(
 						"Provide asset_path, path, name, or asset_paths.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEAssetManagementTool("delete", {
-								asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
-								asset_paths: params.asset_paths,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEAssetManagementTool("delete", {
+										asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+										asset_paths: params.asset_paths,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				save: {
 					paramsSchema: requireAtLeastOneValue(
@@ -192,13 +225,18 @@ export function coreAssetActorDescriptors(
 						"Provide asset_path, path, name, or asset_paths.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEAssetManagementTool("save", {
-								asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
-								asset_paths: params.asset_paths,
-								only_if_is_dirty: typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEAssetManagementTool("save", {
+										asset_path: optionalStringParam(params, ["asset_path", "path", "name"]),
+										asset_paths: params.asset_paths,
+										only_if_is_dirty:
+											typeof params.only_if_is_dirty === "boolean" ? params.only_if_is_dirty : undefined,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				create_folder: {
 					paramsSchema: requireAtLeastOneValue(
@@ -213,11 +251,15 @@ export function coreAssetActorDescriptors(
 						"Provide directory_path, folder_path, or path.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEAssetManagementTool("create_folder", {
-								directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEAssetManagementTool("create_folder", {
+										directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				list_folder: {
 					paramsSchema: z
@@ -229,12 +271,16 @@ export function coreAssetActorDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEAssetManagementTool("list_folder", {
-								directory_path: optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
-								recursive: typeof params.recursive === "boolean" ? params.recursive : undefined,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEAssetManagementTool("list_folder", {
+										directory_path: optionalStringParam(params, ["directory_path", "folder_path", "path"]) ?? "/Game",
+										recursive: typeof params.recursive === "boolean" ? params.recursive : undefined,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				delete_folder: {
 					paramsSchema: requireAtLeastOneValue(
@@ -249,11 +295,15 @@ export function coreAssetActorDescriptors(
 						"Provide directory_path, folder_path, or path.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEAssetManagementTool("delete_folder", {
-								directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEAssetManagementTool("delete_folder", {
+										directory_path: requiredStringParam(params, ["directory_path", "folder_path", "path"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				export: {
 					paramsSchema: requireAtLeastOneValue(
@@ -270,13 +320,17 @@ export function coreAssetActorDescriptors(
 						"Provide asset_path, path, or name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEExportAsset(
-								requiredStringParam(params, ["asset_path", "path", "name"]),
-								optionalStringParam(params, ["destination_path", "file_path", "output_path"]),
-								typeof params.overwrite === "boolean" ? params.overwrite : true,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEExportAsset(
+										requiredStringParam(params, ["asset_path", "path", "name"]),
+										optionalStringParam(params, ["destination_path", "file_path", "output_path"]),
+										typeof params.overwrite === "boolean" ? params.overwrite : true,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				validate: shared.validate_assets,
 			},
@@ -286,7 +340,11 @@ export function coreAssetActorDescriptors(
 			description: describeTool("manage_actor"),
 			actions: {
 				list: {
-					handler: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+					handler: () =>
+						Effect.try({
+							try: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				find: {
 					paramsSchema: requireAtLeastOneValue(
@@ -300,11 +358,15 @@ export function coreAssetActorDescriptors(
 						"Provide pattern or name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("find_actors_by_name", {
-								pattern: requiredStringParam(params, ["pattern", "name"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("find_actors_by_name", {
+										pattern: requiredStringParam(params, ["pattern", "name"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				spawn: {
 					paramsSchema: z
@@ -328,14 +390,18 @@ export function coreAssetActorDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("spawn_actor", {
-								type: optionalStringParam(params, ["type", "actor_type", "class_name"]) ?? "StaticMeshActor",
-								name: optionalStringParam(params, ["name", "actor_name"]),
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("spawn_actor", {
+										type: optionalStringParam(params, ["type", "actor_type", "class_name"]) ?? "StaticMeshActor",
+										name: optionalStringParam(params, ["name", "actor_name"]),
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				spawn_blueprint: {
 					paramsSchema: requireAtLeastOneValue(
@@ -351,25 +417,33 @@ export function coreAssetActorDescriptors(
 						"Provide blueprint_name or asset_path.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("spawn_blueprint_actor", {
-								blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
-								name: optionalStringParam(params, ["name", "actor_name"]),
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-								scale: toVector3Array(params.scale),
-								properties: params.properties,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("spawn_blueprint_actor", {
+										blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
+										name: optionalStringParam(params, ["name", "actor_name"]),
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+										scale: toVector3Array(params.scale),
+										properties: params.properties,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				delete: {
 					paramsSchema: actorNameSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("delete_actor", {
-								name: actorNameParam(params),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("delete_actor", {
+										name: actorNameParam(params),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				transform: {
 					paramsSchema: requireAtLeastOneValue(
@@ -378,23 +452,31 @@ export function coreAssetActorDescriptors(
 						"Provide name or actor_name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("set_actor_transform", {
-								name: actorNameParam(params),
-								location: toVector3Array(params.location),
-								rotation: toRotatorArray(params.rotation),
-								scale: toVector3Array(params.scale),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("set_actor_transform", {
+										name: actorNameParam(params),
+										location: toVector3Array(params.location),
+										rotation: toRotatorArray(params.rotation),
+										scale: toVector3Array(params.scale),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				get_properties: {
 					paramsSchema: actorNameSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("get_actor_properties", {
-								name: actorNameParam(params),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("get_actor_properties", {
+										name: actorNameParam(params),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				set_property: {
 					paramsSchema: requireAtLeastOneValue(
@@ -409,22 +491,30 @@ export function coreAssetActorDescriptors(
 						"Provide name or actor_name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("set_actor_property", {
-								name: actorNameParam(params),
-								property_name: requiredStringParam(params, ["property_name"]),
-								property_value: params.property_value,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("set_actor_property", {
+										name: actorNameParam(params),
+										property_name: requiredStringParam(params, ["property_name"]),
+										property_value: params.property_value,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				get_material_info: {
 					paramsSchema: actorNameSchema,
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEActorTool("get_actor_material_info", {
-								name: actorNameParam(params),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("get_actor_material_info", {
+										name: actorNameParam(params),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},

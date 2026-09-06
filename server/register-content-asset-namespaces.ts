@@ -1,4 +1,6 @@
+import { Effect } from "effect"
 import { z } from "zod"
+import type { ToolError } from "./effect/errors.js"
 
 import {
 	actorNameSchema,
@@ -68,16 +70,32 @@ export function contentAssetDescriptors(
 			actions: {
 				search_skeletons: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) => pythonDispatch(searchAssetsCommand(params, "Skeleton")),
+					// Phase 5d (report §5): handler returns Effect; param-helper
+					// and builder throws become channel failures via Effect.try
+					// (Effect.sync would defect past dispatch's catchAll and break
+					// the identical envelope), rendered verbatim downstream.
+					handler: (params) =>
+						Effect.try({
+							try: () => pythonDispatch(searchAssetsCommand(params, "Skeleton")),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				search_skeletal_meshes: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) => pythonDispatch(searchAssetsCommand(params, "SkeletalMesh")),
+					handler: (params) =>
+						Effect.try({
+							try: () => pythonDispatch(searchAssetsCommand(params, "SkeletalMesh")),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				asset_info: {
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
-						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+						Effect.try({
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},
@@ -95,13 +113,17 @@ export function contentAssetDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEMaterialTool("get_available_materials", {
-								search_term: optionalStringParam(params, ["search_term", "query"]),
-								include_engine: params.include_engine,
-								limit: params.limit,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEMaterialTool("get_available_materials", {
+										search_term: optionalStringParam(params, ["search_term", "query"]),
+										include_engine: params.include_engine,
+										limit: params.limit,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				apply_to_actor: {
 					paramsSchema: requireAtLeastOneValue(
@@ -117,14 +139,18 @@ export function contentAssetDescriptors(
 						"Provide name or actor_name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEMaterialTool("apply_material_to_actor", {
-								actor_name: actorNameParam(params),
-								component_name: optionalStringParam(params, ["component_name"]),
-								material_path: requiredStringParam(params, ["material_path"]),
-								slot_index: params.slot_index,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEMaterialTool("apply_material_to_actor", {
+										actor_name: actorNameParam(params),
+										component_name: optionalStringParam(params, ["component_name"]),
+										material_path: requiredStringParam(params, ["material_path"]),
+										slot_index: params.slot_index,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				apply_to_blueprint: {
 					paramsSchema: requireAtLeastOneValue(
@@ -140,14 +166,18 @@ export function contentAssetDescriptors(
 						"Provide blueprint_name, asset_path, or name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEMaterialTool("apply_material_to_blueprint", {
-								blueprint_name: blueprintNameParam(params),
-								component_name: requiredStringParam(params, ["component_name"]),
-								material_path: requiredStringParam(params, ["material_path"]),
-								slot_index: params.slot_index,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEMaterialTool("apply_material_to_blueprint", {
+										blueprint_name: blueprintNameParam(params),
+										component_name: requiredStringParam(params, ["component_name"]),
+										material_path: requiredStringParam(params, ["material_path"]),
+										slot_index: params.slot_index,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				tint_material: {
 					paramsSchema: requireAtLeastOneValue(
@@ -170,19 +200,23 @@ export function contentAssetDescriptors(
 						"Provide actor_name, name, blueprint_name, asset_path, or material_path.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEMaterialTool("set_mesh_material_color", {
-								actor_name: optionalStringParam(params, ["actor_name", "name"]),
-								blueprint_name: optionalStringParam(params, ["blueprint_name", "asset_path"]),
-								component_name: optionalStringParam(params, ["component_name"]),
-								material_path: optionalStringParam(params, ["material_path"]),
-								slot_index: params.slot_index,
-								color: toColorArray(params.color),
-								parameter_name: optionalStringParam(params, ["parameter_name"]),
-								instance_name: optionalStringParam(params, ["instance_name"]),
-								instance_path: optionalStringParam(params, ["instance_path"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEMaterialTool("set_mesh_material_color", {
+										actor_name: optionalStringParam(params, ["actor_name", "name"]),
+										blueprint_name: optionalStringParam(params, ["blueprint_name", "asset_path"]),
+										component_name: optionalStringParam(params, ["component_name"]),
+										material_path: optionalStringParam(params, ["material_path"]),
+										slot_index: params.slot_index,
+										color: toColorArray(params.color),
+										parameter_name: optionalStringParam(params, ["parameter_name"]),
+										instance_name: optionalStringParam(params, ["instance_name"]),
+										instance_path: optionalStringParam(params, ["instance_path"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},
@@ -192,12 +226,20 @@ export function contentAssetDescriptors(
 			actions: {
 				search_textures: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) => pythonDispatch(searchAssetsCommand(params, "Texture")),
+					handler: (params) =>
+						Effect.try({
+							try: () => pythonDispatch(searchAssetsCommand(params, "Texture")),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				texture_info: {
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
-						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+						Effect.try({
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				import_texture: {
 					paramsSchema: requireAtLeastOneValue(
@@ -219,15 +261,19 @@ export function contentAssetDescriptors(
 						"Provide source_file, file_path, or local_path.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UETextureTool("import_texture", {
-								source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
-								destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
-								asset_name: optionalStringParam(params, ["asset_name", "name"]),
-								replace_existing: typeof params.replace_existing === "boolean" ? params.replace_existing : true,
-								save: typeof params.save === "boolean" ? params.save : true,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UETextureTool("import_texture", {
+										source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
+										destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
+										asset_name: optionalStringParam(params, ["asset_name", "name"]),
+										replace_existing: typeof params.replace_existing === "boolean" ? params.replace_existing : true,
+										save: typeof params.save === "boolean" ? params.save : true,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},
@@ -247,18 +293,26 @@ export function contentAssetDescriptors(
 						})
 						.strict(),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEDataTool("search_data_assets", {
-								search_term: optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
-								include_engine: Boolean(params.include_engine),
-								limit: params.limit,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEDataTool("search_data_assets", {
+										search_term: optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
+										include_engine: Boolean(params.include_engine),
+										limit: params.limit,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				asset_info: {
 					paramsSchema: assetLookupSchema,
 					handler: (params) =>
-						pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+						Effect.try({
+							try: () =>
+								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				create_data_asset: {
 					paramsSchema: requireAtLeastOneValue(
@@ -275,13 +329,17 @@ export function contentAssetDescriptors(
 						"Provide name or asset_name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEDataTool("create_data_asset", {
-								name: requiredStringParam(params, ["name", "asset_name"]),
-								path: optionalStringParam(params, ["path"]),
-								data_asset_class: optionalStringParam(params, ["data_asset_class", "class_name"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEDataTool("create_data_asset", {
+										name: requiredStringParam(params, ["name", "asset_name"]),
+										path: optionalStringParam(params, ["path"]),
+										data_asset_class: optionalStringParam(params, ["data_asset_class", "class_name"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				create_data_table: {
 					paramsSchema: requireAtLeastOneValue(
@@ -302,13 +360,17 @@ export function contentAssetDescriptors(
 						"Provide row_struct or struct.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEDataTool("create_data_table", {
-								name: requiredStringParam(params, ["name", "asset_name"]),
-								path: optionalStringParam(params, ["path"]),
-								row_struct: requiredStringParam(params, ["row_struct", "struct"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEDataTool("create_data_table", {
+										name: requiredStringParam(params, ["name", "asset_name"]),
+										path: optionalStringParam(params, ["path"]),
+										row_struct: requiredStringParam(params, ["row_struct", "struct"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				create_string_table: {
 					paramsSchema: requireAtLeastOneValue(
@@ -323,12 +385,16 @@ export function contentAssetDescriptors(
 						"Provide name or asset_name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEDataTool("create_string_table", {
-								name: requiredStringParam(params, ["name", "asset_name"]),
-								path: optionalStringParam(params, ["path"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEDataTool("create_string_table", {
+										name: requiredStringParam(params, ["name", "asset_name"]),
+										path: optionalStringParam(params, ["path"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 		},

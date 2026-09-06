@@ -1,4 +1,6 @@
+import { Effect } from "effect"
 import { z } from "zod"
+import type { ToolError } from "./effect/errors.js"
 
 import {
 	childWidgetNameKeys,
@@ -97,14 +99,22 @@ export function contentWidgetDescriptors(
 						["widget_name", "name", "asset_path", "widget_path"],
 						"Provide widget_name, name, asset_path, or widget_path.",
 					),
+					// Phase 5d (report §5): handler returns Effect; param-helper
+					// and builder throws become channel failures via Effect.try
+					// (Effect.sync would defect past dispatch's catchAll and break
+					// the identical envelope), rendered verbatim downstream.
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGTool("create_umg_widget_blueprint", {
-								widget_name: requiredStringParam(params, ["widget_name", "name", "asset_path", "widget_path"]),
-								parent_class: optionalStringParam(params, ["parent_class"]),
-								path: optionalStringParam(params, ["path"]),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGTool("create_umg_widget_blueprint", {
+										widget_name: requiredStringParam(params, ["widget_name", "name", "asset_path", "widget_path"]),
+										parent_class: optionalStringParam(params, ["parent_class"]),
+										path: optionalStringParam(params, ["path"]),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				ensure_canvas_root: {
 					paramsSchema: requireWidgetBlueprintSelection({
@@ -113,22 +123,30 @@ export function contentWidgetDescriptors(
 						wrap_existing_root: z.boolean().optional(),
 					}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGTool("ensure_canvas_root", {
-								widget_name: widgetBlueprintParam(params),
-								root_widget_name: optionalStringParam(params, ["root_widget_name", "root_name"]),
-								wrap_existing_root: params.wrap_existing_root !== false,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGTool("ensure_canvas_root", {
+										widget_name: widgetBlueprintParam(params),
+										root_widget_name: optionalStringParam(params, ["root_widget_name", "root_name"]),
+										wrap_existing_root: params.wrap_existing_root !== false,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				inspect_tree: {
 					paramsSchema: requireWidgetBlueprintSelection({}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGTool("inspect_widget_tree", {
-								widget_name: widgetBlueprintParam(params),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGTool("inspect_widget_tree", {
+										widget_name: widgetBlueprintParam(params),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				add_text_block: {
 					paramsSchema: requireNamedWidgetBlueprintSelection(
@@ -145,18 +163,22 @@ export function contentWidgetDescriptors(
 						"Provide text_block_name or name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGTool("add_text_block_to_widget", {
-								widget_name: widgetBlueprintParam(params),
-								text_block_name: requiredStringParam(params, ["text_block_name", "name"]),
-								text: optionalStringParam(params, ["text"]),
-								position: toVector2Array(params.position),
-								size: toVector2Array(params.size),
-								font_size: params.font_size,
-								z_order: params.z_order,
-								color: toColorArray(params.color),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGTool("add_text_block_to_widget", {
+										widget_name: widgetBlueprintParam(params),
+										text_block_name: requiredStringParam(params, ["text_block_name", "name"]),
+										text: optionalStringParam(params, ["text"]),
+										position: toVector2Array(params.position),
+										size: toVector2Array(params.size),
+										font_size: params.font_size,
+										z_order: params.z_order,
+										color: toColorArray(params.color),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				add_button: {
 					paramsSchema: requireNamedWidgetBlueprintSelection(
@@ -174,19 +196,23 @@ export function contentWidgetDescriptors(
 						"Provide button_name or name.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGTool("add_button_to_widget", {
-								widget_name: widgetBlueprintParam(params),
-								button_name: requiredStringParam(params, ["button_name", "name"]),
-								text: optionalStringParam(params, ["text"]),
-								position: toVector2Array(params.position),
-								size: toVector2Array(params.size),
-								font_size: params.font_size,
-								z_order: params.z_order,
-								color: toColorArray(params.color),
-								background_color: toColorArray(params.background_color),
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGTool("add_button_to_widget", {
+										widget_name: widgetBlueprintParam(params),
+										button_name: requiredStringParam(params, ["button_name", "name"]),
+										text: optionalStringParam(params, ["text"]),
+										position: toVector2Array(params.position),
+										size: toVector2Array(params.size),
+										font_size: params.font_size,
+										z_order: params.z_order,
+										color: toColorArray(params.color),
+										background_color: toColorArray(params.background_color),
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				add_to_viewport: {
 					paramsSchema: requireWidgetBlueprintSelection({
@@ -197,16 +223,20 @@ export function contentWidgetDescriptors(
 						poll_interval: z.number().optional(),
 					}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGTool("add_widget_to_viewport", {
-								widget_name: widgetBlueprintParam(params),
-								z_order: params.z_order,
-								start_pie_if_needed: params.start_pie_if_needed,
-								auto_start_pie: params.auto_start_pie,
-								timeout_seconds: params.timeout_seconds,
-								poll_interval: params.poll_interval,
-							}),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGTool("add_widget_to_viewport", {
+										widget_name: widgetBlueprintParam(params),
+										z_order: params.z_order,
+										start_pie_if_needed: params.start_pie_if_needed,
+										auto_start_pie: params.auto_start_pie,
+										timeout_seconds: params.timeout_seconds,
+										poll_interval: params.poll_interval,
+									}),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				add_widget: {
 					paramsSchema: requireWidgetAssetAndName({
@@ -218,18 +248,27 @@ export function contentWidgetDescriptors(
 						background_color: ctx.colorInputSchema.optional(),
 					}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGAddWidget(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["widget_class"]),
-								requiredStringParam(params, ["widget_name", "name"]),
-								optionalStringParam(params, ["parent_widget_name"]),
-								toVector2Record(params.position),
-								toVector2Record(params.size),
-								toColorArray(params.background_color),
-								typeof params.z_order === "number" ? params.z_order : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGAddWidget(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["widget_class"]),
+										requiredStringParam(params, ["widget_name", "name"]),
+										optionalStringParam(params, ["parent_widget_name"]),
+										toVector2Record(params.position),
+										toVector2Record(params.size),
+										toColorArray(params.background_color),
+										typeof params.z_order === "number" ? params.z_order : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				remove_widget: {
 					paramsSchema: requireWidgetAssetAndName({
@@ -237,12 +276,21 @@ export function contentWidgetDescriptors(
 						name: z.string().optional(),
 					}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGRemoveWidget(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["widget_name", "name"]),
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGRemoveWidget(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["widget_name", "name"]),
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				position_widget: {
 					paramsSchema: requireAtLeastOneValue(
@@ -255,15 +303,24 @@ export function contentWidgetDescriptors(
 						"Provide position, size, or z_order.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGSetWidgetPosition(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["widget_name", "name"]),
-								toVector2Record(params.position),
-								toVector2Record(params.size),
-								typeof params.z_order === "number" ? params.z_order : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGSetWidgetPosition(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["widget_name", "name"]),
+										toVector2Record(params.position),
+										toVector2Record(params.size),
+										typeof params.z_order === "number" ? params.z_order : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				reparent_widget: {
 					paramsSchema: requireWidgetAssetAndName({
@@ -273,16 +330,25 @@ export function contentWidgetDescriptors(
 						...placementShape,
 					}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGReparentWidget(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["widget_name", "name"]),
-								requiredStringParam(params, ["new_parent_widget_name"]),
-								toVector2Record(params.position),
-								toVector2Record(params.size),
-								typeof params.z_order === "number" ? params.z_order : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGReparentWidget(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["widget_name", "name"]),
+										requiredStringParam(params, ["new_parent_widget_name"]),
+										toVector2Record(params.position),
+										toVector2Record(params.size),
+										typeof params.z_order === "number" ? params.z_order : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				add_child_widget: {
 					paramsSchema: requireWidgetAssetAndName(
@@ -301,21 +367,30 @@ export function contentWidgetDescriptors(
 						childWidgetNameMessage,
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGAddChildWidget(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["parent_widget_name"]),
-								requiredStringParam(params, ["child_widget_class"]),
-								requiredStringParam(params, ["child_widget_name", "name"]),
-								toVector2Record(params.position),
-								toVector2Record(params.size),
-								optionalStringParam(params, ["text"]),
-								typeof params.font_size === "number" ? params.font_size : undefined,
-								toColorArray(params.color),
-								toColorArray(params.background_color),
-								typeof params.z_order === "number" ? params.z_order : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGAddChildWidget(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["parent_widget_name"]),
+										requiredStringParam(params, ["child_widget_class"]),
+										requiredStringParam(params, ["child_widget_name", "name"]),
+										toVector2Record(params.position),
+										toVector2Record(params.size),
+										optionalStringParam(params, ["text"]),
+										typeof params.font_size === "number" ? params.font_size : undefined,
+										toColorArray(params.color),
+										toColorArray(params.background_color),
+										typeof params.z_order === "number" ? params.z_order : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				remove_child_widget: {
 					paramsSchema: requireWidgetAssetAndName(
@@ -328,13 +403,22 @@ export function contentWidgetDescriptors(
 						childWidgetNameMessage,
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGRemoveChildWidget(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["parent_widget_name"]),
-								requiredStringParam(params, ["child_widget_name", "name"]),
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGRemoveChildWidget(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["parent_widget_name"]),
+										requiredStringParam(params, ["child_widget_name", "name"]),
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				position_child_widget: {
 					paramsSchema: requireAtLeastOneValue(
@@ -352,16 +436,25 @@ export function contentWidgetDescriptors(
 						"Provide position, size, or z_order.",
 					),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGSetChildWidgetPosition(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["parent_widget_name"]),
-								requiredStringParam(params, ["child_widget_name", "name"]),
-								toVector2Record(params.position),
-								toVector2Record(params.size),
-								typeof params.z_order === "number" ? params.z_order : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGSetChildWidgetPosition(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["parent_widget_name"]),
+										requiredStringParam(params, ["child_widget_name", "name"]),
+										toVector2Record(params.position),
+										toVector2Record(params.size),
+										typeof params.z_order === "number" ? params.z_order : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 				setup_sidebar_tab: {
 					paramsSchema: requireWidgetBlueprintSelection({
@@ -384,15 +477,24 @@ export function contentWidgetDescriptors(
 							),
 					}),
 					handler: (params) =>
-						pythonDispatch(
-							editorTools.UEUMGSetupSidebarTab(
-								requiredStringParam(params, ["widget_blueprint_path", "widget_blueprint", "widget_path", "asset_path"]),
-								requiredStringParam(params, ["url"]),
-								optionalStringParam(params, ["browser_widget_name", "name"]),
-								typeof params.open_tab === "boolean" ? params.open_tab : undefined,
-								typeof params.use_template === "boolean" ? params.use_template : undefined,
-							),
-						),
+						Effect.try({
+							try: () =>
+								pythonDispatch(
+									editorTools.UEUMGSetupSidebarTab(
+										requiredStringParam(params, [
+											"widget_blueprint_path",
+											"widget_blueprint",
+											"widget_path",
+											"asset_path",
+										]),
+										requiredStringParam(params, ["url"]),
+										optionalStringParam(params, ["browser_widget_name", "name"]),
+										typeof params.open_tab === "boolean" ? params.open_tab : undefined,
+										typeof params.use_template === "boolean" ? params.use_template : undefined,
+									),
+								),
+							catch: (cause) => cause as ToolError,
+						}),
 				},
 			},
 			options: { compactParamsSchema: true },
