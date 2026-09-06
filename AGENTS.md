@@ -4,7 +4,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 
-## Effect migration (phases 0-4, 5a-5d)
+## Effect migration (phases 0-7)
 
 - Phase 5a pilot (`register-core-system-namespaces.ts` [shared-actions only, no change],
   `register-core-inspection-namespaces.ts`, `register-world-lighting-namespaces.ts`): handlers return
@@ -89,6 +89,15 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `scripts/__snapshots__/dispatch-envelope.snapshot.json`, plus dispatch-unit coverage of the Zod/Schema/
   throw/Effect-handler paths).
 - Emit target is ES2022 (`tsconfig.json` + `scripts/build.mjs` override), proven on Node 18.
+- Phase 7 dependency cleanup: zod KEPT, no `package.json` change. Evidence: the SDK accepts
+  only Zod at the call-site (`getZodSchemaObject` throws otherwise — installed
+  `@modelcontextprotocol/sdk/dist/esm/server/mcp.js`); dispatch itself builds
+  `z.literal`/`z.enum`/`z.object`/`z.union` registered inputSchemas
+  (`server/registration-context-dispatch.ts`); every registrar/fragments file holds frozen Zod
+  paramsSchema and no file imports zod without using it. Do not attempt removal without an
+  SDK upgrade (separate change with its own surface-snapshot run). Postbuild README/catalog
+  regen verified diff-free; the surface/parity/envelope/session harnesses wired into
+  `test:no-unreal` stay as permanent regression tests.
 
 ## Tool catalog (W3)
 
