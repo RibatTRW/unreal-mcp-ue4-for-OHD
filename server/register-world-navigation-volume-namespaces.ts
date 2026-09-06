@@ -72,7 +72,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},
@@ -86,7 +87,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},
@@ -100,7 +102,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},
@@ -114,7 +117,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},
@@ -160,7 +164,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},
@@ -175,7 +180,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},
@@ -189,7 +195,8 @@ export function worldNavigationVolumeDescriptors(
 								toVector3Record(params.location),
 								toRotatorRecord(params.rotation),
 								toVector3Record(params.scale),
-								params.properties,
+								// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+								params.properties as Record<string, unknown> | undefined,
 							),
 						),
 				},

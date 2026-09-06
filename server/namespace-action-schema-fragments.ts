@@ -6,6 +6,16 @@ import {
 	vector2InputSchema,
 	vector3InputSchema,
 } from "./registration-context-schemas.js"
+// ---------------------------------------------------------------------------
+// FROZEN ZOD BOUNDARY (report §4.4). Everything Zod in this file stays
+// byte-identical: registrars build action paramsSchemas from these helpers
+// and shapes, and dispatch derives the registered SDK inputSchema from
+// those. Client-visible custom messages below are verbatim contract — the
+// surface snapshot plus scripts/check-dispatch-envelope.mjs lock them.
+// The effect/Schema forward path for migrated registrars (Phase 5) lives
+// in server/effect/schema-patterns.ts (atLeastOneValue/valueGroups) and is
+// re-exported at the bottom of this file for registrar convenience.
+// ---------------------------------------------------------------------------
 
 const hasMeaningfulValue = (value: unknown): boolean => {
 	if (typeof value === "string") {
@@ -210,3 +220,16 @@ export const sourceControlPackagesSchema = requireAtLeastOneValue(
 	["packages", "package_names", "paths", "asset_paths", "package", "path"],
 	"Provide packages, package_names, paths, asset_paths, package, or path.",
 )
+
+// ---------------------------------------------------------------------------
+// effect/Schema forward path (report §4.1). Migrated registrars (Phase 5)
+// compose Schema.Struct validation with these filters instead of the Zod
+// helpers above; dispatch validates both forms and renders failures into
+// the identical `Invalid params for <tool>.<action>: ...` envelope.
+// Excess-property rejection comes from dispatch's strict decode options
+// (Schema.Struct strips unknown keys by default), not from the schema
+// itself — see strictDecodeSync in server/effect/schema-patterns.ts.
+// ---------------------------------------------------------------------------
+
+export { atLeastOneValue, hasMeaningfulValue, valueGroups } from "./effect/schema-patterns.js"
+export type { ValueGroup } from "./effect/schema-patterns.js"

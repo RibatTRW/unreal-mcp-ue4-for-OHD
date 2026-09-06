@@ -310,7 +310,7 @@ export function contentWidgetDescriptors(
 								toVector2Record(params.position),
 								toVector2Record(params.size),
 								optionalStringParam(params, ["text"]),
-								params.font_size,
+								typeof params.font_size === "number" ? params.font_size : undefined,
 								toColorArray(params.color),
 								toColorArray(params.background_color),
 								typeof params.z_order === "number" ? params.z_order : undefined,

@@ -12,6 +12,12 @@
 //   RenderError        script-renderer.ts:42 (missing template args)
 //   PreludeError       prelude-loader.ts:87,96,102 (manifest mismatch)
 //   CommandFailedError remote command failures surfaced via tryRunCommand
+//   InvalidParamsError Phase-4 dispatch validation failures (Zod safeParse
+//                    or effect/Schema decode), rendered into the identical
+//                    `Invalid params for <tool>.<action>: ...` envelope.
+//                    Creation sites set .message to that exact envelope text
+//                    (Data.TaggedError defaults message to ""), following
+//                    the Phase-2/3 precedent.
 //
 // Interop note: the dispatch `catch` becomes `Effect.catchAll` over this
 // union. Source-control/blueprint degraded paths that return `success:false`
@@ -45,6 +51,12 @@ export class PreludeError extends Data.TaggedError("PreludeError")<{
 	readonly detail: string
 }> {}
 
+export class InvalidParamsError extends Data.TaggedError("InvalidParamsError")<{
+	readonly tool: string
+	readonly action: string
+	readonly detail: string
+}> {}
+
 export type ToolError =
 	| ConnectionError
 	| CommandFailedError
@@ -52,3 +64,4 @@ export type ToolError =
 	| MissingParamError
 	| RenderError
 	| PreludeError
+	| InvalidParamsError

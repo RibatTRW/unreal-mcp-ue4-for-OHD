@@ -132,7 +132,16 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 				),
 		},
 		({ object_class, object_name, location, rotation, scale, properties }) =>
-			editorTools.UECreateObject(object_class, object_name, location, rotation, scale, properties),
+			// SDK Zod-validates args before buildCommand runs; the casts recover
+			// the static types with zero runtime change (Phase-4 retype). Same below.
+			editorTools.UECreateObject(
+				object_class as string,
+				object_name as string,
+				location as { x: number; y: number; z: number } | undefined,
+				rotation as { pitch: number; yaw: number; roll: number } | undefined,
+				scale as { x: number; y: number; z: number } | undefined,
+				properties as Record<string, unknown> | undefined,
+			),
 	)
 
 	registerPythonTool(
@@ -173,7 +182,14 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 			new_name: z.string().optional().describe("New name/label for the actor"),
 		},
 		({ actor_name, location, rotation, scale, properties, new_name }) =>
-			editorTools.UEUpdateObject(actor_name, location, rotation, scale, properties, new_name),
+			editorTools.UEUpdateObject(
+				actor_name as string,
+				location as { x: number; y: number; z: number } | undefined,
+				rotation as { pitch: number; yaw: number; roll: number } | undefined,
+				scale as { x: number; y: number; z: number } | undefined,
+				properties as Record<string, unknown> | undefined,
+				new_name as string | undefined,
+			),
 	)
 
 	registerPythonTool(
@@ -182,6 +198,6 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 		{
 			actor_names: z.string(),
 		},
-		({ actor_names }) => editorTools.UEDeleteObject(actor_names),
+		({ actor_names }) => editorTools.UEDeleteObject(actor_names as string),
 	)
 }

@@ -1,21 +1,25 @@
 import type * as editorTools from "./editor/tools.js"
+import { MissingParamError } from "./effect/errors.js"
+import { missingParamMessage } from "./effect/schema-patterns.js"
 import type { RegistrationSchemas } from "./registration-context-schemas.js"
 
+export type ActionParams = Record<string, unknown>
+
 export interface RegistrationParams {
-	actorNameParam: (params: Record<string, any>) => string
-	assetPathListParam: (params: Record<string, any>) => string | string[] | undefined
-	blueprintNameParam: (params: Record<string, any>) => string
-	optionalStringListParam: (params: Record<string, any>, keys: string[]) => string[] | undefined
-	optionalStringParam: (params: Record<string, any>, keys: string[]) => string | undefined
-	requiredStringListParam: (params: Record<string, any>, keys: string[]) => string[]
-	requiredStringParam: (params: Record<string, any>, keys: string[]) => string
-	searchAssetsCommand: (params: Record<string, any>, defaultAssetClass?: string) => string
-	sourceControlFileListParam: (params: Record<string, any>) => string[]
-	sourceControlFileParam: (params: Record<string, any>) => string
+	actorNameParam: (params: ActionParams) => string
+	assetPathListParam: (params: ActionParams) => string | string[] | undefined
+	blueprintNameParam: (params: ActionParams) => string
+	optionalStringListParam: (params: ActionParams, keys: string[]) => string[] | undefined
+	optionalStringParam: (params: ActionParams, keys: string[]) => string | undefined
+	requiredStringListParam: (params: ActionParams, keys: string[]) => string[]
+	requiredStringParam: (params: ActionParams, keys: string[]) => string
+	searchAssetsCommand: (params: ActionParams, defaultAssetClass?: string) => string
+	sourceControlFileListParam: (params: ActionParams) => string[]
+	sourceControlFileParam: (params: ActionParams) => string
 	sourceControlFilesCommand: (files: string[], singleOperation?: string, multiOperation?: string) => string
-	sourceControlPackageListParam: (params: Record<string, any>) => string[]
-	widgetBlueprintParam: (params: Record<string, any>) => string
-	worldBuildCommand: (operation: string, params: Record<string, any>) => string
+	sourceControlPackageListParam: (params: ActionParams) => string[]
+	widgetBlueprintParam: (params: ActionParams) => string
+	worldBuildCommand: (operation: string, params: ActionParams) => string
 }
 
 export function createRegistrationParamHelpers(
@@ -23,7 +27,7 @@ export function createRegistrationParamHelpers(
 	codecs: Pick<RegistrationSchemas, "toVector3Array">,
 ): RegistrationParams {
 	const { toVector3Array } = codecs
-	const stringOrStringArrayParam = (params: Record<string, any>, keys: string[]) => {
+	const stringOrStringArrayParam = (params: ActionParams, keys: string[]) => {
 		for (const key of keys) {
 			const value = params[key]
 			if (Array.isArray(value)) {
@@ -45,7 +49,18 @@ export function createRegistrationParamHelpers(
 		return undefined
 	}
 
-	const requiredStringParam = (params: Record<string, any>, keys: string[]) => {
+	// Phase 4 (report §4.2): required-param throws are MissingParamError, not
+	// plain Errors. Sync signatures are unchanged so unmigrated registrars
+	// keep compiling; dispatch renders these through the identical envelope
+	// via missingParamMessage(key). .message is set explicitly because
+	// Data.TaggedError defaults it to "" (Phase-2/3 precedent).
+	const missingParam = (key: string): MissingParamError => {
+		const error = new MissingParamError({ key })
+		error.message = missingParamMessage(key)
+		return error
+	}
+
+	const requiredStringParam = (params: ActionParams, keys: string[]) => {
 		for (const key of keys) {
 			const value = params[key]
 			if (typeof value === "string" && value.trim()) {
@@ -53,10 +68,10 @@ export function createRegistrationParamHelpers(
 			}
 		}
 
-		throw new Error(`${keys[0]} is required`)
+		throw missingParam(keys[0])
 	}
 
-	const optionalStringParam = (params: Record<string, any>, keys: string[]) => {
+	const optionalStringParam = (params: ActionParams, keys: string[]) => {
 		for (const key of keys) {
 			const value = params[key]
 			if (typeof value === "string" && value.trim()) {
@@ -67,7 +82,7 @@ export function createRegistrationParamHelpers(
 		return undefined
 	}
 
-	const optionalStringListParam = (params: Record<string, any>, keys: string[]) => {
+	const optionalStringListParam = (params: ActionParams, keys: string[]) => {
 		for (const key of keys) {
 			const value = params[key]
 			if (Array.isArray(value)) {
@@ -89,31 +104,33 @@ export function createRegistrationParamHelpers(
 		return undefined
 	}
 
-	const requiredStringListParam = (params: Record<string, any>, keys: string[]) => {
+	const requiredStringListParam = (params: ActionParams, keys: string[]) => {
 		const values = optionalStringListParam(params, keys)
 		if (values && values.length > 0) {
 			return values
 		}
 
-		throw new Error(`${keys[0]} is required`)
+		throw missingParam(keys[0])
 	}
 
-	const assetPathListParam = (params: Record<string, any>) => stringOrStringArrayParam(params, ["asset_paths", "paths"])
+	const assetPathListParam = (params: ActionParams) => stringOrStringArrayParam(params, ["asset_paths", "paths"])
 
-	const searchAssetsCommand = (params: Record<string, any>, defaultAssetClass?: string) =>
+	const searchAssetsCommand = (params: ActionParams, defaultAssetClass?: string) =>
 		tools.UESearchAssets(
 			optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
 			optionalStringParam(params, ["asset_class", "class_name", "class"]) ?? defaultAssetClass,
-			params.include_engine,
-			params.limit,
+			// Zod-validated at the boundary (boolean | undefined at runtime);
+			// the casts only recover the static type, never change values.
+			params.include_engine as boolean | undefined,
+			params.limit as number | undefined,
 		)
 
-	const actorNameParam = (params: Record<string, any>) => requiredStringParam(params, ["name", "actor_name"])
+	const actorNameParam = (params: ActionParams) => requiredStringParam(params, ["name", "actor_name"])
 
-	const blueprintNameParam = (params: Record<string, any>) =>
+	const blueprintNameParam = (params: ActionParams) =>
 		requiredStringParam(params, ["blueprint_name", "asset_path", "name"])
 
-	const widgetBlueprintParam = (params: Record<string, any>) =>
+	const widgetBlueprintParam = (params: ActionParams) =>
 		requiredStringParam(params, [
 			"widget_blueprint",
 			"widget_blueprint_path",
@@ -123,10 +140,10 @@ export function createRegistrationParamHelpers(
 			"blueprint_name",
 		])
 
-	const sourceControlFileParam = (params: Record<string, any>) =>
+	const sourceControlFileParam = (params: ActionParams) =>
 		requiredStringParam(params, ["file", "path", "asset_path", "package", "name"])
 
-	const sourceControlFileListParam = (params: Record<string, any>) =>
+	const sourceControlFileListParam = (params: ActionParams) =>
 		requiredStringListParam(params, [
 			"files",
 			"paths",
@@ -139,7 +156,7 @@ export function createRegistrationParamHelpers(
 			"name",
 		])
 
-	const sourceControlPackageListParam = (params: Record<string, any>) =>
+	const sourceControlPackageListParam = (params: ActionParams) =>
 		requiredStringListParam(params, ["packages", "package_names", "paths", "asset_paths", "package", "path"])
 
 	const sourceControlFilesCommand = (files: string[], singleOperation?: string, multiOperation?: string) => {
@@ -150,7 +167,7 @@ export function createRegistrationParamHelpers(
 		return tools.UESourceControlTool(multiOperation ?? singleOperation!, { files })
 	}
 
-	const worldBuildCommand = (operation: string, params: Record<string, any>) =>
+	const worldBuildCommand = (operation: string, params: ActionParams) =>
 		tools.UEWorldBuildingTool(operation, {
 			...params,
 			location: toVector3Array(params.location),
