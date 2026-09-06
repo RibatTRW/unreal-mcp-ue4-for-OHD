@@ -41,30 +41,12 @@ const preludeManifest: Record<string, string[]> = {
 		"24_blueprint_component_graph_fallback.py",
 		"24_blueprint_graph_analysis.py",
 	],
-	ue_content_factory: [
-		"00_asset_factory_helpers.py",
-		"10_sequence_behavior_factories.py",
-		"20_audio_import.py",
-	],
+	ue_content_factory: ["00_asset_factory_helpers.py", "10_sequence_behavior_factories.py", "20_audio_import.py"],
 	ue_data: ["00_helpers.py", "10_search_ops.py", "20_create_ops.py"],
-	ue_material: [
-		"00_target_resolution.py",
-		"10_material_ops.py",
-		"20_material_tinting.py",
-		"30_physics_spawn.py",
-	],
+	ue_material: ["00_target_resolution.py", "10_material_ops.py", "20_material_tinting.py", "30_physics_spawn.py"],
 	ue_sequence: ["00_sequence_helpers.py"],
-	ue_source_control: [
-		"00_helper_resolution.py",
-		"01_state_serialization.py",
-		"10_read_ops.py",
-		"20_mutation_ops.py",
-	],
-	ue_umg: [
-		"00_helpers.py",
-		"10_widget_blueprints.py",
-		"30_viewport_bindings.py",
-	],
+	ue_source_control: ["00_helper_resolution.py", "01_state_serialization.py", "10_read_ops.py", "20_mutation_ops.py"],
+	ue_umg: ["00_helpers.py", "10_widget_blueprints.py", "30_viewport_bindings.py"],
 	ue_widget_tree: [
 		"00_helpers.py",
 		"10_widget_tree_access.py",
@@ -99,9 +81,7 @@ export function buildOrderedPrelude(relativeDir: string): string {
 		.sort()
 	const unlisted = onDisk.filter((fileName) => listed.indexOf(fileName) === -1)
 	if (unlisted.length > 0) {
-		throw new Error(
-			`Unlisted prelude file(s) in ${relativeDir}: ${unlisted.join(", ")} (add them to preludeManifest)`,
-		)
+		throw new Error(`Unlisted prelude file(s) in ${relativeDir}: ${unlisted.join(", ")} (add them to preludeManifest)`)
 	}
 	const missing = listed.filter((fileName) => onDisk.indexOf(fileName) === -1)
 	if (missing.length > 0) {

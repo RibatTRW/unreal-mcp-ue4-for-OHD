@@ -5,22 +5,14 @@ import { editorPreludes, jsonArg, renderScript } from "./tools-base.js"
 export const UEGetAssetInfo = (asset_path: string) =>
 	renderScript("./scripts/ue_get_asset_info.py", { asset_path: jsonArg(asset_path) })
 
-export const UEListAssets = (
-	root_path?: string,
-	recursive?: boolean,
-	limit?: number,
-) =>
+export const UEListAssets = (root_path?: string, recursive?: boolean, limit?: number) =>
 	renderScript("./scripts/ue_list_assets.py", {
 		root_path: jsonArg(root_path),
 		recursive: jsonArg(recursive),
 		limit: jsonArg(limit),
 	})
 
-export const UEExportAsset = (
-	asset_path: string,
-	destination_path?: string,
-	overwrite?: boolean,
-) =>
+export const UEExportAsset = (asset_path: string, destination_path?: string, overwrite?: boolean) =>
 	renderScript("./scripts/ue_export_asset.py", {
 		asset_path: jsonArg(asset_path),
 		destination_path: jsonArg(destination_path),
@@ -44,12 +36,7 @@ export const UEGetProjectInfo = () => renderScript("./scripts/ue_get_project_inf
 
 export const UEGetMapInfo = () => renderScript("./scripts/ue_get_map_info.py", {})
 
-export const UESearchAssets = (
-	search_term: string,
-	asset_class?: string,
-	include_engine?: boolean,
-	limit?: number,
-) =>
+export const UESearchAssets = (search_term: string, asset_class?: string, include_engine?: boolean, limit?: number) =>
 	renderScript("./scripts/ue_search_assets.py", {
 		search_term: jsonArg(search_term),
 		asset_class: jsonArg(asset_class || ""),
@@ -238,9 +225,7 @@ export const UEUMGSetChildWidgetPosition = (
  * Returns base64 text or null when the template is absent. */
 function readSidebarTemplate(): string | null {
 	try {
-		return fs
-			.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset"))
-			.toString("base64")
+		return fs.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset")).toString("base64")
 	} catch (err) {
 		return null
 	}
@@ -253,11 +238,15 @@ export const UEUMGSetupSidebarTab = (
 	open_tab?: boolean,
 	use_template?: boolean,
 ) =>
-	renderScript("./scripts/ue_umg_setup_sidebar_tab.py", {
-		widget_blueprint_path: jsonArg(widget_blueprint_path),
-		url: jsonArg(url),
-		browser_widget_name: jsonArg(browser_widget_name),
-		open_tab: jsonArg(open_tab),
-		template_b64: jsonArg(use_template ? readSidebarTemplate() : null),
-		template_expected: jsonArg(use_template ? true : null),
-	}, editorPreludes.umg)
+	renderScript(
+		"./scripts/ue_umg_setup_sidebar_tab.py",
+		{
+			widget_blueprint_path: jsonArg(widget_blueprint_path),
+			url: jsonArg(url),
+			browser_widget_name: jsonArg(browser_widget_name),
+			open_tab: jsonArg(open_tab),
+			template_b64: jsonArg(use_template ? readSidebarTemplate() : null),
+			template_expected: jsonArg(use_template ? true : null),
+		},
+		editorPreludes.umg,
+	)

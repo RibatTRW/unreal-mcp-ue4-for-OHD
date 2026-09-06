@@ -5,7 +5,7 @@ import path from "node:path"
 import process from "node:process"
 import { fileURLToPath } from "node:url"
 
-import { printHelp, parseArgs } from "./e2e/cli-options.mjs"
+import { parseArgs, printHelp } from "./e2e/cli-options.mjs"
 import { runContentAuthoringScenarios } from "./e2e/content-authoring-smoke.mjs"
 import { runCoreScenarios } from "./e2e/core-smoke.mjs"
 import { assert } from "./e2e/harness-utils.mjs"
@@ -30,9 +30,7 @@ async function main() {
 	}
 
 	if (!fs.existsSync(options.serverEntry)) {
-		fail(
-			`Built MCP server entry not found at ${options.serverEntry}. Run "npm run build" first.`,
-		)
+		fail(`Built MCP server entry not found at ${options.serverEntry}. Run "npm run build" first.`)
 	}
 
 	const runtime = createSmokeRuntime({

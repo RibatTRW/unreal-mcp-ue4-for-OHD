@@ -1,10 +1,6 @@
 export async function runWorldLightingScenarios(ctx, state) {
 	const { runStep, callJsonTool, assert } = ctx
-	const {
-		lightActorName,
-		directionalLightActorName,
-		spotLightActorName,
-	} = state
+	const { lightActorName, directionalLightActorName, spotLightActorName } = state
 
 	await runStep("Spawn a point light through manage_lighting", async () => {
 		const lightResult = await callJsonTool("manage_lighting", {
@@ -14,7 +10,10 @@ export async function runWorldLightingScenarios(ctx, state) {
 				location: { x: -300, y: 300, z: 240 },
 			},
 		})
-		assert(lightResult.actor?.label === lightActorName, "manage_lighting spawn_point_light did not create the expected actor")
+		assert(
+			lightResult.actor?.label === lightActorName,
+			"manage_lighting spawn_point_light did not create the expected actor",
+		)
 	})
 
 	await runStep("Spawn a directional light through manage_lighting", async () => {
@@ -66,8 +65,14 @@ export async function runWorldLightingScenarios(ctx, state) {
 			action: "inspect_lighting",
 			params: {},
 		})
-		assert(typeof lightingInfo.map_name === "string" && lightingInfo.map_name.length > 0, "manage_lighting inspect_lighting did not return map_name")
-		assert(Number.isFinite(lightingInfo.lighting?.point_lights), "manage_lighting inspect_lighting did not return point_lights")
+		assert(
+			typeof lightingInfo.map_name === "string" && lightingInfo.map_name.length > 0,
+			"manage_lighting inspect_lighting did not return map_name",
+		)
+		assert(
+			Number.isFinite(lightingInfo.lighting?.point_lights),
+			"manage_lighting inspect_lighting did not return point_lights",
+		)
 	})
 
 	await runStep("Delete the point light smoke-test actor", async () => {

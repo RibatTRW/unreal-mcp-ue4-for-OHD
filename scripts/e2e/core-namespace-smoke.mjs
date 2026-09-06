@@ -1,12 +1,5 @@
 export async function runCoreNamespaceScenarios(ctx) {
-	const {
-		options,
-		addCleanup,
-		runStep,
-		callJsonTool,
-		assert,
-		safeDeleteActor,
-	} = ctx
+	const { options, addCleanup, runStep, callJsonTool, assert, safeDeleteActor } = ctx
 
 	const namespaceActorName = `${options.prefix}_NamespaceActor`
 	if (options.skipNamespace) {
@@ -40,8 +33,8 @@ export async function runCoreNamespaceScenarios(ctx) {
 			"manage_tools describe_namespace returned the wrong namespace",
 		)
 		assert(
-			Array.isArray(namespaceDescription.supported_actions)
-				&& namespaceDescription.supported_actions.includes("apply_to_actor"),
+			Array.isArray(namespaceDescription.supported_actions) &&
+				namespaceDescription.supported_actions.includes("apply_to_actor"),
 			"manage_tools describe_namespace did not include apply_to_actor",
 		)
 	})
@@ -56,8 +49,7 @@ export async function runCoreNamespaceScenarios(ctx) {
 			"manage_tools tool_status did not return a namespace count",
 		)
 		assert(
-			Array.isArray(toolStatus.tool_namespaces)
-				&& toolStatus.tool_namespaces.includes("manage_widget"),
+			Array.isArray(toolStatus.tool_namespaces) && toolStatus.tool_namespaces.includes("manage_widget"),
 			"manage_tools tool_status did not include manage_widget",
 		)
 	})
@@ -81,10 +73,7 @@ export async function runCoreNamespaceScenarios(ctx) {
 				location: { x: 0, y: 300, z: 150 },
 			},
 		})
-		assert(
-			spawnResult.actor?.label === namespaceActorName,
-			"manage_actor spawn did not create the expected label",
-		)
+		assert(spawnResult.actor?.label === namespaceActorName, "manage_actor spawn did not create the expected label")
 	})
 
 	await runStep("Delete the tool-namespace actor", async () => {

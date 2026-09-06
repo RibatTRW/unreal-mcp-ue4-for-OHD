@@ -7,11 +7,7 @@ export async function runCoreManagedActorMaterialScenarios(ctx) {
 		callJsonTool,
 		assert,
 		safeDeleteActor,
-		paths: {
-			basicShapeMaterialPath,
-			tintableMaterialPath,
-			actorTintMaterialPath,
-		},
+		paths: { basicShapeMaterialPath, tintableMaterialPath, actorTintMaterialPath },
 	} = ctx
 
 	const granularActorName = `${options.prefix}_Actor`
@@ -98,9 +94,10 @@ export async function runCoreManagedActorMaterialScenarios(ctx) {
 			"manage_actor get_material_info did not return component materials",
 		)
 		assert(
-			materialInfo.materials.components.some((component) =>
-				Array.isArray(component.materials)
-					&& component.materials.some((slot) => slot.material?.path === basicShapeMaterialPath),
+			materialInfo.materials.components.some(
+				(component) =>
+					Array.isArray(component.materials) &&
+					component.materials.some((slot) => slot.material?.path === basicShapeMaterialPath),
 			),
 			"manage_actor get_material_info did not report the applied material",
 		)
@@ -170,9 +167,10 @@ export async function runCoreManagedActorMaterialScenarios(ctx) {
 			"manage_inspection actor_materials did not return component materials",
 		)
 		assert(
-			materialInspection.materials.components.some((component) =>
-				Array.isArray(component.materials)
-					&& component.materials.some((slot) => slot.material?.path === actorTintMaterialPath),
+			materialInspection.materials.components.some(
+				(component) =>
+					Array.isArray(component.materials) &&
+					component.materials.some((slot) => slot.material?.path === actorTintMaterialPath),
 			),
 			"manage_inspection actor_materials did not report the tinted material",
 		)

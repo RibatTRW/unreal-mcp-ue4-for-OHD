@@ -15,15 +15,7 @@ function hasApproxStyleColor(style, keys, expected) {
 }
 
 export async function runContentWidgetBasicScenarios(state) {
-	const {
-		logSkip,
-		runStep,
-		callJsonTool,
-		assert,
-		isUnsupportedWidgetTreeAuthoring,
-		StepSkipError,
-		widgetPath,
-	} = state
+	const { logSkip, runStep, callJsonTool, assert, isUnsupportedWidgetTreeAuthoring, StepSkipError, widgetPath } = state
 
 	let widgetAuthoringUnsupportedReason = ""
 
@@ -48,7 +40,10 @@ export async function runContentWidgetBasicScenarios(state) {
 		} catch (error) {
 			duplicateReason = String(error?.parsed?.reason ?? error?.message ?? "")
 		}
-		assert(duplicateReason.includes("asset_already_exists"), "Duplicate Widget Blueprint create did not report asset_already_exists")
+		assert(
+			duplicateReason.includes("asset_already_exists"),
+			"Duplicate Widget Blueprint create did not report asset_already_exists",
+		)
 	})
 
 	await runStep("Ensure the Widget Blueprint has a Canvas root", async () => {
@@ -60,7 +55,10 @@ export async function runContentWidgetBasicScenarios(state) {
 			},
 		})
 		assert(rootResult.root_widget?.class === "CanvasPanel", "ensure_canvas_root did not report a CanvasPanel root")
-		assert(rootResult.root_widget?.name === "SmokeRootCanvas", "ensure_canvas_root did not apply the requested root name")
+		assert(
+			rootResult.root_widget?.name === "SmokeRootCanvas",
+			"ensure_canvas_root did not apply the requested root name",
+		)
 		assert(
 			rootResult.wrapped_existing_root === false,
 			"Fresh Widget Blueprint should not require wrapping an existing non-Canvas root",
@@ -85,7 +83,9 @@ export async function runContentWidgetBasicScenarios(state) {
 		} catch (error) {
 			if (isUnsupportedWidgetTreeAuthoring(error)) {
 				widgetAuthoringUnsupportedReason =
-					error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.25 Python environment."
+					error instanceof Error
+						? error.message
+						: "Widget tree authoring is unavailable in this UE4.25 Python environment."
 				throw new StepSkipError(widgetAuthoringUnsupportedReason)
 			}
 
@@ -115,7 +115,9 @@ export async function runContentWidgetBasicScenarios(state) {
 		} catch (error) {
 			if (isUnsupportedWidgetTreeAuthoring(error)) {
 				widgetAuthoringUnsupportedReason =
-					error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.25 Python environment."
+					error instanceof Error
+						? error.message
+						: "Widget tree authoring is unavailable in this UE4.25 Python environment."
 				throw new StepSkipError(widgetAuthoringUnsupportedReason)
 			}
 

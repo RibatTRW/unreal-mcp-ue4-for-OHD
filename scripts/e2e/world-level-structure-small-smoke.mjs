@@ -24,10 +24,12 @@ export async function runWorldLevelStructureSmallScenarios(ctx, state) {
 			structureResult.structure === "construct_house",
 			"manage_level_structure construct_house returned the wrong structure",
 		)
-		assert(Number(structureResult.actor_count) >= 5, "manage_level_structure construct_house did not spawn enough actors")
-		addCleanup(
-			`Delete level-structure actors for ${levelStructurePrefix}`,
-			() => safeDeleteActors((structureResult.actors || []).map((actor) => actor.label || actor.name)),
+		assert(
+			Number(structureResult.actor_count) >= 5,
+			"manage_level_structure construct_house did not spawn enough actors",
+		)
+		addCleanup(`Delete level-structure actors for ${levelStructurePrefix}`, () =>
+			safeDeleteActors((structureResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -53,9 +55,8 @@ export async function runWorldLevelStructureSmallScenarios(ctx, state) {
 		})
 		assert(townResult.structure === "create_town", "manage_level_structure create_town returned the wrong structure")
 		assert(Number(townResult.actor_count) > 0, "manage_level_structure create_town did not spawn any actors")
-		addCleanup(
-			`Delete level-structure actors for ${levelStructureTownPrefix}`,
-			() => safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level-structure actors for ${levelStructureTownPrefix}`, () =>
+			safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -71,11 +72,13 @@ export async function runWorldLevelStructureSmallScenarios(ctx, state) {
 				rail_height: 45,
 			},
 		})
-		assert(bridgeResult.structure === "create_bridge", "manage_level_structure create_bridge returned the wrong structure")
+		assert(
+			bridgeResult.structure === "create_bridge",
+			"manage_level_structure create_bridge returned the wrong structure",
+		)
 		assert(Number(bridgeResult.actor_count) > 0, "manage_level_structure create_bridge did not spawn any actors")
-		addCleanup(
-			`Delete level-structure actors for ${levelStructureBridgePrefix}`,
-			() => safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level-structure actors for ${levelStructureBridgePrefix}`, () =>
+			safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -92,9 +95,8 @@ export async function runWorldLevelStructureSmallScenarios(ctx, state) {
 		})
 		assert(towerResult.structure === "create_tower", "manage_level_structure create_tower returned the wrong structure")
 		assert(Number(towerResult.actor_count) >= 5, "manage_level_structure create_tower did not spawn enough actors")
-		addCleanup(
-			`Delete level-structure actors for ${levelStructureTowerPrefix}`,
-			() => safeDeleteActors((towerResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level-structure actors for ${levelStructureTowerPrefix}`, () =>
+			safeDeleteActors((towerResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 
@@ -112,9 +114,8 @@ export async function runWorldLevelStructureSmallScenarios(ctx, state) {
 		})
 		assert(wallResult.structure === "create_wall", "manage_level_structure create_wall returned the wrong structure")
 		assert(Number(wallResult.actor_count) > 0, "manage_level_structure create_wall did not spawn any actors")
-		addCleanup(
-			`Delete level-structure actors for ${levelStructureWallPrefix}`,
-			() => safeDeleteActors((wallResult.actors || []).map((actor) => actor.label || actor.name)),
+		addCleanup(`Delete level-structure actors for ${levelStructureWallPrefix}`, () =>
+			safeDeleteActors((wallResult.actors || []).map((actor) => actor.label || actor.name)),
 		)
 	})
 }

@@ -1,25 +1,10 @@
 export async function runSourceControlMutationScenarios(ctx, params) {
-	const {
-		fs,
-		options,
-		addCleanup,
-		runStep,
-		callJsonTool,
-		assert,
-		safeRevertSourceControlFiles,
-		StepSkipError,
-	} = ctx
+	const { fs, options, addCleanup, runStep, callJsonTool, assert, safeRevertSourceControlFiles, StepSkipError } = ctx
 
-	const {
-		sourceControlAddAssetPath,
-		sourceControlDataAssetPath,
-		defaultEngineConfigPath,
-		projectHasGitRemote,
-	} = params
+	const { sourceControlAddAssetPath, sourceControlDataAssetPath, defaultEngineConfigPath, projectHasGitRemote } = params
 
-	addCleanup(
-		`Revert source-control package changes for ${options.prefix}`,
-		() => safeRevertSourceControlFiles([sourceControlAddAssetPath, sourceControlDataAssetPath]),
+	addCleanup(`Revert source-control package changes for ${options.prefix}`, () =>
+		safeRevertSourceControlFiles([sourceControlAddAssetPath, sourceControlDataAssetPath]),
 	)
 
 	await runStep("Confirm source control mutations are available", async () => {
@@ -53,8 +38,7 @@ export async function runSourceControlMutationScenarios(ctx, params) {
 			params: { files: [defaultEngineConfigPath] },
 		})
 		assert(
-			checkoutResult.file === defaultEngineConfigPath
-				|| checkoutResult.files?.includes(defaultEngineConfigPath),
+			checkoutResult.file === defaultEngineConfigPath || checkoutResult.files?.includes(defaultEngineConfigPath),
 			"manage_source_control checkout did not report the tracked config file",
 		)
 		assert(checkoutResult.success === true, "manage_source_control checkout did not succeed")
@@ -69,25 +53,19 @@ export async function runSourceControlMutationScenarios(ctx, params) {
 			revertUnchangedResult.files?.includes(defaultEngineConfigPath),
 			"manage_source_control revert_unchanged did not report the tracked config file",
 		)
-		assert(
-			revertUnchangedResult.success === true,
-			"manage_source_control revert_unchanged did not succeed",
-		)
+		assert(revertUnchangedResult.success === true, "manage_source_control revert_unchanged did not succeed")
 	})
 
 	await runStep("Sync a tracked config file through manage_source_control", async () => {
 		if (!projectHasGitRemote) {
-			throw new StepSkipError(
-				"Project source-control repository does not have a remote configured for sync.",
-			)
+			throw new StepSkipError("Project source-control repository does not have a remote configured for sync.")
 		}
 		const syncResult = await callJsonTool("manage_source_control", {
 			action: "sync",
 			params: { files: [defaultEngineConfigPath] },
 		})
 		assert(
-			syncResult.file === defaultEngineConfigPath
-				|| syncResult.files?.includes(defaultEngineConfigPath),
+			syncResult.file === defaultEngineConfigPath || syncResult.files?.includes(defaultEngineConfigPath),
 			"manage_source_control sync did not report the tracked config file",
 		)
 		assert(syncResult.success === true, "manage_source_control sync did not succeed")
@@ -127,8 +105,7 @@ export async function runSourceControlMutationScenarios(ctx, params) {
 			params: { files: [sourceControlAddAssetPath] },
 		})
 		assert(
-			addResult.file === sourceControlAddAssetPath
-				|| addResult.files?.includes(sourceControlAddAssetPath),
+			addResult.file === sourceControlAddAssetPath || addResult.files?.includes(sourceControlAddAssetPath),
 			"manage_source_control add did not report the generated asset package",
 		)
 	})
@@ -154,8 +131,7 @@ export async function runSourceControlMutationScenarios(ctx, params) {
 			params: { files: [sourceControlAddAssetPath] },
 		})
 		assert(
-			revertResult.file === sourceControlAddAssetPath
-				|| revertResult.files?.includes(sourceControlAddAssetPath),
+			revertResult.file === sourceControlAddAssetPath || revertResult.files?.includes(sourceControlAddAssetPath),
 			"manage_source_control revert did not report the generated add asset",
 		)
 	})
@@ -166,8 +142,8 @@ export async function runSourceControlMutationScenarios(ctx, params) {
 			params: { files: [sourceControlDataAssetPath] },
 		})
 		assert(
-			checkoutOrAddResult.file === sourceControlDataAssetPath
-				|| checkoutOrAddResult.files?.includes(sourceControlDataAssetPath),
+			checkoutOrAddResult.file === sourceControlDataAssetPath ||
+				checkoutOrAddResult.files?.includes(sourceControlDataAssetPath),
 			"manage_source_control checkout_or_add did not report the generated asset package",
 		)
 	})
@@ -193,8 +169,7 @@ export async function runSourceControlMutationScenarios(ctx, params) {
 			params: { files: [sourceControlDataAssetPath] },
 		})
 		assert(
-			revertResult.file === sourceControlDataAssetPath
-				|| revertResult.files?.includes(sourceControlDataAssetPath),
+			revertResult.file === sourceControlDataAssetPath || revertResult.files?.includes(sourceControlDataAssetPath),
 			"manage_source_control revert did not report the generated checkout-or-add asset",
 		)
 	})

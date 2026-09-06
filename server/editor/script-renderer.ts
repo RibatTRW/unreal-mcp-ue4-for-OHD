@@ -19,11 +19,7 @@ export type EncodedArg = string & { readonly [encodedArgBrand]: true }
  */
 const templateTokenPattern = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g
 
-function substituteTemplateArgs(
-	filePath: string,
-	source: string,
-	vars: Record<string, EncodedArg>,
-): string {
+function substituteTemplateArgs(filePath: string, source: string, vars: Record<string, EncodedArg>): string {
 	const missing = new Set<string>()
 	const rendered = source.replace(templateTokenPattern, (token, name: string) => {
 		if (!Object.prototype.hasOwnProperty.call(vars, name)) {
@@ -39,7 +35,16 @@ function substituteTemplateArgs(
 }
 
 function readWithPrelude(filePath: string, extraPrelude = ""): string {
-	return [editorPreludes.textCodec, editorPreludes.objectAccess, editorPreludes.assetResolution, editorPreludes.widgetTree, extraPrelude, readEditorScript(filePath)].filter(Boolean).join("\n\n")
+	return [
+		editorPreludes.textCodec,
+		editorPreludes.objectAccess,
+		editorPreludes.assetResolution,
+		editorPreludes.widgetTree,
+		extraPrelude,
+		readEditorScript(filePath),
+	]
+		.filter(Boolean)
+		.join("\n\n")
 }
 
 export function renderEditorScript(

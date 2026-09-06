@@ -21,7 +21,10 @@ export async function runContentPieRuntimeScenarios(state) {
 			action: "is_pie_running",
 			params: {},
 		})
-		assert(typeof pieStatus.is_pie_running === "boolean", "manage_editor is_pie_running did not return a boolean status")
+		assert(
+			typeof pieStatus.is_pie_running === "boolean",
+			"manage_editor is_pie_running did not return a boolean status",
+		)
 		assert(pieStatus.is_pie_running === false, "manage_editor is_pie_running reported PIE before the test started")
 	})
 
@@ -117,7 +120,10 @@ export async function runContentPieRuntimeScenarios(state) {
 
 			throw error
 		})
-		assert(viewportResult.widget_blueprint === widgetPath, "manage_widget add_to_viewport retry returned the wrong widget blueprint path")
+		assert(
+			viewportResult.widget_blueprint === widgetPath,
+			"manage_widget add_to_viewport retry returned the wrong widget blueprint path",
+		)
 		const pieStatus = await pollPieStatus(true)
 		assert(pieStatus?.is_pie_running === true, "manage_widget add_to_viewport did not auto-start PIE")
 	})

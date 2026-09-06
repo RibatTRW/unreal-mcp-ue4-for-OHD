@@ -15,12 +15,7 @@ function hasApproxStyleColor(style, keys, expected) {
 }
 
 export async function runContentWidgetAdvancedScenarios(state) {
-	const {
-		runStep,
-		callJsonTool,
-		assert,
-		widgetPath,
-	} = state
+	const { runStep, callJsonTool, assert, widgetPath } = state
 	const rootWidgetName = state.rootWidgetName ?? "CanvasPanel_0"
 
 	await runStep("Add a CanvasPanel through advanced widget tooling", async () => {
@@ -78,7 +73,10 @@ export async function runContentWidgetAdvancedScenarios(state) {
 				color: { r: 1, g: 0.85, b: 0.35, a: 1 },
 			},
 		})
-		assert(childResult.child_widget_name === "SmokeChildText", "Child widget was not added through advanced widget tooling")
+		assert(
+			childResult.child_widget_name === "SmokeChildText",
+			"Child widget was not added through advanced widget tooling",
+		)
 		assert(childResult.text === "Nested child", "Advanced child widget add did not apply TextBlock text")
 		assert(childResult.style?.font_size === 14, "Advanced child widget add did not apply TextBlock font size")
 		assert(
@@ -217,10 +215,7 @@ export async function runContentWidgetAdvancedScenarios(state) {
 			},
 		})
 		const panelEntry = (treeResult.widgets ?? []).find((widget) => widget.name === "SmokePanel")
-		assert(
-			panelEntry?.parent === rootWidgetName,
-			"Failed reparent layout left SmokePanel under the new parent",
-		)
+		assert(panelEntry?.parent === rootWidgetName, "Failed reparent layout left SmokePanel under the new parent")
 
 		await callJsonTool("manage_widget", {
 			action: "remove_widget",
@@ -242,7 +237,10 @@ export async function runContentWidgetAdvancedScenarios(state) {
 				position: { x: 320, y: 40 },
 			},
 		})
-		assert(panelResult.widget_name === "SmokePanelHost", "Second CanvasPanel was not added through advanced widget tooling")
+		assert(
+			panelResult.widget_name === "SmokePanelHost",
+			"Second CanvasPanel was not added through advanced widget tooling",
+		)
 	})
 
 	await runStep("Reparent the CanvasPanel through advanced widget tooling", async () => {
@@ -284,7 +282,10 @@ export async function runContentWidgetAdvancedScenarios(state) {
 				child_widget_name: "SmokeChildText",
 			},
 		})
-		assert(removeChildResult.child_widget_name === "SmokeChildText", "Child widget was not removed through advanced widget tooling")
+		assert(
+			removeChildResult.child_widget_name === "SmokeChildText",
+			"Child widget was not removed through advanced widget tooling",
+		)
 	})
 
 	await runStep("Remove the CanvasPanel through advanced widget tooling", async () => {
@@ -295,7 +296,10 @@ export async function runContentWidgetAdvancedScenarios(state) {
 				widget_name: "SmokePanel",
 			},
 		})
-		assert(removePanelResult.widget_name === "SmokePanel", "CanvasPanel was not removed through advanced widget tooling")
+		assert(
+			removePanelResult.widget_name === "SmokePanel",
+			"CanvasPanel was not removed through advanced widget tooling",
+		)
 	})
 
 	await runStep("Remove the second CanvasPanel through advanced widget tooling", async () => {
@@ -306,7 +310,10 @@ export async function runContentWidgetAdvancedScenarios(state) {
 				widget_name: "SmokePanelHost",
 			},
 		})
-		assert(removePanelResult.widget_name === "SmokePanelHost", "Second CanvasPanel was not removed through advanced widget tooling")
+		assert(
+			removePanelResult.widget_name === "SmokePanelHost",
+			"Second CanvasPanel was not removed through advanced widget tooling",
+		)
 	})
 
 	await runStep("Remove the styled Border through advanced widget tooling", async () => {
@@ -317,6 +324,9 @@ export async function runContentWidgetAdvancedScenarios(state) {
 				widget_name: "SmokeBorder",
 			},
 		})
-		assert(removeBorderResult.widget_name === "SmokeBorder", "Styled Border was not removed through advanced widget tooling")
+		assert(
+			removeBorderResult.widget_name === "SmokeBorder",
+			"Styled Border was not removed through advanced widget tooling",
+		)
 	})
 }

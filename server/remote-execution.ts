@@ -1,16 +1,13 @@
 import os from "node:os"
 
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
-import type {
-	IRemoteExecutionMessageCommandOutputData,
-	RemoteExecutionNode,
-} from "unreal-remote-execution"
+import type { IRemoteExecutionMessageCommandOutputData, RemoteExecutionNode } from "unreal-remote-execution"
 
 import {
 	ConnectionSession,
+	type ConnectionTransport,
 	DEFAULT_RETRY_COUNT,
 	DEFAULT_RETRY_DELAY_MS,
-	type ConnectionTransport,
 } from "./connection-session.js"
 
 const DEFAULT_MULTICAST_TTL = 1
@@ -53,8 +50,7 @@ const resolveRemoteExecutionBindAddress = () => {
 
 const createRemoteExecutionConfig = () => {
 	const multicastTTL = readIntegerEnv("UNREAL_MCP_MULTICAST_TTL", DEFAULT_MULTICAST_TTL)
-	const multicastAddress =
-		readStringEnv("UNREAL_MCP_MULTICAST_ADDRESS") ?? DEFAULT_MULTICAST_ADDRESS
+	const multicastAddress = readStringEnv("UNREAL_MCP_MULTICAST_ADDRESS") ?? DEFAULT_MULTICAST_ADDRESS
 	const multicastPort = readIntegerEnv("UNREAL_MCP_MULTICAST_PORT", DEFAULT_MULTICAST_PORT)
 	const bindAddress = resolveRemoteExecutionBindAddress()
 	const commandAddress = readStringEnv("UNREAL_MCP_COMMAND_ADDRESS") ?? bindAddress
@@ -64,12 +60,10 @@ const createRemoteExecutionConfig = () => {
 		bindAddress,
 		commandAddress,
 		commandPort,
-		config: new RemoteExecutionConfig(
-			multicastTTL,
-			[multicastAddress, multicastPort],
-			bindAddress,
-			[commandAddress, commandPort],
-		),
+		config: new RemoteExecutionConfig(multicastTTL, [multicastAddress, multicastPort], bindAddress, [
+			commandAddress,
+			commandPort,
+		]),
 	}
 }
 

@@ -84,12 +84,10 @@ for (const file of files) {
 
 		for (const check of checks) {
 			if (check.pattern.test(line)) {
-				if (check.allow && check.allow.some((allowed) => allowed.test(line))) {
+				if (check.allow?.some((allowed) => allowed.test(line))) {
 					continue
 				}
-				problems.push(
-					`${path.relative(repoRoot, file)}:${index + 1}: ${check.name}: ${stripped.slice(0, 120)}`,
-				)
+				problems.push(`${path.relative(repoRoot, file)}:${index + 1}: ${check.name}: ${stripped.slice(0, 120)}`)
 			}
 		}
 	})

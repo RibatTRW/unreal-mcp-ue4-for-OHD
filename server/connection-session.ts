@@ -1,7 +1,4 @@
-import type {
-	IRemoteExecutionMessageCommandOutputData,
-	RemoteExecutionNode,
-} from "unreal-remote-execution"
+import type { IRemoteExecutionMessageCommandOutputData, RemoteExecutionNode } from "unreal-remote-execution"
 
 // Explicit connection session over an injected transport seam
 // (candidate 8). All retry/backoff/stale-connection policy moved here
@@ -49,9 +46,7 @@ export interface ConnectionSessionOptions {
 // command try/catch can never be caught by retry logic).
 export const isRecoverableConnectionError = (error: unknown): boolean => {
 	const code =
-		typeof error === "object" && error !== null && "code" in error
-			? (error as { code?: unknown }).code
-			: undefined
+		typeof error === "object" && error !== null && "code" in error ? (error as { code?: unknown }).code : undefined
 	return code === "ECONNRESET"
 }
 

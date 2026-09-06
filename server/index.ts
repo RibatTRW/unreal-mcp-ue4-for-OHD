@@ -1,16 +1,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
-import { createRegistrationContext } from "./registration-context.js"
 import { registerDirectTools } from "./register-direct-tools.js"
-import { registerAllToolNamespaces } from "./tool-namespaces.js"
+import { createRegistrationContext } from "./registration-context.js"
 import { shutdownRemoteExecution } from "./remote-execution.js"
+import { registerAllToolNamespaces } from "./tool-namespaces.js"
 import { projectVersion } from "./version.js"
 
 export { shutdownRemoteExecution }
 
 export const server = new McpServer({
 	name: "UnrealMCP-UE4",
-	description: "Unreal Engine MCP for UE4.25.4 (Operation Harsh Doorstop mod kit) with UE4 editor scripting compatibility helpers",
+	description:
+		"Unreal Engine MCP for UE4.25.4 (Operation Harsh Doorstop mod kit) with UE4 editor scripting compatibility helpers",
 	version: projectVersion,
 })
 

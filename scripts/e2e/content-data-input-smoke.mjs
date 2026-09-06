@@ -33,7 +33,10 @@ export async function runContentDataInputScenarios(state) {
 			action: "asset_info",
 			params: { asset_path: dataAssetPath },
 		})
-		assert(Array.isArray(dataAssetInfo) && dataAssetInfo.length === 1, "manage_data asset_info did not return one asset record")
+		assert(
+			Array.isArray(dataAssetInfo) && dataAssetInfo.length === 1,
+			"manage_data asset_info did not return one asset record",
+		)
 		assert(
 			dataAssetInfo[0].package === dataAssetPath,
 			`manage_data asset_info returned an unexpected asset path: ${dataAssetInfo[0]?.package}`,
@@ -83,10 +86,7 @@ export async function runContentDataInputScenarios(state) {
 		assert(Array.isArray(dataSearchResult.assets), "manage_data search_data_assets did not return an asset list")
 		assert(
 			dataSearchResult.assets.some(
-				(asset) =>
-					asset.path === dataAssetPath
-					|| asset.path === dataTablePath
-					|| asset.path === stringTablePath,
+				(asset) => asset.path === dataAssetPath || asset.path === dataTablePath || asset.path === stringTablePath,
 			),
 			"manage_data search_data_assets did not find any of the created data assets",
 		)
@@ -102,7 +102,10 @@ export async function runContentDataInputScenarios(state) {
 			},
 		})
 		const resolvedConfigPath = resolveLocalPath(inputResult.config_path)
-		assert(inputResult.mapping_name === inputMappingName, "manage_input create_input_mapping returned the wrong mapping name")
+		assert(
+			inputResult.mapping_name === inputMappingName,
+			"manage_input create_input_mapping returned the wrong mapping name",
+		)
 		assert(
 			typeof resolvedConfigPath === "string" && resolvedConfigPath.endsWith("DefaultInput.ini"),
 			"manage_input create_input_mapping did not return DefaultInput.ini",

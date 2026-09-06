@@ -35,7 +35,10 @@ export async function runContentTextureExportScenarios(state) {
 			action: "texture_info",
 			params: { asset_path: texturePath },
 		})
-		assert(Array.isArray(textureInfo) && textureInfo.length === 1, "manage_texture texture_info did not return one asset record")
+		assert(
+			Array.isArray(textureInfo) && textureInfo.length === 1,
+			"manage_texture texture_info did not return one asset record",
+		)
 		assert(
 			textureInfo[0].package === texturePath,
 			`manage_texture texture_info returned an unexpected asset path: ${textureInfo[0]?.package}`,
@@ -71,12 +74,10 @@ export async function runContentTextureExportScenarios(state) {
 		assert(Array.isArray(listedAssets.assets), "manage_asset list did not return an assets list")
 		assert(
 			listedAssets.assets.some(
-				(assetPath) =>
-					assetPath === blueprintPath || String(assetPath).startsWith(`${blueprintPath}.`),
-			)
-				&& listedAssets.assets.some(
-					(assetPath) =>
-						assetPath === texturePath || String(assetPath).startsWith(`${texturePath}.`),
+				(assetPath) => assetPath === blueprintPath || String(assetPath).startsWith(`${blueprintPath}.`),
+			) &&
+				listedAssets.assets.some(
+					(assetPath) => assetPath === texturePath || String(assetPath).startsWith(`${texturePath}.`),
 				),
 			"manage_asset list did not include the expected generated assets",
 		)

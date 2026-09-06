@@ -1,16 +1,22 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import * as editorTools from "./editor/tools.js"
 import {
+	type NamespaceActionRegistration,
+	type NamespaceDispatchResult,
+	type RegistrationDispatch,
 	createDispatchHelpers,
+} from "./registration-context-dispatch.js"
+import { type RegistrationParams, createRegistrationParamHelpers } from "./registration-context-params.js"
+import { type RegistrationSchemas, createRegistrationSchemaHelpers } from "./registration-context-schemas.js"
+import { toolDescription } from "./tool-catalog.js"
+
+export type {
 	NamespaceActionRegistration,
 	NamespaceDispatchResult,
 	RegistrationDispatch,
-} from "./registration-context-dispatch.js"
-import { createRegistrationParamHelpers, RegistrationParams } from "./registration-context-params.js"
-import { createRegistrationSchemaHelpers, RegistrationSchemas } from "./registration-context-schemas.js"
-import { toolDescription } from "./tool-catalog.js"
-
-export type { NamespaceActionRegistration, NamespaceDispatchResult, RegistrationDispatch, RegistrationParams, RegistrationSchemas }
+	RegistrationParams,
+	RegistrationSchemas,
+}
 
 export interface RegistrationContext extends RegistrationParams, RegistrationSchemas, RegistrationDispatch {}
 
