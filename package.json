@@ -14,7 +14,7 @@
     "prepack": "npm run build",
     "start": "node dist/bin.js",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "test:no-unreal": "npm run build && node scripts/no-unreal-smoke.mjs && node scripts/check-payload-codec.mjs",
+    "test:no-unreal": "npm run build && node scripts/no-unreal-smoke.mjs && node scripts/check-payload-codec.mjs && node scripts/check-tool-surface.mjs && node scripts/check-schema-parity.mjs",
     "typecheck": "tsc --noEmit",
     "check:py27": "node scripts/check-py27.mjs",
     "check:compat-direction": "node scripts/check-compat-direction.mjs",
@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "effect": "^3.22.1",
     "unreal-remote-execution": "^1.0.0",
     "zod": "^3.25.48"
   },
