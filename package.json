@@ -23,7 +23,8 @@
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
     "publish:check": "npm run typecheck && npm run build && npm pack --dry-run",
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",
-    "set:version": "node scripts/set-version.mjs"
+    "set:version": "node scripts/set-version.mjs",
+    "sync:version": "node scripts/sync-version.mjs"
   },
   "files": ["dist"],
   "keywords": ["unreal", "mcp", "modelcontextprotocol", "unreal-mcp", "ue4", "ue4.25", "ohd"],
