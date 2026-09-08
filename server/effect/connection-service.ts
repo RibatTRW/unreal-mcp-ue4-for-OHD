@@ -87,6 +87,18 @@ export const makeConnectionRetrySchedule = (
 export const makeStaleRetrySchedule = (ensured: Ref.Ref<boolean>): Schedule.Schedule<void, unknown, never> =>
 	Schedule.once.pipe(Schedule.whileOutputEffect(() => Ref.get(ensured)))
 
+// Health hint (W2, report §4 W2): short-lived healthy-connection timestamp
+// kept in ConnectionSessionService internals only. A successful runCommand
+// arms it; ensureConnection trusts it while fresh (skipping the
+// hasCommandConnection check and any re-probe); past the TTL the legacy
+// probe path runs unchanged. A failed ensure never arms it (arming happens
+// only on program success), and a failed command disarms it so the
+// existing stale-retry path re-probes on the retry. The absent-editor
+// envelope is untouched: with no success ever, the hint never arms and
+// every ensure pays the full retry budget. Any fast-fail beyond this hint
+// is explicitly out of scope.
+export const HEALTHY_CONNECTION_HINT_TTL_MS = 5000
+
 export interface ConnectionSessionServiceShape {
 	readonly runCommand: (command: string) => Effect.Effect<string, ConnectionError | CommandFailedError | unknown>
 	readonly discoverPath: (
@@ -255,14 +267,28 @@ export const makeConnectionSessionService = (
 			connectWithRetry(connectContext),
 			Duration.infinity,
 		)
+		// W2 health hint: timestamp (Clock ms) of the last successful
+		// runCommand, null when never armed or after a command failure
+		// disarmed it. Read via Clock so TestClock scenarios control it.
+		const healthyHintAt = yield* Ref.make<number | null>(null)
+		const isHintFresh: Effect.Effect<boolean> = Effect.flatMap(Clock.currentTimeMillis, (now) =>
+			Effect.map(
+				Ref.get(healthyHintAt),
+				(armedAt) => armedAt !== null && now - armedAt <= HEALTHY_CONNECTION_HINT_TTL_MS,
+			),
+		)
 		const ensureConnection: Effect.Effect<ConnectionTransport, ConnectionError | unknown> = Effect.flatMap(
-			SynchronizedRef.get(transportCell),
-			(transport) =>
-				Effect.flatMap(
-					Effect.sync(() => transport.hasCommandConnection()),
-					(connected) =>
-						connected ? Effect.succeed(transport) : Effect.tapError(connectionCached, () => invalidateConnection),
-				),
+			Effect.zip(SynchronizedRef.get(transportCell), isHintFresh),
+			([transport, hintFresh]) =>
+				hintFresh
+					? Effect.succeed(transport)
+					: Effect.flatMap(
+							Effect.sync(() => transport.hasCommandConnection()),
+							(connected) =>
+								connected
+									? Effect.succeed(transport)
+									: Effect.tapError(connectionCached, () => invalidateConnection),
+						),
 		)
 
 		const runCommand = (command: string): Effect.Effect<string, ConnectionError | CommandFailedError | unknown> =>
@@ -277,12 +303,28 @@ export const makeConnectionSessionService = (
 					Effect.zipRight(Ref.set(ensured, true), runOnRuntime(acquired, command)).pipe(
 						Effect.tapError(() =>
 							Effect.flatMap(Ref.getAndSet(staleHandled, true), (already) =>
-								already ? Effect.void : Effect.zipRight(closeStaleConnection(options, acquired), invalidateConnection),
+								already
+									? Effect.void
+									: Effect.zipRight(
+											closeStaleConnection(options, acquired),
+											// Disarm the health hint alongside the
+											// invalidate: the retry must re-probe
+											// through the legacy path, never trust
+											// a hint the failure just disproved.
+											Effect.zipRight(invalidateConnection, Ref.set(healthyHintAt, null)),
+										),
 							),
 						),
 					),
 				)
-				return yield* Effect.retry(program, makeStaleRetrySchedule(ensured))
+				// Arming happens only here, on program success (including
+				// stale-retry recovery): a failed ensure never arms the hint,
+				// so the absent-editor envelope keeps its full retry budget.
+				return yield* Effect.retry(program, makeStaleRetrySchedule(ensured)).pipe(
+					Effect.tap(() =>
+						Effect.flatMap(Clock.currentTimeMillis, (now) => Ref.set(healthyHintAt, now)),
+					),
+				)
 			})
 
 		const discoverPath = (
@@ -302,6 +344,7 @@ export const makeConnectionSessionService = (
 
 		const shutdown: Effect.Effect<void> = Effect.gen(function* () {
 			const transport = yield* SynchronizedRef.get(transportCell)
+			yield* Ref.set(healthyHintAt, null)
 			yield* invalidateStart
 			yield* invalidateConnection
 			yield* Effect.catchAll(
