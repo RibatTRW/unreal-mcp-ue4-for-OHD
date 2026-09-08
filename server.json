@@ -8,12 +8,12 @@
     "url": "https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD",
     "source": "github"
   },
-  "version": "2026.5.12-12",
+  "version": "2026.5.12-13",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "unreal-mcp-ue4-for-ohd",
-      "version": "2026.5.12-12",
+      "version": "2026.5.12-13",
       "transport": {
         "type": "stdio"
       }
