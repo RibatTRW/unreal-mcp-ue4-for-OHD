@@ -1,6 +1,6 @@
+import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
-import ts from "typescript"
 import { syncVersionFromPackageJson } from "./sync-version.mjs"
 
 const rootDir = process.cwd()
@@ -10,7 +10,6 @@ const rootDir = process.cwd()
 // the generated files, and package.json can never drift apart.
 syncVersionFromPackageJson()
 const distDir = path.join(rootDir, "dist")
-const serverDir = path.join(rootDir, "server")
 
 try {
 	fs.rmSync(distDir, { recursive: true, force: true })
@@ -24,59 +23,27 @@ try {
 	}
 }
 
-const formatDiagnostic = (diagnostic) =>
-	ts.formatDiagnosticsWithColorAndContext([diagnostic], {
-		getCanonicalFileName: (fileName) => fileName,
-		getCurrentDirectory: () => rootDir,
-		getNewLine: () => "\n",
-	})
-
-const failWithDiagnostics = (diagnostics) => {
-	if (!diagnostics.length) {
-		return
-	}
-
-	const formatted = ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-		getCanonicalFileName: (fileName) => fileName,
-		getCurrentDirectory: () => rootDir,
-		getNewLine: () => "\n",
-	})
-	throw new Error(formatted)
-}
-
-const configPath = ts.findConfigFile(rootDir, ts.sys.fileExists, "tsconfig.json")
-if (!configPath) {
+// NOTE: TypeScript 7 ships no compiler API (only the tsc CLI plus an
+// unstable preview API), so the build shells out to tsc instead of driving
+// a ts.createProgram the way the TS5 build did.
+// NOTE: there is no esbuild bundling step in this repo (esbuild is only a
+// transitive dev tool via tsx); the emit language level is controlled by
+// tsconfig.json. Keep its "target" (es2022) runnable on engines.node (>=18).
+// --noEmitOnError preserves the old fail-before-emit behavior: any pre-emit
+// diagnostic aborts the build with a nonzero exit instead of writing dist/.
+const configPath = path.join(rootDir, "tsconfig.json")
+if (!fs.existsSync(configPath)) {
 	throw new Error("Could not find tsconfig.json")
 }
 
-const configFile = ts.readConfigFile(configPath, ts.sys.readFile)
-if (configFile.error) {
-	throw new Error(formatDiagnostic(configFile.error))
-}
-
-const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath))
-failWithDiagnostics(parsedConfig.errors ?? [])
-
-// NOTE: there is no esbuild bundling step in this repo (esbuild is only a
-// transitive dev tool via tsx); the emit language level is controlled here.
-// Keep in sync with tsconfig.json "target" — dist/ must run on engines.node (>=18).
-const compilerOptions = {
-	...parsedConfig.options,
-	module: ts.ModuleKind.CommonJS,
-	outDir: distDir,
-	rootDir: serverDir,
-	target: ts.ScriptTarget.ES2022,
-}
-
-const program = ts.createProgram({
-	options: compilerOptions,
-	rootNames: parsedConfig.fileNames,
-})
-
-failWithDiagnostics(ts.getPreEmitDiagnostics(program))
-
-const emitResult = program.emit()
-failWithDiagnostics(emitResult.diagnostics ?? [])
+// Prefer the workspace tsc (node_modules/.bin, also on PATH under npm run);
+// fall back to a tsc resolved from PATH for direct node invocations.
+const localTsc =
+	process.platform === "win32"
+		? path.join(rootDir, "node_modules", ".bin", "tsc.cmd")
+		: path.join(rootDir, "node_modules", ".bin", "tsc")
+const tscCommand = fs.existsSync(localTsc) ? localTsc : "tsc"
+execFileSync(tscCommand, ["-p", configPath, "--noEmitOnError"], { stdio: "inherit" })
 
 fs.mkdirSync(path.join(distDir, "editor"), { recursive: true })
 fs.cpSync(path.join(rootDir, "server", "editor", "scripts"), path.join(distDir, "editor", "scripts"), {

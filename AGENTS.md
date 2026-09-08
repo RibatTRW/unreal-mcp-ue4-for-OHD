@@ -88,7 +88,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `scripts/check-dispatch-envelope.mjs` (live invalid-params + handler-throw envelopes snapshotted in
   `scripts/__snapshots__/dispatch-envelope.snapshot.json`, plus dispatch-unit coverage of the Zod/Schema/
   throw/Effect-handler paths).
-- Emit target is ES2022 (`tsconfig.json` + `scripts/build.mjs` override), proven on Node 18.
+- Emit target is ES2022 (`tsconfig.json` owns it; `scripts/build.mjs` passes no overrides), proven on Node 18.
 - Phase 7 dependency cleanup: zod KEPT, no `package.json` change. Evidence: the SDK accepts
   only Zod at the call-site (`getZodSchemaObject` throws otherwise — installed
   `@modelcontextprotocol/sdk/dist/esm/server/mcp.js`); dispatch itself builds
@@ -98,6 +98,19 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   SDK upgrade (separate change with its own surface-snapshot run). Postbuild README/catalog
   regen verified diff-free; the surface/parity/envelope/session harnesses wired into
   `test:no-unreal` stay as permanent regression tests.
+
+## TypeScript 7 toolchain
+
+- `typescript@^7` (native Go port, no compiler API): `scripts/build.mjs` shells out to the
+  workspace `tsc -p tsconfig.json --noEmitOnError` instead of `ts.createProgram`; do not
+  `import ... from "typescript"` outside its `version`-only entry (a new API lands in 7.1,
+  only `./unstable/*` previews exist). `tsconfig.json` pins the TS7-required settings:
+  `module`/`moduleResolution` `nodenext` (still emits CJS — package.json has no `"type"`
+  field), `types: ["node"]`, `rootDir: "server"`. Kept as-is: `target es2022`,
+  `esModuleInterop`/`allowSyntheticDefaultImports` true, `strict`, `useDefineForClassFields:false`.
+- `npm install` rewrites `package.json` array formatting (multiline files/keywords) — revert
+  that churn so the dep diff stays one line. The lockfile carries one `@typescript/native-*`
+  entry per platform (expected for the native-binary distribution model).
 
 ## Tool catalog (W3)
 
