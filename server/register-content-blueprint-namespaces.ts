@@ -280,6 +280,7 @@ export function contentBlueprintDescriptors(
 						}),
 				},
 			},
+			options: { compactParamsSchema: true },
 		},
 	]
 }

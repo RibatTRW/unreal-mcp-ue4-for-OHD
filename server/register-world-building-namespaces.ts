@@ -184,6 +184,7 @@ export function worldBuildingDescriptors(
 				create_aqueduct: worldAction("create_aqueduct", createAqueductSchema),
 				create_castle_fortress: worldAction("create_castle_fortress", createCastleFortressSchema),
 			},
+			options: { compactParamsSchema: true },
 		},
 		{
 			name: "manage_environment",

@@ -323,6 +323,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						}),
 				},
 			},
+			options: { compactParamsSchema: true },
 		},
 		{
 			name: "manage_audio",
