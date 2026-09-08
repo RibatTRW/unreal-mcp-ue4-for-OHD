@@ -4,6 +4,7 @@ import { z } from "zod"
 import type { ToolError } from "./effect/errors.js"
 import {
 	assetLookupSchema,
+	assetPathParam,
 	blueprintNameShape,
 	requireAtLeastOneValue,
 	searchAssetsShape,
@@ -61,7 +62,7 @@ export function gameplayDescriptors(
 
 	const blueprintTargetNoNameShape = {
 		blueprint_name: z.string().optional(),
-		asset_path: z.string().optional(),
+		asset_path: assetPathParam,
 	}
 
 	return [

@@ -103,6 +103,11 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 	)
 
 	/// Core Direct Tools
+	// S4 outlier: the location/rotation/scale fields below carry per-tool
+	// defaults, object-only shapes, and descriptions, so they validate
+	// differently from the canonical vector3/rotator fragments (which also
+	// accept tuples and carry no defaults). Unifying would silently widen the
+	// surface and change defaults. They stay inline; see vector3InputSchema.
 	registerPythonTool(
 		"editor_create_object",
 		describeTool("editor_create_object"),

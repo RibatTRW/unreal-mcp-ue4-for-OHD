@@ -158,6 +158,21 @@ export const searchAssetsShape = {
 	limit: z.number().optional(),
 }
 
+// Canonical scalar fragments (S4): single shared instances so the next
+// validation change lands once. All bare (no .describe) to match the
+// call-sites they replace — the surface snapshot pins byte-identity.
+export const limitParam = z.number().optional()
+
+export const assetPathParam = z.string().optional()
+
+// Paged-read growth point (S4 for S3): spread into list/search paramsSchemas
+// (`...pagedReadParams`). Holds only `limit` today — `offset`/`fields` stay
+// out until S3 adds bounded reads, since adding them now would silently widen
+// today's `.strict()` objects. Key order is preserved when spread last.
+export const pagedReadParams = {
+	limit: limitParam,
+}
+
 export const vector3TransformShape = {
 	location: vector3InputSchema.optional(),
 	rotation: rotatorInputSchema.optional(),

@@ -3,6 +3,7 @@ import { z } from "zod"
 import type { ToolError } from "./effect/errors.js"
 
 import {
+	assetPathParam,
 	childWidgetNameKeys,
 	childWidgetNameMessage,
 	materialColorShape,
@@ -91,7 +92,7 @@ export function contentWidgetDescriptors(
 						strictObject({
 							widget_name: z.string().optional(),
 							name: z.string().optional(),
-							asset_path: z.string().optional(),
+							asset_path: assetPathParam,
 							widget_path: z.string().optional(),
 							parent_class: z.string().optional(),
 							path: z.string().optional(),

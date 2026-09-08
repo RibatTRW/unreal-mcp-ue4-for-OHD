@@ -7,8 +7,10 @@ import {
 	actorNameShape,
 	assetLookupSchema,
 	assetLookupShape,
+	assetPathParam,
 	assetSourceLookupShape,
 	blueprintNameShape,
+	pagedReadParams,
 	requireAtLeastOneValue,
 	searchAssetsShape,
 	vector3TransformShape,
@@ -79,7 +81,7 @@ export function coreAssetActorDescriptors(
 
 	const blueprintTargetNoNameShape = {
 		blueprint_name: z.string().optional(),
-		asset_path: z.string().optional(),
+		asset_path: assetPathParam,
 	}
 
 	const assetMutationPayload = (params: Record<string, any>) => ({
@@ -110,7 +112,7 @@ export function coreAssetActorDescriptors(
 							root_path: z.string().optional(),
 							path: z.string().optional(),
 							recursive: z.boolean().optional(),
-							limit: z.number().optional(),
+							...pagedReadParams,
 						})
 						.strict(),
 					handler: (params) =>
@@ -375,6 +377,13 @@ export function coreAssetActorDescriptors(
 							actor_type: z.string().optional(),
 							class_name: z.string().optional(),
 							...actorNameShape,
+							// S4 outlier: these unions are structurally identical to the
+							// canonical vector3InputSchema/rotatorInputSchema, but reusing
+							// those shared instances would change the rendered surface:
+							// the SDK's schema converter dedupes repeat instances into
+							// $refs, so spawn_blueprint's location would collapse into a
+							// $ref and check-tool-surface would drift. Fresh inline
+							// instances keep the snapshot byte-identical; see limitParam.
 							location: z
 								.union([
 									z.object({ x: z.number(), y: z.number(), z: z.number() }),

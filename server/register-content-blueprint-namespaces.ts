@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import type { ToolError } from "./effect/errors.js"
 import {
+	assetPathParam,
 	blueprintNameShape,
 	requireAtLeastOneValue,
 	vector3TransformShape,
@@ -42,7 +43,7 @@ export function contentBlueprintDescriptors(
 
 	const blueprintTargetNoNameShape = {
 		blueprint_name: z.string().optional(),
-		asset_path: z.string().optional(),
+		asset_path: assetPathParam,
 	}
 
 	return [
