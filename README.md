@@ -478,7 +478,7 @@ These capability areas are intentionally not exposed through the MCP surface in 
 - [x] Add a agent.md so agents can install it easily (landed as `docs/agent-setup.md`)
 - [x] Add GitHub Actions CI (`.github/workflows/ci.yml` green on main + Tests badge live; `protect-main` ruleset PR-only, status checks not yet required)
 - [x] Cut a first fork release (tags exist, e.g. `2026.5.12-11`; published to npm)
-- [x] Decide registry identity (rename to `unreal-mcp-ue4-for-ohd` under `io.github.ribattrw`; merge + publish pending)
+- [ ] Publish registry rename to `unreal-mcp-ue4-for-ohd` under `io.github.ribattrw` (decision made; merge + publish pending)
 
 ## License
 
