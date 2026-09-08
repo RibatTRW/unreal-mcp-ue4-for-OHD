@@ -114,7 +114,12 @@ checkBlobs("UEValidateAssets", direct.UEValidateAssets(["/Game/A", ADV]), [["/Ga
 checkBlobs("UEValidateAssets.omitted", direct.UEValidateAssets(undefined), [null])
 checkBlobs("UEGetProjectInfo", direct.UEGetProjectInfo(), [])
 checkBlobs("UEGetMapInfo", direct.UEGetMapInfo(), [])
-checkBlobs("UEGetWorldOutliner", direct.UEGetWorldOutliner(), [])
+checkBlobs("UEGetWorldOutliner", direct.UEGetWorldOutliner(), [null, null, null])
+checkBlobs("UEGetWorldOutliner.paged", direct.UEGetWorldOutliner(50, 10, ["name", "class"]), [
+	50,
+	10,
+	["name", "class"],
+])
 checkBlobs("UETakeScreenshot", direct.UETakeScreenshot(), [])
 checkBlobs("UEUMGAddWidget", direct.UEUMGAddWidget(ADV, ADV, ADV, ADV, pos2, size2, rgba, 5), [
 	ADV,

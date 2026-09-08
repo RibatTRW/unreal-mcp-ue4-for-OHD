@@ -45,7 +45,12 @@ export const UESearchAssets = (search_term: string, asset_class?: string, includ
 		limit: jsonArg(limit),
 	})
 
-export const UEGetWorldOutliner = () => renderScript("./scripts/ue_get_world_outliner.py", {})
+export const UEGetWorldOutliner = (limit?: number, offset?: number, fields?: string[]) =>
+	renderScript("./scripts/ue_get_world_outliner.py", {
+		limit: jsonArg(limit),
+		offset: jsonArg(offset),
+		fields: jsonArg(fields),
+	})
 
 export const UEValidateAssets = (asset_paths?: string | string[]) =>
 	renderScript("./scripts/ue_validate_assets.py", {

@@ -31,7 +31,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	manage_editor: {
 		project_info: ["No params. Returns the active project summary."],
 		map_info: ["No params. Returns the current map summary."],
-		world_outliner: ["No params. Lists actors in the current editor world."],
+		world_outliner: [
+			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
+		],
 		run_python: [
 			"Required: code. Use this for UE4.25 Python debugging or gaps not wrapped by a stable action. All code must be Python 2.7-compatible.",
 		],
@@ -147,8 +149,28 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 			"Optional: start_seconds, integration_mode (linear, constant).",
 		],
 	},
+	manage_level: {
+		info: ["No params. Returns the current map summary."],
+		world_outliner: [
+			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
+		],
+		list_actors: [
+			"Optional: limit (default 200, max 2000), offset. Lists actors in the current level with a truncation envelope (total_count, returned_count, truncated).",
+		],
+		create_wall: ["Optional: location, material_path, prefix, segments, segment_length, height, thickness, axis."],
+		create_maze: [
+			"Optional: location, material_path, prefix, rows, cols, cell_size, wall_height, wall_thickness, seed.",
+		],
+		create_pyramid: ["Optional: location, material_path, prefix, levels, block_size."],
+		create_bridge: [
+			"Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height.",
+		],
+		create_town: ["Optional: location, material_path, prefix, rows, cols, spacing."],
+	},
 	manage_level_structure: {
-		world_outliner: ["No params. Lists actors in the current editor world."],
+		world_outliner: [
+			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
+		],
 		create_town: ["Optional: location, material_path, prefix, rows, cols, spacing."],
 		construct_house: [
 			"Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height.",
@@ -234,8 +256,12 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		transform_volume: ["Required: name or actor_name.", "Optional: location, rotation, scale."],
 	},
 	manage_actor: {
-		list: ["No params. Lists actors in the current level."],
-		find: ["Required: pattern or name."],
+		list: [
+			"Optional: limit (default 200, max 2000), offset. Lists actors in the current level with a truncation envelope (total_count, returned_count, truncated).",
+		],
+		find: [
+			"Required: pattern or name. Optional: limit (default 200, max 2000), offset. Searches level actors with a truncation envelope (total_count, returned_count, truncated).",
+		],
 		spawn: ["Optional: type/actor_type/class_name (defaults to StaticMeshActor), name/actor_name, location, rotation."],
 		spawn_blueprint: [
 			"Required: blueprint_name or asset_path.",
