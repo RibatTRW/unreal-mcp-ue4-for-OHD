@@ -476,9 +476,9 @@ These capability areas are intentionally not exposed through the MCP surface in 
 - [x] Improve Code Architecture (Effect-migration phases 0-7 landed)
 - [x] Add Dsh Harness Support (`manage_widget.setup_sidebar_tab` + golden template)
 - [x] Add a agent.md so agents can install it easily (landed as `docs/agent-setup.md`)
-- [ ] Add GitHub Actions CI (then a Tests badge plus required status checks become possible)
+- [x] Add GitHub Actions CI (`.github/workflows/ci.yml` green on main + Tests badge live; `protect-main` ruleset PR-only with required status checks)
 - [x] Cut a first fork release (tags exist, e.g. `2026.5.12-11`; published to npm)
-- [ ] Decide registry identity: keep `io.github.conaman/unreal-mcp-ue4` or rename to the fork
+- [ ] Publish registry rename to `unreal-mcp-ue4-for-ohd` under `io.github.ribattrw` (decision made; merge + publish pending)
 
 ## License
 
