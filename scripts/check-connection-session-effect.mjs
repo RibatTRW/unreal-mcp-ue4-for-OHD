@@ -34,6 +34,7 @@ const serviceMod = require(servicePath)
 
 const {
 	ConnectionSessionService,
+	HEALTHY_CONNECTION_HINT_TTL_MS,
 	makeConnectionSessionLayer,
 	makeConnectionSessionService,
 	makeConnectionRetrySchedule,
@@ -266,6 +267,172 @@ const virtualConnectElapsed = (transport, options = {}) =>
 		getFirstRemoteNode: [{ nodeId: "n2" }],
 	})
 	check("stale-recovers-via-layer", (await withTimeout(runViaLayer(recovering), 15000, "stale-recover")) === "back")
+}
+
+// 6. W2 health hint (report §4 W2): a successful runCommand arms a
+// short-lived hint; a second runCommand within the TTL skips discovery
+// even when hasCommandConnection flaps false; past the TTL it re-probes;
+// a failed ensure never arms the hint (every ensure pays the full retry
+// budget, so the absent-editor envelope is unchanged); a failed command
+// disarms it so the stale-retry path re-probes and recovers.
+{
+	let flap = true
+	const transport = new FakeTransport({
+		hasCommandConnection: () => flap,
+		runCommand: [okRun(lineOut("one")), okRun(lineOut("two"))],
+	})
+	const layer = makeConnectionSessionLayer({ transport, log: silent })
+	const outputs = await withTimeout(
+		Effect.runPromise(
+			Effect.gen(function* () {
+				const service = yield* ConnectionSessionService
+				const out1 = yield* service.runCommand("print(1)")
+				yield* Effect.sync(() => {
+					flap = false
+				})
+				const out2 = yield* service.runCommand("print(2)")
+				return [out1, out2]
+			}).pipe(Effect.provide(layer), Effect.provide(TestContext.TestContext)),
+		),
+		15000,
+		"hint-skip",
+	)
+	check("hint-skip-outputs", JSON.stringify(outputs) === JSON.stringify(["one", "two"]), JSON.stringify(outputs))
+	check("hint-skip-no-discovery", !transport.calls.includes("getFirstRemoteNode"), transport.calls.join(","))
+}
+
+// 7. Past the TTL the hint expires and the next ensure re-probes.
+{
+	let flap = true
+	const transport = new FakeTransport({
+		hasCommandConnection: () => flap,
+		runCommand: [okRun(lineOut("one")), okRun(lineOut('print("rrmcp:init")')), okRun(lineOut("two"))],
+		getFirstRemoteNode: [{ nodeId: "n2" }],
+	})
+	const layer = makeConnectionSessionLayer({ transport, log: silent })
+	const outputs = await withTimeout(
+		Effect.runPromise(
+			Effect.gen(function* () {
+				const service = yield* ConnectionSessionService
+				const out1 = yield* service.runCommand("print(1)")
+				yield* Effect.sync(() => {
+					flap = false
+				})
+				yield* TestClock.adjust("6 seconds")
+				const out2 = yield* service.runCommand("print(2)")
+				return [out1, out2]
+			}).pipe(Effect.provide(layer), Effect.provide(TestContext.TestContext)),
+		),
+		15000,
+		"hint-ttl-expiry",
+	)
+	check("hint-expired-outputs", JSON.stringify(outputs) === JSON.stringify(["one", "two"]), JSON.stringify(outputs))
+	check(
+		"hint-expired-reprobes",
+		transport.calls.filter((call) => call === "getFirstRemoteNode").length === 1,
+		transport.calls.join(","),
+	)
+}
+
+// 8. A failed ensure never arms the hint: two sequential failing
+// runCommands through one service each pay the full 3-attempt budget
+// (6 discoveries total) instead of the second fast-pathing.
+{
+	const transport = new FakeTransport({
+		getFirstRemoteNode: [
+			new Error("e1"),
+			new Error("e2"),
+			new Error("e3"),
+			new Error("e4"),
+			new Error("e5"),
+			new Error("e6"),
+		],
+	})
+	const runUntilFailed = (effect) =>
+		Effect.gen(function* () {
+			const fiber = yield* Effect.fork(Effect.flip(effect))
+			let settled = false
+			let guard = 0
+			while (!settled && guard < 200) {
+				for (let drain = 0; drain < 25 && !settled; drain += 1) {
+					yield* Effect.yieldNow()
+					settled = Option.isSome(yield* Fiber.poll(fiber))
+				}
+				if (!settled) {
+					yield* TestClock.adjust("1 second")
+				}
+				guard += 1
+			}
+			if (!settled) {
+				throw new Error("connect did not settle")
+			}
+			return yield* Fiber.join(fiber)
+		})
+	const layer = makeConnectionSessionLayer({ transport, log: silent })
+	const errors = await withTimeout(
+		Effect.runPromise(
+			Effect.gen(function* () {
+				const service = yield* ConnectionSessionService
+				const first = yield* runUntilFailed(service.runCommand("print(1)"))
+				const second = yield* runUntilFailed(service.runCommand("print(2)"))
+				return [first, second]
+			}).pipe(Effect.provide(layer), Effect.provide(TestContext.TestContext)),
+		),
+		15000,
+		"hint-never-armed",
+	)
+	check(
+		"hint-failed-ensure-surfaces-last",
+		errors[0]?.cause?.message === "e3" && errors[1]?.cause?.message === "e6",
+		JSON.stringify(errors.map((error) => error?.cause?.message)),
+	)
+	check(
+		"hint-failed-ensure-full-budget",
+		transport.calls.filter((call) => call === "getFirstRemoteNode").length === 6,
+		transport.calls.join(","),
+	)
+}
+
+// 9. A failed command disarms the hint: after one success, a throw on the
+// fast path still closes, re-probes once, and recovers on the retry.
+{
+	let flap = true
+	const transport = new FakeTransport({
+		hasCommandConnection: () => flap,
+		runCommand: [
+			okRun(lineOut("one")),
+			new Error("socket died"),
+			okRun(lineOut('print("rrmcp:init")')),
+			okRun(lineOut("recovered")),
+		],
+		getFirstRemoteNode: [{ nodeId: "n2" }],
+	})
+	const layer = makeConnectionSessionLayer({ transport, log: silent })
+	const outputs = await withTimeout(
+		Effect.runPromise(
+			Effect.gen(function* () {
+				const service = yield* ConnectionSessionService
+				const out1 = yield* service.runCommand("print(1)")
+				yield* Effect.sync(() => {
+					flap = false
+				})
+				const out2 = yield* service.runCommand("print(2)")
+				return [out1, out2]
+			}).pipe(Effect.provide(layer), Effect.provide(TestContext.TestContext)),
+		),
+		15000,
+		"hint-disarm",
+	)
+	check(
+		"hint-disarm-recovers",
+		JSON.stringify(outputs) === JSON.stringify(["one", "recovered"]),
+		JSON.stringify(outputs),
+	)
+	check(
+		"hint-disarm-reprobes-once",
+		transport.calls.filter((call) => call === "getFirstRemoteNode").length === 1,
+		transport.calls.join(","),
+	)
 }
 
 if (failures.length > 0) {
