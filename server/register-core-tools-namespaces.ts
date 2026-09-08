@@ -31,7 +31,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	manage_editor: {
 		project_info: ["No params. Returns the active project summary."],
 		map_info: ["No params. Returns the current map summary."],
-		world_outliner: ["No params. Lists actors in the current editor world."],
+		world_outliner: [
+			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
+		],
 		run_python: [
 			"Required: code. Use this for UE4.25 Python debugging or gaps not wrapped by a stable action. All code must be Python 2.7-compatible.",
 		],

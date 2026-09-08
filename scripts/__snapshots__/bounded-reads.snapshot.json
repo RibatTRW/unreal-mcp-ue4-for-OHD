@@ -1,0 +1,200 @@
+{
+  "cases": [
+    {
+      "case": "outliner/defaults",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "components",
+        "folder_path",
+        "is_hidden",
+        "label",
+        "location",
+        "name",
+        "rotation",
+        "scale"
+      ],
+      "last": "actor_0199",
+      "limit": 200,
+      "offset": 0,
+      "returned_count": 200,
+      "total_count": 250,
+      "truncated": true
+    },
+    {
+      "case": "outliner/page2",
+      "first": "actor_0200",
+      "keys": [
+        "class",
+        "components",
+        "folder_path",
+        "is_hidden",
+        "label",
+        "location",
+        "name",
+        "rotation",
+        "scale"
+      ],
+      "last": "actor_0249",
+      "limit": 200,
+      "offset": 200,
+      "returned_count": 50,
+      "total_count": 250,
+      "truncated": false
+    },
+    {
+      "case": "outliner/beyond",
+      "limit": 200,
+      "offset": 500,
+      "returned_count": 0,
+      "total_count": 250,
+      "truncated": false
+    },
+    {
+      "case": "outliner/zero-limit",
+      "limit": 0,
+      "offset": 0,
+      "returned_count": 0,
+      "total_count": 250,
+      "truncated": true
+    },
+    {
+      "case": "outliner/clamped",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "components",
+        "folder_path",
+        "is_hidden",
+        "label",
+        "location",
+        "name",
+        "rotation",
+        "scale"
+      ],
+      "last": "actor_0249",
+      "limit": 2000,
+      "offset": 0,
+      "returned_count": 250,
+      "total_count": 250,
+      "truncated": false
+    },
+    {
+      "case": "outliner/fields",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "name"
+      ],
+      "last": "actor_0199",
+      "limit": 200,
+      "offset": 0,
+      "returned_count": 200,
+      "total_count": 250,
+      "truncated": true
+    },
+    {
+      "case": "outliner/small",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "components",
+        "folder_path",
+        "is_hidden",
+        "label",
+        "location",
+        "name",
+        "rotation",
+        "scale"
+      ],
+      "last": "actor_0002",
+      "limit": 200,
+      "offset": 0,
+      "returned_count": 3,
+      "total_count": 3,
+      "truncated": false
+    },
+    {
+      "case": "outliner/broken",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "components",
+        "folder_path",
+        "is_hidden",
+        "label",
+        "location",
+        "name",
+        "rotation",
+        "scale"
+      ],
+      "last": "actor_0003",
+      "limit": 200,
+      "offset": 0,
+      "returned_count": 3,
+      "total_count": 4,
+      "truncated": false
+    },
+    {
+      "case": "actor-list/defaults",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "label",
+        "name"
+      ],
+      "last": "actor_0199",
+      "limit": 200,
+      "offset": 0,
+      "returned_count": 200,
+      "total_count": 250,
+      "truncated": true
+    },
+    {
+      "case": "actor-list/paged",
+      "first": "actor_0100",
+      "keys": [
+        "class",
+        "label",
+        "name"
+      ],
+      "last": "actor_0149",
+      "limit": 50,
+      "offset": 100,
+      "returned_count": 50,
+      "total_count": 250,
+      "truncated": true
+    },
+    {
+      "case": "actor-find/narrow",
+      "first": "actor_0000",
+      "keys": [
+        "class",
+        "label",
+        "name"
+      ],
+      "last": "actor_0099",
+      "limit": 200,
+      "offset": 0,
+      "returned_count": 100,
+      "total_count": 100,
+      "truncated": false
+    },
+    {
+      "case": "actor-find/paged",
+      "first": "actor_0060",
+      "keys": [
+        "class",
+        "label",
+        "name"
+      ],
+      "last": "actor_0109",
+      "limit": 50,
+      "offset": 60,
+      "returned_count": 50,
+      "total_count": 250,
+      "truncated": true
+    }
+  ],
+  "version": 1
+}

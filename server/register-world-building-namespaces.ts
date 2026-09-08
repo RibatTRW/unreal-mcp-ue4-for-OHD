@@ -156,9 +156,21 @@ export function worldBuildingDescriptors(
 				info: shared.map_info,
 				world_outliner: shared.world_outliner,
 				list_actors: {
-					handler: () =>
+					paramsSchema: z
+						.object({
+							limit: z.number().int().min(0).max(2000).optional(),
+							offset: z.number().int().min(0).optional(),
+						})
+						.strict(),
+					handler: (params: Record<string, any>) =>
 						Effect.try({
-							try: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("get_actors_in_level", {
+										limit: typeof params.limit === "number" ? params.limit : undefined,
+										offset: typeof params.offset === "number" ? params.offset : undefined,
+									}),
+								),
 							catch: (cause) => cause as ToolError,
 						}),
 				},

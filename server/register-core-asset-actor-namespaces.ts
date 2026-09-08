@@ -343,9 +343,21 @@ export function coreAssetActorDescriptors(
 			description: describeTool("manage_actor"),
 			actions: {
 				list: {
-					handler: () =>
+					paramsSchema: z
+						.object({
+							limit: z.number().int().min(0).max(2000).optional(),
+							offset: z.number().int().min(0).optional(),
+						})
+						.strict(),
+					handler: (params) =>
 						Effect.try({
-							try: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
+							try: () =>
+								pythonDispatch(
+									editorTools.UEActorTool("get_actors_in_level", {
+										limit: typeof params.limit === "number" ? params.limit : undefined,
+										offset: typeof params.offset === "number" ? params.offset : undefined,
+									}),
+								),
 							catch: (cause) => cause as ToolError,
 						}),
 				},
@@ -355,6 +367,8 @@ export function coreAssetActorDescriptors(
 							.object({
 								pattern: z.string().optional(),
 								name: z.string().optional(),
+								limit: z.number().int().min(0).max(2000).optional(),
+								offset: z.number().int().min(0).optional(),
 							})
 							.strict(),
 						["pattern", "name"],
@@ -366,6 +380,8 @@ export function coreAssetActorDescriptors(
 								pythonDispatch(
 									editorTools.UEActorTool("find_actors_by_name", {
 										pattern: requiredStringParam(params, ["pattern", "name"]),
+										limit: typeof params.limit === "number" ? params.limit : undefined,
+										offset: typeof params.offset === "number" ? params.offset : undefined,
 									}),
 								),
 							catch: (cause) => cause as ToolError,

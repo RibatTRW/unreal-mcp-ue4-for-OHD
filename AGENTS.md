@@ -82,6 +82,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `inputSchema` (SDK pre-validates before our callback — strict check runs inside), so the surface
   snapshot will move when Phase 5 migrates the first action; handler params are `ActionParams`
   (`Record<string, unknown>`), param-helper throws are `MissingParamError` with `.message` aligned.
+  Sharp edge: constraint violations (negative/non-integer/over-max) on all-optional strict-union
+  members match NO member, so the SDK gate rejects them with -32602 before dispatch — the
+  `Invalid params` envelope only renders when the payload matches another member first.
 - `test:no-unreal` also runs `scripts/check-tool-surface.mjs` (listTools snapshot
   in `scripts/__snapshots__/`), `scripts/check-schema-parity.mjs` (Zod↔Schema matrix),
   `scripts/check-connection-session.mjs` (fake-transport scenarios over the `ConnectionSession`
@@ -90,7 +93,11 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   health-hint arm/expire/disarm) and
   `scripts/check-dispatch-envelope.mjs` (live invalid-params + handler-throw envelopes snapshotted in
   `scripts/__snapshots__/dispatch-envelope.snapshot.json`, plus dispatch-unit coverage of the Zod/Schema/
-  throw/Effect-handler paths).
+  throw/Effect-handler paths) and `scripts/check-bounded-reads.mjs` (S3 paged reads: invalid
+  limit/offset/fields envelopes + valid-path arg forwarding via dispatch-unit over the real
+  registrations, truncation snapshot on a stubbed large payload in
+  `scripts/__snapshots__/bounded-reads.snapshot.json` via `scripts/stub-bounded-reads.py`,
+  synthetic N=2000 byte proxy).
 - Emit target is ES2022 (`tsconfig.json` owns it; `scripts/build.mjs` passes no overrides), proven on Node 18.
 - Phase 7 dependency cleanup: zod KEPT, no `package.json` change. Evidence: the SDK accepts
   only Zod at the call-site (`getZodSchemaObject` throws otherwise — installed

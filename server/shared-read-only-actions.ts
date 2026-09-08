@@ -53,7 +53,21 @@ export function sharedReadOnlyActions(
 			handler: (params) => pythonDispatch(editorTools.UEValidateAssets(assetPathListParam(params))),
 		},
 		world_outliner: {
-			handler: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
+			paramsSchema: z
+				.object({
+					limit: z.number().int().min(0).max(2000).optional(),
+					offset: z.number().int().min(0).optional(),
+					fields: z.array(z.string()).optional(),
+				})
+				.strict(),
+			handler: (params) =>
+				pythonDispatch(
+					editorTools.UEGetWorldOutliner(
+						typeof params.limit === "number" ? params.limit : undefined,
+						typeof params.offset === "number" ? params.offset : undefined,
+						Array.isArray(params.fields) ? (params.fields as string[]) : undefined,
+					),
+				),
 		},
 	}
 }
