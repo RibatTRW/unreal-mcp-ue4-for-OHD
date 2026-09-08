@@ -14,7 +14,7 @@
     "prepack": "npm run build",
     "start": "node dist/bin.js",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "test:no-unreal": "npm run build && node scripts/no-unreal-smoke.mjs && node scripts/check-payload-codec.mjs && node scripts/check-batch-prototype.mjs && node scripts/check-tool-surface.mjs && node scripts/check-dispatch-envelope.mjs && node scripts/check-schema-parity.mjs && node scripts/check-connection-session.mjs && node scripts/check-connection-session-effect.mjs",
+    "test:no-unreal": "npm run build && node scripts/no-unreal-smoke.mjs && node scripts/check-payload-codec.mjs && node scripts/check-batch-prototype.mjs && node scripts/check-prelude-cache.mjs && node scripts/check-tool-surface.mjs && node scripts/check-dispatch-envelope.mjs && node scripts/check-schema-parity.mjs && node scripts/check-connection-session.mjs && node scripts/check-connection-session-effect.mjs",
     "typecheck": "tsc --noEmit",
     "check:py27": "node scripts/check-py27.mjs",
     "check:compat-direction": "node scripts/check-compat-direction.mjs",
