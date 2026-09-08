@@ -110,9 +110,8 @@ TypeScript 7 native toolchain (`tsc -p tsconfig.json`, ES2022, Node 18 proven), 
 | Item | Shape |
 |------|-------|
 | Prelude cache | static Python prelude cached in the editor session behind the render seam; cacheable renders are ~1–5% of full bytes, miss resends once (`scripts/check-prelude-cache.mjs`) |
-| Schema compaction | six heaviest tool schemas compacted to cut the `listTools` payload; surface pinned by `scripts/__snapshots__/list-tools.snapshot.json` (`scripts/check-tool-surface.mjs`) |
-| Bounded reads | shared `limit`/`offset` validation fragments for paged reads |
-| Validation fragments | canonical `limit`/asset-path validators shared across namespaces |
+| Schema compaction | seven heaviest tool schemas compacted to cut the `listTools` payload; surface pinned by `scripts/__snapshots__/list-tools.snapshot.json` (`scripts/check-tool-surface.mjs`) |
+| Validation fragments | shared `limit`/asset-path validators used across namespaces |
 | Batch design | harness-level chaining memo in [docs/w1-batch-design-memo.md](docs/w1-batch-design-memo.md), offline prototype green (`scripts/check-batch-prototype.mjs`); live gate not run |
 | Connect health-hint | short-lived healthy-connection hint skips redundant reconnects |
 
@@ -140,7 +139,7 @@ Success = `[PASS]` on every step; actor tests visibly create then remove temp ac
 
 ## Publishing
 
-Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-11`):
+Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-11`) — bump it, then:
 
 ```bash
 npm run publish:check                                  # typecheck + rebuild + tarball dry-run
@@ -463,7 +462,7 @@ These capability areas are intentionally not exposed through the MCP surface in 
 - **`Remote node is not available`**: open the editor fully first; verify `Python Editor Script Plugin`, `Editor Scripting Utilities`, and `Enable Remote Execution` are enabled; restart after changing any of them.
 - **Connection/discovery on Windows**: allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall. Discovery is UDP multicast on `239.0.0.1:6766`, command channel on `6776`. Override the bind address with `UNREAL_MCP_BIND_ADDRESS` or `UNREAL_MCP_COMMAND_ADDRESS` when the editor can't discover/connect. In JSON configs, escape backslashes or use forward slashes.
 - **Client can't find `unreal-mcp-ue4` or `node`**: put the npm global binary dir on the client's `PATH` (or use the absolute `unreal-mcp-ue4` path); for source checkouts use the absolute `node`/`node.exe` path instead of relying on `PATH`.
-- **Blueprint graph / UMG binding commands unavailable**: expected — Widget creation + tree editing work, but delegate bindings and runtime viewport flows don't; Blueprint asset/component/compile + summaries work, but graph inspection, pin wiring, and variable/function metadata are excluded (stock UE4.25 Python doesn't expose them). Full list under `Excluded Capability Areas` below.
+- **Blueprint graph / UMG binding commands unavailable**: expected — Widget creation + tree editing work, but delegate bindings and runtime viewport flows don't; Blueprint asset/component/compile + summaries work, but graph inspection, pin wiring, and variable/function metadata are excluded (stock UE4.25 Python doesn't expose them). Full list under `Excluded Capability Areas` above.
 
 ## Notes and Limitations
 
