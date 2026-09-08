@@ -126,8 +126,8 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   cacheable path is exercised only through the renderers until a later ship flips callers.
 - Editor protocol notes: store lives in `sys.modules["rrmcp_preludes"]` keyed by sha1 of the
   exact static prefix (content addressing = staleness guard) plus a `__rrmcp_version__`
-  protocol guard; warm path merges the snapshot via `globals().update` then runs the
-  literal tail (py2.7 `exec X in Y` form is required — `exec(x, y)` execs a tuple on py2);
+  protocol guard; warm path merges the snapshot via `globals().update` then the literal
+  tail runs unmodified in the same payload (no `exec` involved);
   miss prints exactly one `rrmcp:cache-miss:<hash>` line and never runs the tail; TS resends
   the registering full payload exactly once (`runWithPreludeCacheFallback`, generic over
   the Effect failure channel — composes with `ConnectionSessionService.runCommand`

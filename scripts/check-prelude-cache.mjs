@@ -146,7 +146,7 @@ for (const { label, full, file, vars, extra, isDomain } of baseline) {
 check("miss-clean-output", preludeCache.isPreludeCacheMiss('{"success":true}') === false)
 check(
 	"miss-marker-output",
-	preludeCache.isPreludeCacheMiss('noise\nrrmcp:cache-miss:abc123\nTraceback (most recent call last)') === true,
+	preludeCache.isPreludeCacheMiss("noise\nrrmcp:cache-miss:abc123\nTraceback (most recent call last)") === true,
 )
 check("miss-hash-filter-hit", preludeCache.isPreludeCacheMiss("rrmcp:cache-miss:abc123", "abc123") === true)
 check("miss-hash-filter-miss", preludeCache.isPreludeCacheMiss("rrmcp:cache-miss:abc123", "deadbee") === false)
@@ -224,9 +224,7 @@ class FakeTransport {
 
 const editor = new MiniFakeEditor()
 const transport = new FakeTransport(editor)
-const service = await Effect.runPromise(
-	makeConnectionSessionService({ transport, log: () => {} }),
-)
+const service = await Effect.runPromise(makeConnectionSessionService({ transport, log: () => {} }))
 const run = (command) => service.runCommand(command)
 const runPromise = (effect) => Effect.runPromise(effect)
 

@@ -230,14 +230,7 @@ const cachedCases = [
 		false,
 		[ADV, ADV, true, 7],
 	],
-	[
-		"UEGetAssetInfo.cached",
-		"./scripts/ue_get_asset_info.py",
-		{ asset_path: jsonArg(ADV) },
-		"",
-		false,
-		[ADV],
-	],
+	["UEGetAssetInfo.cached", "./scripts/ue_get_asset_info.py", { asset_path: jsonArg(ADV) }, "", false, [ADV]],
 ]
 
 for (const [label, file, vars, extra, isDomain, expected] of cachedCases) {
@@ -252,7 +245,9 @@ for (const [label, file, vars, extra, isDomain, expected] of cachedCases) {
 	try {
 		;({ tail } = preludeCache.splitCachedScript(rendered))
 	} catch (error) {
-		failures.push(`${label}: splitCachedScript threw: ${error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120)}`)
+		failures.push(
+			`${label}: splitCachedScript threw: ${error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120)}`,
+		)
 		continue
 	}
 	checkBlobs(label, tail, expected)
