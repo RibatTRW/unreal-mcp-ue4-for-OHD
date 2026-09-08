@@ -150,7 +150,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		],
 	},
 	manage_level_structure: {
-		world_outliner: ["No params. Lists actors in the current editor world."],
+		world_outliner: [
+			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
+		],
 		create_town: ["Optional: location, material_path, prefix, rows, cols, spacing."],
 		construct_house: [
 			"Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height.",
@@ -236,8 +238,12 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		transform_volume: ["Required: name or actor_name.", "Optional: location, rotation, scale."],
 	},
 	manage_actor: {
-		list: ["No params. Lists actors in the current level."],
-		find: ["Required: pattern or name."],
+		list: [
+			"Optional: limit (default 200, max 2000), offset. Lists actors in the current level with a truncation envelope (total_count, returned_count, truncated).",
+		],
+		find: [
+			"Required: pattern or name. Optional: limit (default 200, max 2000), offset. Searches level actors with a truncation envelope (total_count, returned_count, truncated).",
+		],
 		spawn: ["Optional: type/actor_type/class_name (defaults to StaticMeshActor), name/actor_name, location, rotation."],
 		spawn_blueprint: [
 			"Required: blueprint_name or asset_path.",

@@ -24,8 +24,8 @@
 // Runs against dist/ (like check-schema-parity.mjs): run `npm run build` first.
 
 import { execFileSync } from "node:child_process"
-import { createRequire } from "node:module"
 import fs from "node:fs"
+import { createRequire } from "node:module"
 import path from "node:path"
 import process from "node:process"
 import { fileURLToPath } from "node:url"
@@ -142,14 +142,13 @@ async function runDispatchMatrix() {
 	})
 
 	const ctx = { ...schemaHelpers, ...paramHelpers, ...dispatch }
-	for (const descriptors of [coreAssetActorDescriptors(ctx), coreEditorDescriptors(ctx), worldBuildingDescriptors(ctx)]) {
+	for (const descriptors of [
+		coreAssetActorDescriptors(ctx),
+		coreEditorDescriptors(ctx),
+		worldBuildingDescriptors(ctx),
+	]) {
 		for (const descriptor of descriptors) {
-			dispatch.registerToolNamespace(
-				descriptor.name,
-				descriptor.description,
-				descriptor.actions,
-				descriptor.options,
-			)
+			dispatch.registerToolNamespace(descriptor.name, descriptor.description, descriptor.actions, descriptor.options)
 		}
 	}
 
@@ -260,7 +259,11 @@ async function runDispatchMatrix() {
 function runStubSnapshot(update) {
 	let stdout
 	try {
-		stdout = execFileSync("python3", [stubScript], { cwd: repoRoot, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+		stdout = execFileSync("python3", [stubScript], {
+			cwd: repoRoot,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "pipe"],
+		})
 	} catch (error) {
 		check("stub harness exits 0", false, String(error?.stderr ?? error?.message ?? error).slice(0, 500))
 		return
