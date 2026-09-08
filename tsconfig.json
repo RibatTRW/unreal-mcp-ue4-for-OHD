@@ -13,7 +13,14 @@
     "noUnusedParameters": false,
     "preserveWatchOutput": true,
     "strictNullChecks": true,
-    "module": "commonjs",
+    // TS7 pairing for CommonJS output: moduleResolution nodenext requires
+    // module nodenext. package.json has no "type" field, so every .ts
+    // file still compiles to CJS (require/exports) exactly as before.
+    "module": "nodenext",
+    // TS7 removed moduleResolution node/node10/classic: nodenext is the
+    // supported resolver for CommonJS output (extensionless relative
+    // imports and package exports both resolve as before).
+    "moduleResolution": "nodenext",
     "target": "es2022",
     // Pin legacy class-field assignment semantics: the ES2022 target would
     // otherwise flip useDefineForClassFields to true and change runtime emit
@@ -21,6 +28,12 @@
     // Phase-0 scaffolding must not change runtime behavior.
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
+    // TS7 defaults types to [] (no automatic @types inclusion): list node
+    // explicitly so Node globals (process, Buffer, __dirname) resolve.
+    "types": ["node"],
+    // TS7 defaults rootDir to ./ : pin it to server/ so emit layout stays
+    // dist/<relative-to-server> instead of dist/server/... .
+    "rootDir": "server",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
