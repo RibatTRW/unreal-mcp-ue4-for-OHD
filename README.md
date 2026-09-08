@@ -1,7 +1,7 @@
 # unreal-mcp-ue4-for-OHD
 > UE4.25.4-focused MCP server for Operation Harsh Doorstop modding using Unreal Python Remote Execution
 
-<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node 18+" src="https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"></div>
+<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node 18+" src="https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"></div>
 
 `unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first. This fork retargets that server to UE4.25.4 for the Operation Harsh Doorstop mod kit (OHDCore Mod Kit): same transport and tool surface, version pins, docs links, and Python-dialect constraints adjusted for the kit's embedded Python 2.7.
 
