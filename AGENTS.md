@@ -115,6 +115,30 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   that churn so the dep diff stays one line. The lockfile carries one `@typescript/native-*`
   entry per platform (expected for the native-binary distribution model).
 
+## Editor-side prelude cache (SHIP-S1)
+
+- Payload shapes (`server/editor/script-renderer.ts`, protocol in `server/editor/prelude-cache.ts`,
+  editor snippets `server/editor/scripts/ue_prelude_cache_{shim,register}.py`): default
+  `PRELUDE + TAIL` (byte-identical to pre-S1), opt-in `cacheable` → `SHIM(hash) + TAIL`
+  (1–5% of full bytes on the baseline set), `registerCache` → full + registration trailer.
+  One flag (`{ cacheable?: boolean }`) on `renderScript`/`renderDomainScript`
+  (`server/editor/tools-base.ts`); domain/direct builders and dispatch are untouched, so the
+  cacheable path is exercised only through the renderers until a later ship flips callers.
+- Editor protocol notes: store lives in `sys.modules["rrmcp_preludes"]` keyed by sha1 of the
+  exact static prefix (content addressing = staleness guard) plus a `__rrmcp_version__`
+  protocol guard; warm path merges the snapshot via `globals().update` then the literal
+  tail runs unmodified in the same payload (no `exec` involved);
+  miss prints exactly one `rrmcp:cache-miss:<hash>` line and never runs the tail; TS resends
+  the registering full payload exactly once (`runWithPreludeCacheFallback`, generic over
+  the Effect failure channel — composes with `ConnectionSessionService.runCommand`
+  without touching the service). Snippet placeholders are plain `__RRMCP_PRELUDE_HASH__`
+  tokens (never `${...}`, which would trip the codec/`${` checks); the `.py` snippets are
+  covered by the stock `check-py27` gate.
+- Permanent harness: `scripts/check-prelude-cache.mjs` (wired into `test:no-unreal`)
+  asserts cacheable ≤10% of full bytes over actor-list/asset-search/sequence-create/pie_start,
+  tail byte-identity vs the default render, and fake-transport scenarios (full first,
+  tail-only second, exactly one resend on simulated miss) through the real service.
+
 ## Tool catalog (W3)
 
 - Tool name/category/description live co-located with registration in `server/register-*.ts`

@@ -29,6 +29,18 @@ const require = createRequire(import.meta.url)
 const direct = require(toolsDirectPath)
 const domain = require(toolsDomainPath)
 const { renderEditorScript, jsonArg } = require(scriptRendererPath)
+const toolsBasePath = path.join(repoRoot, "dist", "editor", "tools-base.js")
+const preludeCachePath = path.join(repoRoot, "dist", "editor", "prelude-cache.js")
+const preludeLoaderPath = path.join(repoRoot, "dist", "editor", "prelude-loader.js")
+for (const required of [toolsBasePath, preludeCachePath, preludeLoaderPath]) {
+	if (!fs.existsSync(required)) {
+		console.error("check-payload-codec: dist/ is missing — run `npm run build` first.")
+		process.exit(2)
+	}
+}
+const toolsBase = require(toolsBasePath)
+const preludeCache = require(preludeCachePath)
+const { editorPreludes } = require(preludeLoaderPath)
 
 // Brutal by design: quotes, backslashes, JS-template and Python-quote
 // breakage attempts, newlines, non-ascii, and a triple-quote sequence.
@@ -197,6 +209,48 @@ try {
 	failures.push(
 		`renderEditorScript.extra-var: extra values must be ignored, threw: ${error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120)}`,
 	)
+}
+
+// SHIP-S1: cacheable renders carry the same substituted tail behind the
+// warm-path shim — the codec blobs inside the tail must decode
+// byte-identically to the default path. Each case mirrors its builder
+// (same file, vars, extraPrelude, domain-vs-direct) with cacheable on,
+// then the shim is split back off and the tail is checked as usual.
+const cachedCases = [
+	[
+		"UESearchAssets.cached",
+		"./scripts/ue_search_assets.py",
+		{
+			search_term: jsonArg(ADV),
+			asset_class: jsonArg(ADV),
+			include_engine: jsonArg(true),
+			limit: jsonArg(7),
+		},
+		"",
+		false,
+		[ADV, ADV, true, 7],
+	],
+	["UEGetAssetInfo.cached", "./scripts/ue_get_asset_info.py", { asset_path: jsonArg(ADV) }, "", false, [ADV]],
+]
+
+for (const [label, file, vars, extra, isDomain, expected] of cachedCases) {
+	const rendered = isDomain
+		? toolsBase.renderDomainScript(file, vars, extra, { cacheable: true })
+		: toolsBase.renderScript(file, vars, extra, { cacheable: true })
+	if (rendered.includes("${")) {
+		failures.push(`${label}: cacheable payload still contains an unrendered \${...}`)
+		continue
+	}
+	let tail
+	try {
+		;({ tail } = preludeCache.splitCachedScript(rendered))
+	} catch (error) {
+		failures.push(
+			`${label}: splitCachedScript threw: ${error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120)}`,
+		)
+		continue
+	}
+	checkBlobs(label, tail, expected)
 }
 
 if (failures.length > 0) {
