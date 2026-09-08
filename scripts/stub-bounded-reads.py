@@ -251,6 +251,12 @@ result = get_world_outliner(None, None, ["nope"])
 check("outliner unknown fields ignored", all(a == {} for a in result["actors"]),
       str(result["actors"][:1]))
 
+result = get_world_outliner(None, None, [])
+check("outliner empty fields project to empty", all(a == {} for a in result["actors"]),
+      str(result["actors"][:1]))
+check("outliner empty fields still paged",
+      (result["returned_count"], result["truncated"]) == (200, True))
+
 # --- world_outliner, small world (legacy shape preserved) ---------------
 set_world(3)
 result = get_world_outliner()
@@ -318,6 +324,17 @@ check("actor find empty", (result["count"], result["actors"], result["truncated"
 result = find_actors_by_name({"pattern": "   "})
 check("actor find blank still rejected",
       result["success"] is False and result["message"] == "Pattern is required")
+
+set_world(10)
+CURRENT_ACTORS[3].get_actor_label = lambda: None
+result = find_actors_by_name({"pattern": "zzz_no_match"})
+check("actor find None label no crash",
+      result["actors"] == [] and result["total_count"] == 0,
+      json.dumps({"total_count": result.get("total_count"), "returned": result.get("returned_count")}))
+result = find_actors_by_name({"pattern": "actor_0003"})
+check("actor find None label still matched by name",
+      len(result["actors"]) == 1 and result["actors"][0]["name"] == "actor_0003",
+      str(result["actors"][:1]))
 
 if FAILURES:
     sys.stderr.write("stub-bounded-reads: FAIL (%d/%d):\n" % (len(FAILURES), CHECKS))

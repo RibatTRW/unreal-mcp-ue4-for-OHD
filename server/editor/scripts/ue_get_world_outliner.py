@@ -47,7 +47,7 @@ def normalize_fields(fields):
                 continue
             if text and text not in names:
                 names.append(text)
-        return names or None
+        return names
     try:
         text = unreal_text(fields)
     except Exception:
@@ -56,7 +56,7 @@ def normalize_fields(fields):
 
 
 def project_actor_fields(actor_info, fields):
-    if not fields:
+    if fields is None:
         return actor_info
     projected = {}
     for name in fields:
