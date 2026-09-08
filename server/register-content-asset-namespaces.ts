@@ -6,8 +6,10 @@ import {
 	actorNameSchema,
 	actorNameShape,
 	assetLookupSchema,
+	assetPathParam,
 	blueprintNameShape,
 	materialColorShape,
+	pagedReadParams,
 	requireAtLeastOneValue,
 	searchAssetsShape,
 } from "./namespace-action-schema-fragments.js"
@@ -109,7 +111,7 @@ export function contentAssetDescriptors(
 							search_term: z.string().optional(),
 							query: z.string().optional(),
 							include_engine: z.boolean().optional(),
-							limit: z.number().optional(),
+							...pagedReadParams,
 						})
 						.strict(),
 					handler: (params) =>
@@ -187,7 +189,7 @@ export function contentAssetDescriptors(
 								actor_name: z.string().optional(),
 								name: z.string().optional(),
 								blueprint_name: z.string().optional(),
-								asset_path: z.string().optional(),
+								asset_path: assetPathParam,
 								component_name: z.string().optional(),
 								material_path: z.string().optional(),
 								slot_index: z.number().optional(),
@@ -289,7 +291,7 @@ export function contentAssetDescriptors(
 							pattern: z.string().optional(),
 							name: z.string().optional(),
 							include_engine: z.boolean().optional(),
-							limit: z.number().optional(),
+							...pagedReadParams,
 						})
 						.strict(),
 					handler: (params) =>

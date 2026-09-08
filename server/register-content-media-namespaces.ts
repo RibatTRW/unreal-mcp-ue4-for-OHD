@@ -2,7 +2,12 @@ import { Effect } from "effect"
 import { z } from "zod"
 import type { ToolError } from "./effect/errors.js"
 
-import { assetLookupSchema, requireAtLeastOneValue, searchAssetsShape } from "./namespace-action-schema-fragments.js"
+import {
+	assetLookupSchema,
+	assetPathParam,
+	requireAtLeastOneValue,
+	searchAssetsShape,
+} from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams } from "./registration-context.js"
 import type { ToolCatalogEntry } from "./tool-catalog-types.js"
 import { createToolDescriptionLookup } from "./tool-catalog-types.js"
@@ -34,7 +39,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 
 	const sequenceAssetShape = {
 		sequence_path: z.string().optional(),
-		asset_path: z.string().optional(),
+		asset_path: assetPathParam,
 		path: z.string().optional(),
 		name: z.string().optional(),
 	}
@@ -142,6 +147,9 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 					paramsSchema: sequenceParamsSchema({
 						include_channels: z.boolean().optional(),
 						include_keys: z.boolean().optional(),
+						// S4 outlier: `key_limit` names a different key than the
+						// canonical `limit` fragment, so renaming it to unify would
+						// change the surface. Stays inline; see limitParam.
 						key_limit: z.number().optional(),
 					}),
 					handler: (params) =>

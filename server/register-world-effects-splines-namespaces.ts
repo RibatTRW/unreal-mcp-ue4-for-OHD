@@ -5,6 +5,7 @@ import type { ToolError } from "./effect/errors.js"
 import {
 	actorNameSchema,
 	actorNameShape,
+	assetPathParam,
 	blueprintNameShape,
 	materialColorShape,
 	requireAtLeastOneValue,
@@ -54,7 +55,7 @@ export function worldEffectsSplineDescriptors(
 
 	const blueprintTargetNoNameShape = {
 		blueprint_name: z.string().optional(),
-		asset_path: z.string().optional(),
+		asset_path: assetPathParam,
 	}
 
 	return [
