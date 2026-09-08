@@ -149,6 +149,24 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 			"Optional: start_seconds, integration_mode (linear, constant).",
 		],
 	},
+	manage_level: {
+		info: ["No params. Returns the current map summary."],
+		world_outliner: [
+			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
+		],
+		list_actors: [
+			"Optional: limit (default 200, max 2000), offset. Lists actors in the current level with a truncation envelope (total_count, returned_count, truncated).",
+		],
+		create_wall: ["Optional: location, material_path, prefix, segments, segment_length, height, thickness, axis."],
+		create_maze: [
+			"Optional: location, material_path, prefix, rows, cols, cell_size, wall_height, wall_thickness, seed.",
+		],
+		create_pyramid: ["Optional: location, material_path, prefix, levels, block_size."],
+		create_bridge: [
+			"Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height.",
+		],
+		create_town: ["Optional: location, material_path, prefix, rows, cols, spacing."],
+	},
 	manage_level_structure: {
 		world_outliner: [
 			"Optional: limit (default 200, max 2000), offset, fields. Lists actors in the current editor world with a truncation envelope (total_count, returned_count, truncated).",
