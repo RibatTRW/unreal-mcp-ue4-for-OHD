@@ -15,8 +15,11 @@ Check each item resolves to a working binary:
 ```bash
 node --version   # expect v18 or newer (package.json engines: node >= 18)
 npm --version    # expect npm 10+ (packageManager pins npm@10.8.1)
-npx tsc --version  # expect 7.x (TypeScript 7 native toolchain; runs via the workspace tsc, no compiler API)
 ```
+
+The TypeScript check lives in Step 2 (after `npm install`): on a fresh clone
+`npx tsc` resolves to an unrelated registry placeholder, not the workspace
+TypeScript 7 toolchain.
 
 Toolchain notes: `tsconfig.json` owns the emit settings (`target es2022`,
 `module`/`moduleResolution` `nodenext` still emitting CJS, `rootDir server/`,
@@ -30,7 +33,7 @@ Unreal Editor state (needed from Step 6 on; Steps 1–5 run without it):
   and `Edit -> Project Settings -> Plugins -> Python -> Enable Remote
   Execution` on. Full editor walkthrough: README `Editor remote execution`.
 
-Done when: `node --version` reports 18+ and `npx tsc --version` reports 7.x.
+Done when: `node --version` reports 18+.
 
 ## Step 1 — Get the source
 
@@ -51,7 +54,9 @@ npm install
 (`npm install` may reformat `package.json` array whitespace; leave that churn
 out of any commit. CI installs with `npm ci`.)
 
-Done when: `node_modules/` exists and the command exits 0.
+Done when: `node_modules/` exists, the command exits 0, and `npx tsc --version`
+reports 7.x (TypeScript 7 native toolchain; runs via the workspace tsc installed
+by this step, no compiler API).
 
 ## Step 3 — Build
 
