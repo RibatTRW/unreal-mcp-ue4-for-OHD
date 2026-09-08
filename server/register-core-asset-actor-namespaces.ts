@@ -334,6 +334,7 @@ export function coreAssetActorDescriptors(
 				},
 				validate: shared.validate_assets,
 			},
+			options: { compactParamsSchema: true },
 		},
 		{
 			name: "manage_actor",
@@ -517,6 +518,7 @@ export function coreAssetActorDescriptors(
 						}),
 				},
 			},
+			options: { compactParamsSchema: true },
 		},
 	]
 }

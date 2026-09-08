@@ -178,6 +178,7 @@ export function worldNavigationVolumeDescriptors(
 						}),
 				},
 			},
+			options: { compactParamsSchema: true },
 		},
 		{
 			name: "manage_navigation",

@@ -25,6 +25,20 @@ const repoRoot = path.resolve(__dirname, "..")
 const serverEntry = path.join(repoRoot, "dist", "bin.js")
 const snapshotPath = path.join(repoRoot, "scripts", "__snapshots__", "list-tools.snapshot.json")
 
+// SHIP-S2: tools whose inputSchema is compacted via `compactParamsSchema`.
+// Their per-action params live in `namespaceParameterHints` instead of the
+// listTools surface, so this harness pins the other half of the trade:
+// describe_namespace must return hints for every supported action.
+const compactSchemaTools = [
+	"manage_sequence",
+	"manage_level_structure",
+	"manage_asset",
+	"manage_blueprint",
+	"manage_volumes",
+	"manage_actor",
+	"manage_widget",
+]
+
 const stableStringify = (value) => {
 	if (Array.isArray(value)) {
 		return `[${value.map((entry) => stableStringify(entry)).join(",")}]`
@@ -73,6 +87,64 @@ async function captureSurface() {
 	}
 }
 
+async function checkDescribeCoverage() {
+	const transport = new StdioClientTransport({
+		command: process.execPath,
+		args: [serverEntry],
+		cwd: repoRoot,
+		stderr: "pipe",
+	})
+	const client = new Client({ name: "unreal-mcp-ue4-describe-coverage", version: "0.1.0" })
+
+	try {
+		await client.connect(transport)
+		const problems = []
+
+		for (const toolName of compactSchemaTools) {
+			const result = await client.callTool({
+				name: "manage_tools",
+			arguments: { action: "describe_namespace", params: { tool_name: toolName } },
+			})
+			const text = (result.content ?? [])
+				.filter((item) => item?.type === "text")
+				.map((item) => item.text)
+				.join("\n")
+			let payload
+			try {
+				payload = JSON.parse(text)
+			} catch {
+				problems.push(`${toolName}: describe_namespace returned non-JSON content`)
+				continue
+			}
+
+			if (payload?.success !== true) {
+				problems.push(`${toolName}: describe_namespace did not report success=true`)
+				continue
+			}
+
+			const supported = payload.supported_actions ?? []
+			const hints = payload.parameter_hints ?? {}
+			for (const actionName of supported) {
+				if (!Array.isArray(hints[actionName]) || hints[actionName].length === 0) {
+					problems.push(`${toolName}.${actionName}: missing describe_namespace parameter hints`)
+				}
+			}
+		}
+
+		if (problems.length > 0) {
+			fail(`describe_namespace hint coverage (${problems.length}):\n  - ${problems.join("\n  - ")}`)
+		}
+
+		console.log(`[PASS] check-tool-surface: describe_namespace hints cover ${compactSchemaTools.length} compact tools`)
+	} finally {
+		try {
+			await client.close()
+		} catch {
+			// Best effort shutdown only.
+		}
+	}
+}
+
 async function main() {
 	if (!fs.existsSync(serverEntry)) {
 		fail("dist/bin.js is missing — run `npm run build` first.")
@@ -89,6 +161,7 @@ async function main() {
 		fs.mkdirSync(path.dirname(snapshotPath), { recursive: true })
 		fs.writeFileSync(snapshotPath, `${stableStringify(tools)}\n`)
 		console.log(`[PASS] check-tool-surface: snapshot updated (${tools.length} tools)`)
+		await checkDescribeCoverage()
 		return
 	}
 
@@ -133,6 +206,7 @@ async function main() {
 	}
 
 	console.log(`[PASS] check-tool-surface: tool surface frozen (${tools.length} tools)`)
+	await checkDescribeCoverage()
 }
 
 main().catch((error) => {

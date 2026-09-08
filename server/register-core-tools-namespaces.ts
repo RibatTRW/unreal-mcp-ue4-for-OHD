@@ -93,6 +93,153 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 			"Required: widget_blueprint, widget_blueprint_path, widget_path, asset_path, widget_name, or blueprint_name.",
 			"Optional: z_order, start_pie_if_needed/auto_start_pie, timeout_seconds, poll_interval. Requires PIE or a game world; start_pie_if_needed can request PIE and may return retry_recommended until the game world is ready.",
 		],
+		setup_sidebar_tab: [
+			"Required: widget blueprint selector plus url (initial sidebar browser URL).",
+			"Optional: browser_widget_name/name, open_tab, use_template.",
+		],
+	},
+	manage_sequence: {
+		sequence_support: ["No params. Reports whether the UE4.25 SequencerScripting APIs needed by advanced sequence actions are available."],
+		create_sequence: ["Required: name or asset_name.", "Optional: path."],
+		search_sequences: [
+			"Optional: search_term, query, pattern, name, asset_class, class_name, class, include_engine, limit. Searches LevelSequence assets.",
+		],
+		sequence_info: ["Required: asset_path, path, or name. Reads basic LevelSequence asset metadata."],
+		inspect_sequence: [
+			"Required: sequence_path, asset_path, path, or name.",
+			"Optional: include_channels, include_keys, key_limit.",
+		],
+		set_playback_range: [
+			"Required: sequence_path, asset_path, path, or name.",
+			"Optional: start_frame, end_frame, duration_frames, start_seconds, end_seconds, duration_seconds, unbounded, save.",
+		],
+		convert_time: [
+			"Required: sequence_path, asset_path, path, or name, plus one of seconds, display_frame, tick_frame, or frame.",
+		],
+		bind_actor: [
+			"Required: sequence_path, asset_path, path, or name, plus one of actor_name, actor_path, or object_path.",
+			"Optional: binding_name, reuse_existing, save.",
+		],
+		add_track: [
+			"Required: sequence_path, asset_path, path, or name, plus track_type.",
+			"Optional: scope/master, track_index/track_name, binding target (binding_id, binding_name, actor_name, actor_path, object_path, camera_actor_name), range (start/end_frame, start/end_seconds, duration_*, unbounded, save), display_name, property_name, property_path, add_section.",
+		],
+		add_section: [
+			"Required: sequence_path, asset_path, path, or name.",
+			"Optional: track target (scope/master, track_type, track_index, track_name, binding target) and range (start/end_frame, start/end_seconds, duration_*, unbounded, save).",
+		],
+		add_key: [
+			"Required: sequence_path, asset_path, path, or name; one of frame, time_seconds, or seconds; plus value.",
+			"Optional: track target, section_index, channel_type/channel_name/channel_index, sub_frame, time_unit (display_rate, tick_resolution), save.",
+		],
+		add_camera_cut: [
+			"Required: sequence_path, asset_path, path, or name, plus one of binding_id, binding_name, actor_name, actor_path, object_path, or camera_actor_name.",
+			"Optional: range (start/end_frame, start/end_seconds, duration_*, unbounded, save).",
+		],
+		analyze_playback_speed: [
+			"Required: sequence_path, asset_path, path, or name.",
+			"Optional: target_seconds, target_frame, start_seconds, integration_mode (linear, constant).",
+		],
+		calculate_playback_time: [
+			"Required: sequence_path, asset_path, path, or name, plus one of target_seconds, target_frame, end_seconds, or end_frame.",
+			"Optional: start_seconds, integration_mode (linear, constant).",
+		],
+	},
+	manage_level_structure: {
+		world_outliner: ["No params. Lists actors in the current editor world."],
+		create_town: ["Optional: location, material_path, prefix, rows, cols, spacing."],
+		construct_house: ["Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height."],
+		construct_mansion: [
+			"Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height, wing_offset.",
+		],
+		create_tower: ["Optional: location, material_path, prefix, width, floors, floor_height."],
+		create_wall: ["Optional: location, material_path, prefix, segments, segment_length, height, thickness, axis."],
+		create_bridge: ["Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height."],
+		create_suspension_bridge: [
+			"Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height, tower_height.",
+		],
+		create_aqueduct: ["Optional: location, material_path, prefix, arches, spacing."],
+		create_castle_fortress: ["Optional: location, material_path, prefix, size, segments, height, thickness, tower_width."],
+	},
+	manage_asset: {
+		list: ["Optional: root_path/path (defaults to /Game), recursive, limit."],
+		search: ["Optional: search_term, query, pattern, name, asset_class, class_name, class, include_engine, limit."],
+		info: ["Required: asset_path, path, or name. Reads asset metadata."],
+		references: ["Required: asset_path, path, or name. Lists asset references."],
+		exists: ["Required: asset_path, path, name, or asset_paths (array checks multiple assets)."],
+		duplicate: [
+			"Required: a source (source_asset_path, source_path, asset_path, or path) plus a destination (destination_asset_path, target_asset_path, destination_path, new_name, or name).",
+		],
+		rename: [
+			"Required: a source (source_asset_path, source_path, asset_path, or path) plus a destination (destination_asset_path, target_asset_path, destination_path, new_name, or name).",
+		],
+		move: [
+			"Required: a source (source_asset_path, source_path, asset_path, or path) plus a destination (destination_asset_path, target_asset_path, destination_path, new_name, or name).",
+		],
+		delete: ["Required: asset_path, path, name, or asset_paths."],
+		save: ["Required: asset_path, path, name, or asset_paths.", "Optional: only_if_is_dirty."],
+		create_folder: ["Required: directory_path, folder_path, or path."],
+		list_folder: ["Optional: directory_path/folder_path/path (defaults to /Game), recursive."],
+		delete_folder: ["Required: directory_path, folder_path, or path."],
+		export: [
+			"Required: asset_path, path, or name.",
+			"Optional: destination_path, file_path, output_path, overwrite (defaults true).",
+		],
+		validate: ["Required: asset_paths or paths as a string, comma-separated string, or string array."],
+	},
+	manage_blueprint: {
+		create_blueprint: ["Required: name or blueprint_name.", "Optional: parent_class, path."],
+		add_component: [
+			"Required: blueprint_name or asset_path for the target; component_type or class_name; component_name or name.",
+			"Optional: location, rotation, scale, component_properties, parent_component_name.",
+		],
+		set_static_mesh: [
+			"Required: blueprint target (blueprint_name, asset_path, or name), component_name, plus static_mesh or mesh_path.",
+		],
+		set_component_property: [
+			"Required: blueprint target (blueprint_name, asset_path, or name), component_name, property_name.",
+			"Optional: property_value.",
+		],
+		set_physics_properties: [
+			"Required: blueprint target (blueprint_name, asset_path, or name), component_name.",
+			"Optional: simulate_physics, gravity_enabled, mass, linear_damping, angular_damping.",
+		],
+		set_blueprint_property: [
+			"Required: blueprint target (blueprint_name, asset_path, or name), property_name.",
+			"Optional: property_value.",
+		],
+		compile: ["Required: blueprint_name, asset_path, or name."],
+		read: ["Required: blueprint_name, asset_path, or name.", "Optional: include_nodes."],
+	},
+	manage_volumes: {
+		spawn_trigger_volume: [
+			"Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties.",
+		],
+		spawn_blocking_volume: [
+			"Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties.",
+		],
+		spawn_physics_volume: [
+			"Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties.",
+		],
+		spawn_audio_volume: [
+			"Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties.",
+		],
+		delete_volume: ["Required: name or actor_name."],
+		transform_volume: ["Required: name or actor_name.", "Optional: location, rotation, scale."],
+	},
+	manage_actor: {
+		list: ["No params. Lists actors in the current level."],
+		find: ["Required: pattern or name."],
+		spawn: ["Optional: type/actor_type/class_name (defaults to StaticMeshActor), name/actor_name, location, rotation."],
+		spawn_blueprint: [
+			"Required: blueprint_name or asset_path.",
+			"Optional: name/actor_name, location, rotation, scale, properties.",
+		],
+		delete: ["Required: name or actor_name."],
+		transform: ["Required: name or actor_name.", "Optional: location, rotation, scale."],
+		get_properties: ["Required: name or actor_name."],
+		set_property: ["Required: name or actor_name plus property_name.", "Optional: property_value."],
+		get_material_info: ["Required: name or actor_name. Returns the actor material info."],
 	},
 }
 
