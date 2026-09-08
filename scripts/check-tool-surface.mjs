@@ -103,7 +103,7 @@ async function checkDescribeCoverage() {
 		for (const toolName of compactSchemaTools) {
 			const result = await client.callTool({
 				name: "manage_tools",
-			arguments: { action: "describe_namespace", params: { tool_name: toolName } },
+				arguments: { action: "describe_namespace", params: { tool_name: toolName } },
 			})
 			const text = (result.content ?? [])
 				.filter((item) => item?.type === "text")

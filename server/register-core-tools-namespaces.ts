@@ -99,7 +99,9 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		],
 	},
 	manage_sequence: {
-		sequence_support: ["No params. Reports whether the UE4.25 SequencerScripting APIs needed by advanced sequence actions are available."],
+		sequence_support: [
+			"No params. Reports whether the UE4.25 SequencerScripting APIs needed by advanced sequence actions are available.",
+		],
 		create_sequence: ["Required: name or asset_name.", "Optional: path."],
 		search_sequences: [
 			"Optional: search_term, query, pattern, name, asset_class, class_name, class, include_engine, limit. Searches LevelSequence assets.",
@@ -148,18 +150,24 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 	manage_level_structure: {
 		world_outliner: ["No params. Lists actors in the current editor world."],
 		create_town: ["Optional: location, material_path, prefix, rows, cols, spacing."],
-		construct_house: ["Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height."],
+		construct_house: [
+			"Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height.",
+		],
 		construct_mansion: [
 			"Optional: location, material_path, prefix, width, depth, wall_height, wall_thickness, roof_height, wing_offset.",
 		],
 		create_tower: ["Optional: location, material_path, prefix, width, floors, floor_height."],
 		create_wall: ["Optional: location, material_path, prefix, segments, segment_length, height, thickness, axis."],
-		create_bridge: ["Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height."],
+		create_bridge: [
+			"Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height.",
+		],
 		create_suspension_bridge: [
 			"Optional: location, material_path, prefix, segments, segment_length, width, thickness, rail_height, tower_height.",
 		],
 		create_aqueduct: ["Optional: location, material_path, prefix, arches, spacing."],
-		create_castle_fortress: ["Optional: location, material_path, prefix, size, segments, height, thickness, tower_width."],
+		create_castle_fortress: [
+			"Optional: location, material_path, prefix, size, segments, height, thickness, tower_width.",
+		],
 	},
 	manage_asset: {
 		list: ["Optional: root_path/path (defaults to /Game), recursive, limit."],
@@ -221,9 +229,7 @@ const namespaceParameterHints: Record<string, Record<string, string[]>> = {
 		spawn_physics_volume: [
 			"Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties.",
 		],
-		spawn_audio_volume: [
-			"Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties.",
-		],
+		spawn_audio_volume: ["Optional: object_class/class_name, name/actor_name, location, rotation, scale, properties."],
 		delete_volume: ["Required: name or actor_name."],
 		transform_volume: ["Required: name or actor_name.", "Optional: location, rotation, scale."],
 	},
