@@ -1,20 +1,20 @@
 # unreal-mcp-ue4-for-OHD
 > UE4.25.4-first MCP server for Operation Harsh Doorstop modding via Unreal Python Remote Execution (stdio transport)
 
-<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node 18+" src="https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"><a href="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml"><img alt="Tests" src="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml/badge.svg"></a></div>
+<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4-for-ohd?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node 18+" src="https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"><a href="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml"><img alt="Tests" src="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml/badge.svg"></a></div>
 
 Fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), heavily refactored UE4-first (via a UE4.27.2 stage) and retargeted here to UE4.25.4 for the OHDCore Mod Kit: same transport and tool surface, with version pins, docs links, and Python-dialect constraints adjusted for the kit's embedded Python 2.7.14. Port, tool, docs, and smoke-test work were developed with assistance from OpenAI Codex.
 
 > [!NOTE]
 > Still under active development — expect bugs, rough edges, and UE4.25-specific limitations.
-> Published package: [`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4) · Registry name: `io.github.conaman/unreal-mcp-ue4`
+> Published package: [`unreal-mcp-ue4-for-ohd`](https://www.npmjs.com/package/unreal-mcp-ue4-for-ohd) · Registry name: `io.github.RibatTRW/unreal-mcp-ue4-for-ohd`
 
 > [!CAUTION]
 > Not an official Epic Games project. Any connected MCP client can inspect and modify your open editor session — use a disposable test project first, especially for asset or world-generation tools.
 
 ## Contents
 
-- [Requirements](#requirements) · [Setup](#setup) · [Editor remote execution](#editor-remote-execution) · [Usage](#usage) · [Sidebar tab](#sidebar-tab) · [Internals](#internals) · [Testing](#testing) · [Publishing](#publishing) · [Available Tools](#available-tools) · [Contributing](#contributing) · [Troubleshooting](#troubleshooting) · [Notes and Limitations](#notes-and-limitations) · [Roadmap](#roadmap) · [License](#license)
+- [Requirements](#requirements) · [Setup](#setup) · [Migrating from unreal-mcp-ue4](#migrating-from-unreal-mcp-ue4) · [Editor remote execution](#editor-remote-execution) · [Usage](#usage) · [Sidebar tab](#sidebar-tab) · [Internals](#internals) · [Testing](#testing) · [Publishing](#publishing) · [Available Tools](#available-tools) · [Contributing](#contributing) · [Troubleshooting](#troubleshooting) · [Notes and Limitations](#notes-and-limitations) · [Roadmap](#roadmap) · [License](#license)
 
 ## Requirements
 
@@ -29,7 +29,7 @@ Reference: [Unreal Engine Python API 4.25](https://dev.epicgames.com/documentati
 
 ```mermaid
 graph TD
-    A[MCP client] --> B[unreal-mcp-ue4 stdio server]
+    A[MCP client] --> B[unreal-mcp-ue4-for-ohd stdio server]
     B --> C[manage_* namespaces + direct tools]
     C --> D[Python 2.7 payloads]
     D --> E[Unreal Editor via Remote Execution]
@@ -40,8 +40,8 @@ graph TD
 Autonomous agents setting up unattended: follow the ordered guide in [docs/agent-setup.md](docs/agent-setup.md).
 
 ```bash
-npm install -g unreal-mcp-ue4   # recommended; then reference the `unreal-mcp-ue4` binary
-npx unreal-mcp-ue4              # one-off invocation
+npm install -g unreal-mcp-ue4-for-ohd   # recommended; then reference the `unreal-mcp-ue4-for-ohd` binary
+npx unreal-mcp-ue4-for-ohd              # one-off invocation
 ```
 
 Local source checkout:
@@ -57,11 +57,34 @@ One install, then one line per client (global vs local-checkout variants). All c
 
 | Client | Global install | Local checkout |
 |--------|---------------|----------------|
-| Claude | `claude mcp add --scope user unreal-mcp-ue4 -- unreal-mcp-ue4` | `claude mcp add --scope user unreal-mcp-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
-| Codex | `codex mcp add unreal-ue4 -- unreal-mcp-ue4` | `codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
-| Copilot | `.vscode/mcp.json` → `{ "servers": { "unreal-ue4": { "command": "unreal-mcp-ue4", "args": [] } } }`, then start the server from the MCP config UI and confirm `unreal-ue4` is in the tools picker | same file with `"command": "node", "args": ["/absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js"]` |
+| Claude | `claude mcp add --scope user unreal-mcp-ue4-for-ohd -- unreal-mcp-ue4-for-ohd` | `claude mcp add --scope user unreal-mcp-ue4-for-ohd -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
+| Codex | `codex mcp add unreal-ue4 -- unreal-mcp-ue4-for-ohd` | `codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
+| Copilot | `.vscode/mcp.json` → `{ "servers": { "unreal-ue4": { "command": "unreal-mcp-ue4-for-ohd", "args": [] } } }`, then start the server from the MCP config UI and confirm `unreal-ue4` is in the tools picker | same file with `"command": "node", "args": ["/absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js"]` |
 
 Copilot docs: [Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp) · [About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
+
+## Migrating from unreal-mcp-ue4
+
+This fork was renamed to its own identity so it can ship independently of upstream. Upstream credit: the UE4 line derives from [conaman/unreal-mcp-ue4](https://github.com/conaman/unreal-mcp-ue4) (itself forked from [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)).
+
+> [!WARNING]
+> `npm install -g unreal-mcp-ue4` installs **upstream's UE4.27 build**, not this fork. For the OHD/UE4.25.4 retarget, install the renamed package instead.
+
+| Before (upstream name) | After (this fork) |
+|------|------|
+| `npm install -g unreal-mcp-ue4` | `npm install -g unreal-mcp-ue4-for-ohd` |
+| `npx unreal-mcp-ue4` | `npx unreal-mcp-ue4-for-ohd` |
+| `unreal-mcp-ue4 --version` | `unreal-mcp-ue4-for-ohd --version` |
+| Registry `io.github.conaman/unreal-mcp-ue4` | Registry `io.github.RibatTRW/unreal-mcp-ue4-for-ohd` |
+
+Re-add the server in your client (local server labels such as `unreal-ue4` are unchanged — only the command changes):
+
+```bash
+claude mcp add --scope user unreal-mcp-ue4-for-ohd -- unreal-mcp-ue4-for-ohd
+codex mcp add unreal-ue4 -- unreal-mcp-ue4-for-ohd
+```
+
+Copilot `.vscode/mcp.json`: change `"command"` to `"unreal-mcp-ue4-for-ohd"`, keeping the `unreal-ue4` server key.
 
 ## Editor remote execution
 
@@ -87,9 +110,9 @@ Connection env overrides (`UNREAL_MCP_*`):
 - Direct tools (`get_unreal_*`, `editor_create/update/delete_object`) are low-level primitives for session path discovery and actor CRUD.
 - `manage_editor.run_python` is the escape hatch for debugging, prototyping, and UE4.25 API gaps — still Python 2.7-compatible.
 
-First run: open the kit project and wait for load → confirm plugins + remote execution → `npm install -g unreal-mcp-ue4` (or `npm run build`) → open/start the client session → run something read-only:
+First run: open the kit project and wait for load → confirm plugins + remote execution → `npm install -g unreal-mcp-ue4-for-ohd` (or `npm run build`) → open/start the client session → run something read-only:
 
-- `unreal-mcp-ue4 --version` (prints version, no stdio transport)
+- `unreal-mcp-ue4-for-ohd --version` (prints version, no stdio transport)
 - `manage_editor` + `action: "project_info"` / `"map_info"` · `manage_level` + `"world_outliner"` · `manage_tools` + `"list_namespaces"`
 - In prose: `Get project info from the unreal-ue4 server.` · `List the actors in the current level.` · `Spawn a StaticMeshActor named TestCube at 0,0,100.`
 
@@ -139,7 +162,7 @@ Success = `[PASS]` on every step; actor tests visibly create then remove temp ac
 
 ## Publishing
 
-Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-11`) — bump it, then:
+Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-12`) — bump it, then:
 
 ```bash
 npm run publish:check                                  # typecheck + rebuild + tarball dry-run
@@ -461,7 +484,7 @@ These capability areas are intentionally not exposed through the MCP surface in 
 
 - **`Remote node is not available`**: open the editor fully first; verify `Python Editor Script Plugin`, `Editor Scripting Utilities`, and `Enable Remote Execution` are enabled; restart after changing any of them.
 - **Connection/discovery on Windows**: allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall. Discovery is UDP multicast on `239.0.0.1:6766`, command channel on `6776`. Override the bind address with `UNREAL_MCP_BIND_ADDRESS` or `UNREAL_MCP_COMMAND_ADDRESS` when the editor can't discover/connect. In JSON configs, escape backslashes or use forward slashes.
-- **Client can't find `unreal-mcp-ue4` or `node`**: put the npm global binary dir on the client's `PATH` (or use the absolute `unreal-mcp-ue4` path); for source checkouts use the absolute `node`/`node.exe` path instead of relying on `PATH`.
+- **Client can't find `unreal-mcp-ue4-for-ohd` or `node`**: put the npm global binary dir on the client's `PATH` (or use the absolute `unreal-mcp-ue4-for-ohd` path); for source checkouts use the absolute `node`/`node.exe` path instead of relying on `PATH`.
 - **Blueprint graph / UMG binding commands unavailable**: expected — Widget creation + tree editing work, but delegate bindings and runtime viewport flows don't; Blueprint asset/component/compile + summaries work, but graph inspection, pin wiring, and variable/function metadata are excluded (stock UE4.25 Python doesn't expose them). Full list under `Excluded Capability Areas` above.
 
 ## Notes and Limitations
@@ -477,8 +500,8 @@ These capability areas are intentionally not exposed through the MCP surface in 
 - [x] Add Dsh Harness Support (`manage_widget.setup_sidebar_tab` + golden template)
 - [x] Add a agent.md so agents can install it easily (landed as `docs/agent-setup.md`)
 - [x] Add GitHub Actions CI (`.github/workflows/ci.yml` green on main + Tests badge live; `protect-main` ruleset PR-only with required status checks)
-- [x] Cut a first fork release (tags exist, e.g. `2026.5.12-11`; published to npm)
-- [ ] Publish registry rename to `unreal-mcp-ue4-for-ohd` under `io.github.ribattrw` (decision made; merge + publish pending)
+- [x] Cut a first fork release (tags exist, e.g. `2026.5.12-12`; published to npm as `unreal-mcp-ue4-for-ohd`)
+- [x] Decide registry identity: renamed to the fork's own `io.github.RibatTRW/unreal-mcp-ue4-for-ohd` (see `Migrating from unreal-mcp-ue4` above)
 
 ## License
 

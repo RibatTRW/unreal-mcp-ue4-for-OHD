@@ -1,19 +1,19 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.conaman/unreal-mcp-ue4",
-  "title": "unreal-mcp-ue4",
-  "description": "UE4.25 MCP server for controlling Unreal Editor sessions over Python Remote Execution (Operation Harsh Doorstop mod-kit retarget).",
+  "name": "io.github.RibatTRW/unreal-mcp-ue4-for-ohd",
+  "title": "unreal-mcp-ue4-for-ohd",
+  "description": "UE4.25 MCP server for Unreal Editor via Python Remote Execution (OHD mod-kit retarget).",
   "websiteUrl": "https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD",
   "repository": {
     "url": "https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD",
     "source": "github"
   },
-  "version": "2026.5.12-11",
+  "version": "2026.5.12-12",
   "packages": [
     {
       "registryType": "npm",
-      "identifier": "unreal-mcp-ue4",
-      "version": "2026.5.12-11",
+      "identifier": "unreal-mcp-ue4-for-ohd",
+      "version": "2026.5.12-12",
       "transport": {
         "type": "stdio"
       }

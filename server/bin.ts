@@ -89,6 +89,6 @@ void main().catch((error) => {
 	}
 
 	const message = error instanceof Error ? error.message : String(error)
-	console.error(`Failed to start unreal-mcp-ue4: ${message}`)
+	console.error(`Failed to start unreal-mcp-ue4-for-ohd: ${message}`)
 	process.exit(1)
 })

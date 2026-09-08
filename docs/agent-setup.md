@@ -43,7 +43,7 @@ cd unreal-mcp-ue4-for-OHD
 ```
 
 Done when: `git rev-parse --show-toplevel` prints the checkout and
-`package.json` contains `"name": "unreal-mcp-ue4"`.
+`package.json` contains `"name": "unreal-mcp-ue4-for-ohd"`.
 
 ## Step 2 — Install dependencies
 
@@ -113,11 +113,11 @@ over stdio: 3 session-info + 3 direct actor CRUD primitives + 28 `manage_*`
 namespaces). The same table lives in README `Setup`; copy from there if this
 drifts:
 
-| Client | Global install (`npm install -g unreal-mcp-ue4`) | Local checkout (`<checkout>/dist/bin.js` from Step 3) |
+| Client | Global install (`npm install -g unreal-mcp-ue4-for-ohd`) | Local checkout (`<checkout>/dist/bin.js` from Step 3) |
 |--------|--------------------------------------------------|--------------------------------------------------------|
-| Claude | `claude mcp add --scope user unreal-mcp-ue4 -- unreal-mcp-ue4` | `claude mcp add --scope user unreal-mcp-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
-| Codex | `codex mcp add unreal-ue4 -- unreal-mcp-ue4` | `codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
-| Copilot | `.vscode/mcp.json` → `{ "servers": { "unreal-ue4": { "command": "unreal-mcp-ue4", "args": [] } } }`, then start the server from the MCP config UI | same file with `"command": "node", "args": ["/absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js"]` |
+| Claude | `claude mcp add --scope user unreal-mcp-ue4-for-ohd -- unreal-mcp-ue4-for-ohd` | `claude mcp add --scope user unreal-mcp-ue4-for-ohd -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
+| Codex | `codex mcp add unreal-ue4 -- unreal-mcp-ue4-for-ohd` | `codex mcp add unreal-ue4 -- node /absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js` |
+| Copilot | `.vscode/mcp.json` → `{ "servers": { "unreal-ue4": { "command": "unreal-mcp-ue4-for-ohd", "args": [] } } }`, then start the server from the MCP config UI | same file with `"command": "node", "args": ["/absolute/path/to/unreal-mcp-ue4-for-OHD/dist/bin.js"]` |
 
 Done when: the client lists the server (for example `unreal-ue4` appears in
 the tools picker) and a session starts without a launch error.
