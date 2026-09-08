@@ -57,7 +57,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   runs `never`, so signals must interrupt the fiber (scope close runs finalizers).
 - Session policy (`server/connection-session.ts`, `server/remote-execution.ts`) is Effect-backed
   (`server/effect/connection-service.ts`: custom 1.5x retry schedule, Clock/TestClock sleeps,
-  cached acquisitions, one `Schedule.once` stale retry, scoped Layer) behind the Promise-typed
+  cached acquisitions, one `Schedule.once` stale retry, short-lived healthy-connection hint
+  (5s TTL, internals-only: command success arms, failure disarms, failed setup never arms),
+  scoped Layer) behind the Promise-typed
   `ConnectionSession` boundary (the module-singleton shims went away in Phase 6). Sharp edges:
   `tapOutput` fires on the terminal Done step (guard the final sleep/log by
   state); `Effect.runPromise` rejects with FiberFailure (unwrap via `runPromiseExit`+`Cause.squash`
@@ -84,7 +86,8 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   in `scripts/__snapshots__/`), `scripts/check-schema-parity.mjs` (Zod↔Schema matrix),
   `scripts/check-connection-session.mjs` (fake-transport scenarios over the `ConnectionSession`
   compat boundary, plus the composition-surface check: scoped layer present, shims absent) and
-  `scripts/check-connection-session-effect.mjs` (TestClock timing: 1.5x gaps, MAX cap, stale-once) and
+  `scripts/check-connection-session-effect.mjs` (TestClock timing: 1.5x gaps, MAX cap, stale-once,
+  health-hint arm/expire/disarm) and
   `scripts/check-dispatch-envelope.mjs` (live invalid-params + handler-throw envelopes snapshotted in
   `scripts/__snapshots__/dispatch-envelope.snapshot.json`, plus dispatch-unit coverage of the Zod/Schema/
   throw/Effect-handler paths).

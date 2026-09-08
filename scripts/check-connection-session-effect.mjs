@@ -298,11 +298,7 @@ const virtualConnectElapsed = (transport, options = {}) =>
 		"hint-skip",
 	)
 	check("hint-skip-outputs", JSON.stringify(outputs) === JSON.stringify(["one", "two"]), JSON.stringify(outputs))
-	check(
-		"hint-skip-no-discovery",
-		!transport.calls.includes("getFirstRemoteNode"),
-		transport.calls.join(","),
-	)
+	check("hint-skip-no-discovery", !transport.calls.includes("getFirstRemoteNode"), transport.calls.join(","))
 }
 
 // 7. Past the TTL the hint expires and the next ensure re-probes.
@@ -330,11 +326,7 @@ const virtualConnectElapsed = (transport, options = {}) =>
 		15000,
 		"hint-ttl-expiry",
 	)
-	check(
-		"hint-expired-outputs",
-		JSON.stringify(outputs) === JSON.stringify(["one", "two"]),
-		JSON.stringify(outputs),
-	)
+	check("hint-expired-outputs", JSON.stringify(outputs) === JSON.stringify(["one", "two"]), JSON.stringify(outputs))
 	check(
 		"hint-expired-reprobes",
 		transport.calls.filter((call) => call === "getFirstRemoteNode").length === 1,

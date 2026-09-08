@@ -285,9 +285,7 @@ export const makeConnectionSessionService = (
 					: Effect.flatMap(
 							Effect.sync(() => transport.hasCommandConnection()),
 							(connected) =>
-								connected
-									? Effect.succeed(transport)
-									: Effect.tapError(connectionCached, () => invalidateConnection),
+								connected ? Effect.succeed(transport) : Effect.tapError(connectionCached, () => invalidateConnection),
 						),
 		)
 
@@ -321,9 +319,7 @@ export const makeConnectionSessionService = (
 				// stale-retry recovery): a failed ensure never arms the hint,
 				// so the absent-editor envelope keeps its full retry budget.
 				return yield* Effect.retry(program, makeStaleRetrySchedule(ensured)).pipe(
-					Effect.tap(() =>
-						Effect.flatMap(Clock.currentTimeMillis, (now) => Ref.set(healthyHintAt, now)),
-					),
+					Effect.tap(() => Effect.flatMap(Clock.currentTimeMillis, (now) => Ref.set(healthyHintAt, now))),
 				)
 			})
 
