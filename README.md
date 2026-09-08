@@ -7,7 +7,7 @@ Fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), heavily ref
 
 > [!NOTE]
 > Still under active development — expect bugs, rough edges, and UE4.25-specific limitations.
-> Published package: [`unreal-mcp-ue4-for-ohd`](https://www.npmjs.com/package/unreal-mcp-ue4-for-ohd) · Registry name: `io.github.ribattrw/unreal-mcp-ue4-for-ohd`
+> Published package: [`unreal-mcp-ue4-for-ohd`](https://www.npmjs.com/package/unreal-mcp-ue4-for-ohd) · Registry name: `io.github.RibatTRW/unreal-mcp-ue4-for-ohd`
 
 > [!CAUTION]
 > Not an official Epic Games project. Any connected MCP client can inspect and modify your open editor session — use a disposable test project first, especially for asset or world-generation tools.
@@ -75,7 +75,7 @@ This fork was renamed to its own identity so it can ship independently of upstre
 | `npm install -g unreal-mcp-ue4` | `npm install -g unreal-mcp-ue4-for-ohd` |
 | `npx unreal-mcp-ue4` | `npx unreal-mcp-ue4-for-ohd` |
 | `unreal-mcp-ue4 --version` | `unreal-mcp-ue4-for-ohd --version` |
-| Registry `io.github.conaman/unreal-mcp-ue4` | Registry `io.github.ribattrw/unreal-mcp-ue4-for-ohd` |
+| Registry `io.github.conaman/unreal-mcp-ue4` | Registry `io.github.RibatTRW/unreal-mcp-ue4-for-ohd` |
 
 Re-add the server in your client (local server labels such as `unreal-ue4` are unchanged — only the command changes):
 
@@ -501,7 +501,7 @@ These capability areas are intentionally not exposed through the MCP surface in 
 - [x] Add a agent.md so agents can install it easily (landed as `docs/agent-setup.md`)
 - [x] Add GitHub Actions CI (`.github/workflows/ci.yml` green on main + Tests badge live; `protect-main` ruleset PR-only with required status checks)
 - [x] Cut a first fork release (tags exist, e.g. `2026.5.12-11`; published to npm as `unreal-mcp-ue4-for-ohd`)
-- [x] Decide registry identity: renamed to the fork's own `io.github.ribattrw/unreal-mcp-ue4-for-ohd` (see `Migrating from unreal-mcp-ue4` below)
+- [x] Decide registry identity: renamed to the fork's own `io.github.RibatTRW/unreal-mcp-ue4-for-ohd` (see `Migrating from unreal-mcp-ue4` below)
 
 ## License
 
