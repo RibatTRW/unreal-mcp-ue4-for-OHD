@@ -78,7 +78,7 @@ for (const [name, pattern, allow] of [
 	["bare super()", /\bsuper\(\s*\)/, null],
 	["nonlocal", /^\s*nonlocal\b/m, null],
 ]) {
-	if (pattern.test(BATCH_CHAIN_STANZA) && !(allow && allow.test(BATCH_CHAIN_STANZA))) {
+	if (pattern.test(BATCH_CHAIN_STANZA) && !allow?.test(BATCH_CHAIN_STANZA)) {
 		failures.push(`batch stanza py27 gate: banned construct (${name})`)
 	}
 }
@@ -209,7 +209,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-	`check-batch-prototype passed: 3-call batch ${batched.length} B vs 3 singles ${singlesSum} B ` +
-		`(${((1 - batched.length / singlesSum) * 100).toFixed(1)}% smaller, prelude paid once); ` +
-		`ordering + per-call failure locality green. Live wall-clock gate not run (no editor).`,
+	`check-batch-prototype passed: 3-call batch ${batched.length} B vs 3 singles ${singlesSum} B (${((1 - batched.length / singlesSum) * 100).toFixed(1)}% smaller, prelude paid once); ordering + per-call failure locality green. Live wall-clock gate not run (no editor).`,
 )
