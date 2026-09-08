@@ -100,7 +100,7 @@ def find_actors_by_name(args):
             actor_label = actor.get_actor_label()
         except Exception:
             continue
-        if pattern in actor_name.lower() or pattern in actor_label.lower():
+        if pattern in (actor_name or "").lower() or pattern in (actor_label or "").lower():
             try:
                 actor_class = actor.get_class().get_name()
             except Exception:
