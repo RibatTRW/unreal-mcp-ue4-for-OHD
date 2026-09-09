@@ -38,9 +38,9 @@
 import { Effect, type Schema } from "effect"
 import { z } from "zod"
 
+import { runWithPreludeCacheFallback } from "./editor/prelude-cache.js"
 import type * as editorTools from "./editor/tools.js"
 import { type ConnectionSessionServiceShape, runCompatPromise, withCompatErrors } from "./effect/connection-service.js"
-import { runWithPreludeCacheFallback } from "./editor/prelude-cache.js"
 import { InvalidParamsError, MissingParamError, type ToolError } from "./effect/errors.js"
 import {
 	invalidParamsMessage,

@@ -13,8 +13,8 @@ import {
 	searchAssetsShape,
 	vector3TransformShape,
 } from "./namespace-action-schema-fragments.js"
-import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import type { ActionParams } from "./registration-context-params.js"
+import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolCatalogEntry } from "./tool-catalog-types.js"
 import { createToolDescriptionLookup } from "./tool-catalog-types.js"

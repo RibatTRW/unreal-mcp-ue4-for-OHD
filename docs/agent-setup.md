@@ -78,8 +78,8 @@ and `server.json` for registry metadata.
 
 ### 4a — Environment variables
 
-The readers are the source of truth: `server/effect/config.ts` (the legacy
-`server/remote-execution.ts` module-singleton shims are gone; dispatch runs
+The readers are the source of truth: `server/remote-execution.ts` (the legacy
+`server/effect/config.ts` module is deleted; dispatch runs
 through the injected `ConnectionSessionService`). Defaults ship in code, so a
 stock single-machine setup needs no variables at all; set overrides only when
 the network or the editor session needs them:
@@ -218,8 +218,8 @@ pushing, run `npm run typecheck` + `npm run check:py27` (plus
   launching `MainLive` as a daemon fiber.
 - `server/index.ts` — composition root exporting `MainLive`; owns the stdio
   serve (`serveStdio`).
-- `server/effect/` — Effect services: connection session, `Config` env
-  readers, prelude loading, error channel.
+- `server/effect/` — Effect services: connection session, prelude loading, error channel.
+  Environment-variable defaults live in `server/remote-execution.ts`.
 - `server/editor/` — pure payload renderers plus the Python 2.7 scripts sent
   to the editor; after touching `server/editor/scripts`, run the dialect gate
   (`npm run check:py27`).
