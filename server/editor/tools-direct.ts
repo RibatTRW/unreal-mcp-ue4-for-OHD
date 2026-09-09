@@ -1,6 +1,5 @@
 import fs from "node:fs"
 import path from "node:path"
-import { Effect, type Scope } from "effect"
 import { editorPreludes, jsonArg, renderScript } from "./tools-base.js"
 
 export const UEGetAssetInfo = (asset_path: string) =>
@@ -63,7 +62,7 @@ export const UECreateObject = (
 	location?: { x: number; y: number; z: number },
 	rotation?: { pitch: number; yaw: number; roll: number },
 	scale?: { x: number; y: number; z: number },
-	properties?: Record<string, any>,
+	properties?: Record<string, unknown>,
 ) => {
 	return renderScript("./scripts/ue_create_object.py", {
 		object_class: jsonArg(object_class),
@@ -80,7 +79,7 @@ export const UEUpdateObject = (
 	location?: { x: number; y: number; z: number },
 	rotation?: { pitch: number; yaw: number; roll: number },
 	scale?: { x: number; y: number; z: number },
-	properties?: Record<string, any>,
+	properties?: Record<string, unknown>,
 	new_name?: string,
 ) => {
 	return renderScript("./scripts/ue_update_object.py", {
@@ -229,22 +228,23 @@ export const UEUMGSetChildWidgetPosition = (
  * into dist by scripts/build.mjs; read here at call time so the bytes
  * travel inside the rendered script args (same machine, editor + server).
  * Returns base64 text or null when the template is absent. */
-// Phase 3 (report §4.5): the call-time read is a scoped Effect, injected
-// into UEUMGSetupSidebarTab via the sync wrapper below. The builder keeps
-// its pure sync signature and the rendered bytes are unchanged.
-const readSidebarTemplateEffect: Effect.Effect<string | null, never, Scope.Scope> = Effect.acquireRelease(
-	Effect.sync((): string | null => {
-		try {
-			return fs.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset")).toString("base64")
-		} catch (err) {
-			return null
-		}
-	}),
-	() => Effect.void,
-)
+// Memoized-once cell like the prelude cells in prelude-loader.ts: the
+// template is a shipped binary asset, so one process-lifetime read (the
+// negative cached too) replaces the per-call disk I/O. Rendered bytes
+// are unchanged.
+let cachedSidebarTemplate: string | null | undefined
 
 function readSidebarTemplate(): string | null {
-	return Effect.runSync(Effect.scoped(readSidebarTemplateEffect))
+	if (cachedSidebarTemplate === undefined) {
+		try {
+			cachedSidebarTemplate = fs
+				.readFileSync(path.join(__dirname, "sidebar-template", "EUW_DSHSidebar.uasset"))
+				.toString("base64")
+		} catch (err) {
+			cachedSidebarTemplate = null
+		}
+	}
+	return cachedSidebarTemplate
 }
 
 export const UEUMGSetupSidebarTab = (

@@ -16,6 +16,7 @@ export const jsonArg = encodeJsonArg
 // registering variant lives one layer down on renderEditorScript.
 export interface RenderScriptOptions {
 	readonly cacheable?: boolean
+	readonly registerCache?: boolean
 }
 
 export function renderScript(
@@ -24,7 +25,11 @@ export function renderScript(
 	extraPrelude = "",
 	options: RenderScriptOptions = {},
 ) {
-	return renderEditorScript(filePath, vars, { extraPrelude, cacheable: options.cacheable })
+	return renderEditorScript(filePath, vars, {
+		extraPrelude,
+		cacheable: options.cacheable,
+		registerCache: options.registerCache,
+	})
 }
 
 export function renderDomainScript(
@@ -36,5 +41,6 @@ export function renderDomainScript(
 	return renderEditorScript(filePath, vars, {
 		extraPrelude: [getDomainDispatchHarness(), extraPrelude].filter(Boolean).join("\n\n"),
 		cacheable: options.cacheable,
+		registerCache: options.registerCache,
 	})
 }

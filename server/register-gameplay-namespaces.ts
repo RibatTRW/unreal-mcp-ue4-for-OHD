@@ -1,7 +1,5 @@
-import { Effect } from "effect"
 import { z } from "zod"
 
-import type { ToolError } from "./effect/errors.js"
 import {
 	assetLookupSchema,
 	assetPathParam,
@@ -53,7 +51,7 @@ export function gameplayDescriptors(
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
-		pythonDispatch,
+		pythonAction,
 		requiredStringParam,
 		searchAssetsCommand,
 		toRotatorArray,
@@ -91,32 +89,23 @@ export function gameplayDescriptors(
 						["blueprint_name", "asset_path"],
 						"Provide blueprint_name or asset_path for the Blueprint.",
 					),
-					// Phase 5c (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEMaterialTool("spawn_physics_blueprint_actor", {
-										blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
-										name: optionalStringParam(params, ["name", "actor_name"]),
-										location: toVector3Array(params.location),
-										rotation: toRotatorArray(params.rotation),
-										scale: toVector3Array(params.scale),
-										component_name: optionalStringParam(params, ["component_name"]),
-										material_path: optionalStringParam(params, ["material_path"]),
-										slot_index: params.slot_index,
-										simulate_physics: params.simulate_physics,
-										gravity_enabled: params.gravity_enabled,
-										mass: params.mass,
-										linear_damping: params.linear_damping,
-										angular_damping: params.angular_damping,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEMaterialTool("spawn_physics_blueprint_actor", {
+							blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
+							name: optionalStringParam(params, ["name", "actor_name"]),
+							location: toVector3Array(params.location),
+							rotation: toRotatorArray(params.rotation),
+							scale: toVector3Array(params.scale),
+							component_name: optionalStringParam(params, ["component_name"]),
+							material_path: optionalStringParam(params, ["material_path"]),
+							slot_index: params.slot_index,
+							simulate_physics: params.simulate_physics,
+							gravity_enabled: params.gravity_enabled,
+							mass: params.mass,
+							linear_damping: params.linear_damping,
+							angular_damping: params.angular_damping,
 						}),
+					),
 				},
 				set_physics_properties: {
 					paramsSchema: requireAtLeastOneValue(
@@ -134,22 +123,17 @@ export function gameplayDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("set_physics_properties", {
-										blueprint_name: blueprintNameParam(params),
-										component_name: requiredStringParam(params, ["component_name"]),
-										simulate_physics: params.simulate_physics,
-										gravity_enabled: params.gravity_enabled,
-										mass: params.mass,
-										linear_damping: params.linear_damping,
-										angular_damping: params.angular_damping,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("set_physics_properties", {
+							blueprint_name: blueprintNameParam(params),
+							component_name: requiredStringParam(params, ["component_name"]),
+							simulate_physics: params.simulate_physics,
+							gravity_enabled: params.gravity_enabled,
+							mass: params.mass,
+							linear_damping: params.linear_damping,
+							angular_damping: params.angular_damping,
 						}),
+					),
 				},
 				compile_blueprint: {
 					paramsSchema: requireAtLeastOneValue(
@@ -157,16 +141,11 @@ export function gameplayDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("compile_blueprint", {
-										blueprint_name: blueprintNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("compile_blueprint", {
+							blueprint_name: blueprintNameParam(params),
 						}),
+					),
 				},
 			},
 		},
@@ -189,19 +168,14 @@ export function gameplayDescriptors(
 						["mapping_name", "action_name", "name"],
 						"Provide mapping_name, action_name, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEProjectTool("create_input_mapping", {
-										mapping_name: requiredStringParam(params, ["mapping_name", "action_name", "name"]),
-										key: requiredStringParam(params, ["key"]),
-										input_type: optionalStringParam(params, ["input_type"]) ?? "Action",
-										scale: params.scale,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEProjectTool("create_input_mapping", {
+							mapping_name: requiredStringParam(params, ["mapping_name", "action_name", "name"]),
+							key: requiredStringParam(params, ["key"]),
+							input_type: optionalStringParam(params, ["input_type"]) ?? "Action",
+							scale: params.scale,
 						}),
+					),
 				},
 			},
 		},
@@ -221,42 +195,26 @@ export function gameplayDescriptors(
 						["name", "asset_name"],
 						"Provide name or asset_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEContentFactoryTool("create_behavior_tree", {
-										name: requiredStringParam(params, ["name", "asset_name"]),
-										path: optionalStringParam(params, ["path"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEContentFactoryTool("create_behavior_tree", {
+							name: requiredStringParam(params, ["name", "asset_name"]),
+							path: optionalStringParam(params, ["path"]),
 						}),
+					),
 				},
 				search_behavior_trees: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => searchAssetsCommand(params, "BehaviorTree")),
 				},
 				search_ai_assets: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => searchAssetsCommand(params, "BehaviorTree")),
 				},
 				behavior_tree_info: {
 					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+					),
 				},
 			},
 		},
@@ -266,20 +224,13 @@ export function gameplayDescriptors(
 			actions: {
 				search_gas_assets: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(searchAssetsCommand(params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => searchAssetsCommand(params)),
 				},
 				asset_info: {
 					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+					),
 				},
 			},
 		},

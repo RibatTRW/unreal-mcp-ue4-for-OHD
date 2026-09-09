@@ -38,6 +38,7 @@
 import { Effect, type Schema } from "effect"
 import { z } from "zod"
 
+import { runWithPreludeCacheFallback } from "./editor/prelude-cache.js"
 import type * as editorTools from "./editor/tools.js"
 import { type ConnectionSessionServiceShape, runCompatPromise, withCompatErrors } from "./effect/connection-service.js"
 import { InvalidParamsError, MissingParamError, type ToolError } from "./effect/errors.js"
@@ -49,7 +50,9 @@ import {
 } from "./effect/schema-patterns.js"
 import type { ActionParams } from "./registration-context-params.js"
 
-export type NamespaceDispatchResult = { kind: "python"; command: string } | { kind: "direct"; payload: unknown }
+export type NamespaceDispatchResult =
+	| { kind: "python"; command: string; fullCommand?: string }
+	| { kind: "direct"; payload: unknown }
 
 export type NamespaceActionHandler = (
 	params: ActionParams,
@@ -96,6 +99,8 @@ export interface RegistrationDispatch {
 	commands: ConnectionSessionServiceShape
 	directDispatch: (payload: unknown) => NamespaceDispatchResult
 	editorTools: typeof editorTools
+	pythonAction: (build: (params: ActionParams) => string) => NamespaceActionHandler
+	cacheablePythonAction: (build: (params: ActionParams) => { cached: string; full: string }) => NamespaceActionHandler
 	pythonDispatch: (command: string) => NamespaceDispatchResult
 	rawServerTool: RawServerTool
 	registerPythonTool: (
@@ -156,6 +161,31 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 	} = options
 
 	const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
+	// Single consolidation point for the namespace python handlers: build the
+	// command string, then dispatch it. Sync throws from param helpers and
+	// builders need no per-handler Effect wrapper — invokeActionHandler lifts
+	// every handler into the failure channel centrally, where catchAll renders
+	// the identical envelope (including the MissingParamError branch).
+	const pythonAction =
+		(build: (params: ActionParams) => string): NamespaceActionHandler =>
+		(params) =>
+			pythonDispatch(build(params))
+	// SHIP-S1 pilot mate to pythonAction: the builder returns the
+	// (cached, full) pair (see UEActorToolCommands). fullCommand rides the
+	// result to the python-send site, which resends it exactly once on a
+	// cache miss. When the kill-switch is off both halves share one
+	// reference, so fullCommand stays undefined and dispatch takes its
+	// existing send path with no fallback scan.
+	const cacheablePythonAction =
+		(build: (params: ActionParams) => { cached: string; full: string }): NamespaceActionHandler =>
+		(params) => {
+			const pair = build(params)
+			return {
+				kind: "python",
+				command: pair.cached,
+				fullCommand: pair.full !== pair.cached ? pair.full : undefined,
+			}
+		}
 	const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
 	const normalizeActionName = (action: string) => action.trim().toLowerCase()
 	const normalizeActionDefinition = (actionRegistration: NamespaceActionRegistration): NamespaceActionDefinition =>
@@ -193,6 +223,17 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 
 	const runNamespaceDispatchEffect = (result: NamespaceDispatchResult): Effect.Effect<TextResponse, unknown> => {
 		if (result.kind === "python") {
+			if (result.fullCommand !== undefined) {
+				// SHIP-S1 pilot path: run the cached (tail-only) payload; on
+				// the miss marker — and only then — resend once with the
+				// full registering payload. Only reachable when the
+				// UNREAL_MCP_PRELUDE_CACHE kill-switch is on.
+				return runWithPreludeCacheFallback(
+					(command) => withCompatErrors(commands.runCommand(command)),
+					result.command,
+					result.fullCommand,
+				).pipe(Effect.map((output) => textResponse(output)))
+			}
 			// withCompatErrors unwraps the typed channel to the exact legacy
 			// Errors the removed tryRunCommand shim used to reject with, so
 			// the catchAll envelope below renders byte-identical text.
@@ -368,6 +409,8 @@ export function createDispatchHelpers(options: DispatchHelperOptions): Registrat
 		commands,
 		directDispatch,
 		editorTools,
+		pythonAction,
+		cacheablePythonAction,
 		pythonDispatch,
 		rawServerTool,
 		registerPythonTool,

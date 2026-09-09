@@ -6,15 +6,41 @@ export const UEAssetManagementTool = (operation: string, args: Record<string, un
 		args: jsonArg(args),
 	})
 
+// SHIP-S1 pilot: UEActorTool traffic runs through the editor-side prelude
+// cache behind the UNREAL_MCP_PRELUDE_CACHE kill-switch (default off,
+// same "1" convention as the UNREAL_MCP_* readers in
+// server/remote-execution.ts). Off: cached and full are the same reference
+// to today's byte-identical render, so dispatch skips the miss fallback
+// and takes its existing send path. On: cached is SHIM(hash) + TAIL and
+// full is the registering PRELUDE + TAIL, which dispatch resends exactly
+// once on a cache miss (runWithPreludeCacheFallback at the python-send
+// site). UEActorTool keeps its string signature and delegates to the
+// cached half; handlers opt into the pair via dispatch's
+// cacheablePythonAction so every shimmed send carries its fallback.
+const actorPreludeCacheEnabled = process.env.UNREAL_MCP_PRELUDE_CACHE === "1"
+
+export interface ActorToolCommands {
+	readonly cached: string
+	readonly full: string
+}
+
+export const UEActorToolCommands = (operation: string, args: Record<string, unknown> = {}): ActorToolCommands => {
+	const vars = {
+		operation: jsonArg(operation),
+		args: jsonArg(args),
+	}
+	if (!actorPreludeCacheEnabled) {
+		const full = renderDomainScript("./scripts/ue_actor_tools.py", vars, editorPreludes.actor)
+		return { cached: full, full }
+	}
+	return {
+		cached: renderDomainScript("./scripts/ue_actor_tools.py", vars, editorPreludes.actor, { cacheable: true }),
+		full: renderDomainScript("./scripts/ue_actor_tools.py", vars, editorPreludes.actor, { registerCache: true }),
+	}
+}
+
 export const UEActorTool = (operation: string, args: Record<string, unknown> = {}) =>
-	renderDomainScript(
-		"./scripts/ue_actor_tools.py",
-		{
-			operation: jsonArg(operation),
-			args: jsonArg(args),
-		},
-		editorPreludes.actor,
-	)
+	UEActorToolCommands(operation, args).cached
 
 export const UEBlueprintTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderDomainScript(

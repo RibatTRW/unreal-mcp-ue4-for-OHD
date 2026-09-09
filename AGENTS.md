@@ -6,40 +6,21 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 ## Effect migration (phases 0-7)
 
-- Phase 5a pilot (`register-core-system-namespaces.ts` [shared-actions only, no change],
-  `register-core-inspection-namespaces.ts`, `register-world-lighting-namespaces.ts`): handlers return
-  `Effect.try({ try: () => pythonDispatch(...), catch: (cause) => cause as ToolError })` with paramsSchema
-  left as frozen Zod, so the listTools surface snapshot does not move. Never `Effect.sync`/`Effect.succeed`
-  around throwing param-helper/builder thunks: `succeed` evaluates eagerly (throw escapes the Effect)
-  and `sync` turns the throw into a defect that sails past dispatch's `Effect.catchAll` as FiberFailure;
-  only `Effect.try` lands it in the failure channel for the identical envelope.
-- Phase 5b small wave (`register-core-editor-namespaces.ts`, `register-core-tools-namespaces.ts`
-  [`directDispatch` handlers wrap identically; the unknown-namespace `success:false` stays a payload,
-  not a channel failure], `register-core-source-control-namespaces.ts` [provider-degraded `success:false`
-  payloads stay payloads], `register-direct-tools.ts`): the three `discoverPath` callbacks run as
-  `Effect.tryPromise` programs executed via `runCompatPromise`, preserving legacy rejection identity
-  (discoverPath throws surface exactly as today). The `registerPythonTool` buildCommands stay pure
-  sync string builders — no envelope path exists there (dispatch keeps promise semantics), so no
-  channel to join.
-- Phase 5c mid wave (`register-world-building-namespaces.ts` [the `worldAction` helper wraps once,
-  covering every preset-construction action; `list_actors` wraps inline; shared `map_info`/`world_outliner`
-  untouched], `register-world-navigation-volume-namespaces.ts`,
-  `register-world-effects-splines-namespaces.ts` [block-body handlers wrap as `try: () => { ... }`,
-  returns preserved inside], `register-gameplay-namespaces.ts`,
-  `register-content-blueprint-namespaces.ts`): same mechanical wrap; no `success:false` degraded branches
-  exist in these files (blueprint optional-fallbacks stay inline expressions inside `try`), paramsSchema stays
-  frozen Zod so the surface snapshot does not move.
-- Phase 5d large wave (`register-content-media-namespaces.ts` [`add_key`'s custom-issue `superRefine`
-  ("Provide value.") untouched in frozen paramsSchema], `register-content-asset-namespaces.ts` [the nested
-  `requireAtLeastOneValue` composition on `create_data_table` untouched — both custom messages preserved
-  verbatim], `register-content-widget-namespaces.ts`, `register-core-asset-actor-namespaces.ts` [the
-  `assetMutationHandler` helper wraps once, covering duplicate/rename/move; zero-arg `list` wraps inline;
-  shared `validate_assets` untouched]): same mechanical wrap; no `success:false` degraded branches exist in
-  these files, paramsSchema stays frozen Zod so the surface snapshot does not move.
+- Handler consolidation (post Phase 5a–5d): the 134 per-handler `Effect.try` wrappers
+  (plus their `ToolError` imports and Phase-5x comments) are deleted. Namespace handlers are
+  plain sync functions through one helper in `registration-context-dispatch.ts` —
+  `pythonAction((params) => command-string)` — with the `worldAction`/`assetMutationHandler`
+  group helpers folded into it, block bodies returning the command string, and `directDispatch`
+  handlers returning the payload directly. Lifting into the failure channel happens once,
+  centrally, in `invokeActionHandler` (`Effect.tryPromise` flattens sync param-helper/builder
+  throws into rejections for the identical envelope) — never reintroduce per-handler
+  `Effect.try`/`Effect.sync` wrappers. All handler params are `ActionParams`
+  (`Record<string, unknown>`); builder `properties` bags are `Record<string, unknown>`.
 
-- Pattern catalog + error channel (+`InvalidParamsError`) + Config env readers + connection service +
-  prelude service live in `server/effect/`; Zod stays at the MCP SDK call-site permanently
-  (SDK throws on non-Zod).
+- Pattern catalog + error channel (+`InvalidParamsError`) + connection service +
+  prelude service live in `server/effect/` (`server/effect/config.ts` deleted as dead —
+  zero callers; re-derive the trivial `Config` forms from `remote-execution.ts` if one appears);
+  Zod stays at the MCP SDK call-site permanently (SDK throws on non-Zod).
 - Phase 6 composition root + entry (`server/index.ts` exports `MainLive`; `server/bin.ts` forkDaemons
   `Layer.launch(MainLive)` and joins it, interrupting the fiber on signals/exit so scope finalizers
   run the connection shutdown — interrupt idempotency replaces the shutdownInProgress guard,
@@ -70,8 +51,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   (`Data.TaggedError` defaults message to `""`, which breaks message-reading harnesses). Import-time `.py` reads
   moved behind memoized-once cells (`getEditorPreludes`/`getDomainDispatchHarness`, lazy-getter `editorPreludes`
   preserving key order) composed into the `PreludeServiceLive` Layer (Phase 6 wires it at startup); sidebar-template
-  read is a scoped Effect run synchronously inside the unchanged `UEUMGSetupSidebarTab` builder.
-- Registration framework (`server/registration-context-*.ts`, `server/namespace-action-schema-fragments.ts`,
+  read is a memoized-once module cell (negative cached too) inside the unchanged `UEUMGSetupSidebarTab` builder.
+- Registration framework (`server/registration-context-*.ts`, `server/namespace-action-schema-fragments.ts`
+  [Zod-only — dead `stringListSchema` and dead Schema re-exports deleted; migrated registrars import
+  `atLeastOneValue`/`valueGroups` from `server/effect/schema-patterns.ts` directly],
   `server/shared-read-only-actions.ts`): dispatch runs as an Effect program with `Effect.catchAll` rendering
   the identical `{success:false, tool, action, message}` envelope; per-action `paramsSchema` accepts
   `z.ZodTypeAny | Schema.Schema.AnyNoContext` (Zod validates via `safeParseAsync`, Schemas via strict decode).
@@ -80,7 +63,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   conditional `ToolCallback` explodes tsc (excessively-deep) — use the shallow `Sdk*Like` seams in
   `server/registration-context.ts`; Schema-validated actions contribute a permissive record to the SDK
   `inputSchema` (SDK pre-validates before our callback — strict check runs inside), so the surface
-  snapshot will move when Phase 5 migrates the first action; handler params are `ActionParams`
+  snapshot moves per migrated namespace (first move: `manage_inspection`, whose 5 paramsSchemas are
+  now `Schema.Struct` + `atLeastOneValue` from `server/effect/schema-patterns.ts` with verbatim messages);
+  handler params are `ActionParams`
   (`Record<string, unknown>`), param-helper throws are `MissingParamError` with `.message` aligned.
   Sharp edge: constraint violations (negative/non-integer/over-max) on all-optional strict-union
   members match NO member, so the SDK gate rejects them with -32602 before dispatch — the
@@ -143,9 +128,13 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   editor snippets `server/editor/scripts/ue_prelude_cache_{shim,register}.py`): default
   `PRELUDE + TAIL` (byte-identical to pre-S1), opt-in `cacheable` → `SHIM(hash) + TAIL`
   (1–5% of full bytes on the baseline set), `registerCache` → full + registration trailer.
-  One flag (`{ cacheable?: boolean }`) on `renderScript`/`renderDomainScript`
-  (`server/editor/tools-base.ts`); domain/direct builders and dispatch are untouched, so the
-  cacheable path is exercised only through the renderers until a later ship flips callers.
+  One flag (`{ cacheable?: boolean; registerCache?: boolean }`) on `renderScript`/`renderDomainScript`
+  (`server/editor/tools-base.ts`); the SHIP-S1 pilot wires one builder end-to-end: `UEActorToolCommands`
+  (`server/editor/tools-domain.ts`) returns the `(cached, full)` pair behind the
+  `UNREAL_MCP_PRELUDE_CACHE=1` kill-switch (default off — both halves share one reference to
+  today's byte-identical render), all 22 `UEActorTool` call sites use dispatch's
+  `cacheablePythonAction` pair-helper, and the python-send site resends `fullCommand` exactly once
+  on a miss (`runWithPreludeCacheFallback`). The python result carries `fullCommand?` for this.
 - Editor protocol notes: store lives in `sys.modules["rrmcp_preludes"]` keyed by sha1 of the
   exact static prefix (content addressing = staleness guard) plus a `__rrmcp_version__`
   protocol guard; warm path merges the snapshot via `globals().update` then the literal

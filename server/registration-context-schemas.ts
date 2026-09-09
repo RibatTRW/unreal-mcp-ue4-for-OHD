@@ -36,13 +36,11 @@ export const colorInputSchema = z.union([
 ])
 
 export const recordSchema = z.record(z.string(), z.any())
-export const stringListSchema = z.array(z.string().min(1)).min(1)
 
 export interface RegistrationSchemas {
 	colorInputSchema: z.ZodTypeAny
 	recordSchema: z.ZodRecord<z.ZodString, z.ZodAny>
 	rotatorInputSchema: z.ZodTypeAny
-	stringListSchema: z.ZodTypeAny
 	vector2InputSchema: z.ZodTypeAny
 	vector3InputSchema: z.ZodTypeAny
 	worldBuildBaseSchema: {
@@ -249,7 +247,6 @@ export function createRegistrationSchemaHelpers(): RegistrationSchemas {
 		colorInputSchema,
 		recordSchema,
 		rotatorInputSchema,
-		stringListSchema,
 		vector2InputSchema,
 		vector3InputSchema,
 		worldBuildBaseSchema,
