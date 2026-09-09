@@ -46,7 +46,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   and main's catch ignores the join failure only when the explicit `shutdownRequested` flag
   was set (fiber-cleared alone is ambiguous: the fiber is also undefined when main fails
   before assignment). index owns the
-  `StdioServerTransport`+connect; `--version`, the ECONNRESET guard, and the four `process.once`
+  `serveStdio` stdio serve; `--version`, the ECONNRESET guard, and the four `process.once`
   handlers are unchanged. Removed the remote-execution.ts Promise singleton shims
   (`tryRunCommand`/`discoverPath`/`shutdownRemoteExecution`); dispatch + direct tools run the
   injected `ConnectionSessionService` Effects directly (`withCompatErrors` keeps envelopes

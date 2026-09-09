@@ -28,7 +28,7 @@ try {
 // a ts.createProgram the way the TS5 build did.
 // NOTE: there is no esbuild bundling step in this repo (esbuild is only a
 // transitive dev tool via tsx); the emit language level is controlled by
-// tsconfig.json. Keep its "target" (es2022) runnable on engines.node (>=18).
+// tsconfig.json. Keep its "target" (es2022) runnable on engines.node (>=20).
 // --noEmitOnError preserves the old fail-before-emit behavior: any pre-emit
 // diagnostic aborts the build with a nonzero exit instead of writing dist/.
 const configPath = path.join(rootDir, "tsconfig.json")
