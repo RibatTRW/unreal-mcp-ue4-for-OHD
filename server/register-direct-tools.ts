@@ -139,7 +139,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 				.optional()
 				.describe("Scale multipliers"),
 			properties: z
-				.record(z.any())
+				.record(z.string(), z.any())
 				.optional()
 				.describe(
 					'Additional actor properties. For StaticMeshActor: use \'StaticMesh\' for mesh path, \'Material\' for single material path, or \'Materials\' for array of material paths. Example: {"StaticMesh": "/Game/Meshes/Cube", "Material": "/Game/Materials/M_Basic"}',
@@ -188,7 +188,7 @@ export function registerDirectTools(ctx: RegistrationDispatch) {
 				.optional()
 				.describe("New scale multipliers"),
 			properties: z
-				.record(z.any())
+				.record(z.string(), z.any())
 				.optional()
 				.describe(
 					'Additional actor properties to update. For StaticMeshActor: use \'StaticMesh\' for mesh path, \'Material\' for single material path, or \'Materials\' for array of material paths. Example: {"StaticMesh": "/Game/Meshes/Cube", "Material": "/Game/Materials/M_Basic"}',

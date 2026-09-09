@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
+import { McpServer } from "@modelcontextprotocol/server"
+import { serveStdio } from "@modelcontextprotocol/server/stdio"
 import { Effect, Layer } from "effect"
 
 import { ConnectionSessionService } from "./effect/connection-service.js"
@@ -32,7 +32,9 @@ const makeServer = Effect.gen(function* () {
 	registerDirectTools(registrationContext)
 	registerAllToolNamespaces(registrationContext)
 
-	server.resource("docs", "docs://unreal_python", async () => {
+	// MCP 2026-07-28 (SDK v2): the removed `resource()` becomes
+	// `registerResource()` with an explicit (here empty) metadata config.
+	server.registerResource("docs", "docs://unreal_python", {}, async () => {
 		return {
 			contents: [
 				{
@@ -43,11 +45,27 @@ const makeServer = Effect.gen(function* () {
 		}
 	})
 
-	const transport = new StdioServerTransport()
-	yield* Effect.tryPromise({
-		try: () => server.connect(transport),
+	// MCP 2026-07-28 (SDK v2): `serveStdio` owns the era decision for the
+	// stdio connection — the opening exchange pins it to 2026-07-28 when the
+	// client speaks it, else to the 2025-era handshake (default `legacy:
+	// 'serve'`). A hand-wired `server.connect(transport)` would serve the
+	// 2025 era only. The factory returns the service-wired instance built
+	// above (stdio carries exactly one connection, so it is called once).
+	// serveStdio returns a handle, not a promise, so park the fiber here:
+	// scope finalizers (connection shutdown) run when a signal interrupts it.
+	const handle = yield* Effect.try({
+		try: () => serveStdio(() => server),
 		catch: (cause) => cause,
 	})
+	// The release must be infallible for acquireRelease: a stdio-teardown
+	// failure at shutdown is ignored (process exit tears down the pipes).
+	yield* Effect.acquireRelease(Effect.succeed(handle), (entry) =>
+		Effect.tryPromise({
+			try: () => entry.close(),
+			catch: (cause) => cause,
+		}).pipe(Effect.ignore),
+	)
+	yield* Effect.never
 })
 
 // The launched server owns no service of its own — it only holds the

@@ -1,5 +1,5 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import type { z } from "zod"
+import type { McpServer } from "@modelcontextprotocol/server"
+import { z } from "zod"
 import * as editorTools from "./editor/tools.js"
 import type { ConnectionSessionServiceShape } from "./effect/connection-service.js"
 import {
@@ -39,14 +39,9 @@ export interface RegistrationContext extends RegistrationParams, RegistrationSch
 // callbacks in, never consumes args out through these types. No `any`.
 type SdkRegisterToolLike = (
 	name: string,
-	config: { description: string; inputSchema: z.ZodTypeAny },
+	config: { description: string; inputSchema?: z.ZodTypeAny },
 	cb: (args: never) => unknown,
 ) => unknown
-
-interface SdkToolLike {
-	(name: string, description: string, schema: Record<string, z.ZodTypeAny>, cb: (args: never) => unknown): unknown
-	(name: string, description: string, cb: (args: never) => unknown): unknown
-}
 
 // Phase 6: the live ConnectionSessionService is threaded in from the
 // composition root (index.ts MainLive) — dispatch and direct tools run
@@ -58,11 +53,10 @@ export function createRegistrationContext(
 	// Typed SDK-boundary wrappers (report §4.4): the old `bind` + `as` casts
 	// that erased SDK types down to `any` are gone. Zod stays at this exact
 	// call-site permanently (locked by the list-tools surface snapshot).
+	// MCP 2026-07-28 (SDK v2): the deprecated variadic `tool()` is removed,
+	// so every path below routes through `registerTool` — raw shapes are
+	// wrapped with `z.object()` explicitly (never the deprecated auto-wrap).
 	const sdkRegisterTool = server.registerTool.bind(server) as SdkRegisterToolLike
-	// bind collapses the deprecated tool() overloads to a single signature,
-	// so comparability needs the unknown detour; runtime overloads are as
-	// declared in SdkToolLike (SDK source). Type-only, zero runtime effect.
-	const sdkTool = server.tool.bind(server) as unknown as SdkToolLike
 
 	const rawServerRegisterTool: DispatchHelperOptions["rawServerRegisterTool"] = (name, config, cb) =>
 		sdkRegisterTool(name, config, cb)
@@ -84,12 +78,14 @@ export function createRegistrationContext(
 			if (typeof schemaOrCb !== "function") {
 				throw new Error(`rawServerTool(${name}): missing callback`)
 			}
-			return sdkTool(name, description, schemaOrCb)
+			// No inputSchema: v2 passes the request context as the single
+			// callback arg; our zero-arg callbacks simply ignore it.
+			return sdkRegisterTool(name, { description }, schemaOrCb)
 		}
 		if (typeof schemaOrCb === "function") {
 			throw new Error(`rawServerTool(${name}): missing params schema`)
 		}
-		return sdkTool(name, description, schemaOrCb, cb)
+		return sdkRegisterTool(name, { description, inputSchema: z.object(schemaOrCb) }, cb)
 	}
 
 	const textResponse = (text: string) => ({

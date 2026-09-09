@@ -35,14 +35,14 @@ export const colorInputSchema = z.union([
 	z.tuple([z.number(), z.number(), z.number(), z.number()]),
 ])
 
-export const recordSchema = z.record(z.any())
+export const recordSchema = z.record(z.string(), z.any())
 export const stringListSchema = z.array(z.string().min(1)).min(1)
 
 export interface RegistrationSchemas {
 	colorInputSchema: z.ZodTypeAny
 	recordSchema: z.ZodRecord<z.ZodString, z.ZodAny>
 	rotatorInputSchema: z.ZodTypeAny
-	stringListSchema: z.ZodArray<z.ZodString, "many">
+	stringListSchema: z.ZodTypeAny
 	vector2InputSchema: z.ZodTypeAny
 	vector3InputSchema: z.ZodTypeAny
 	worldBuildBaseSchema: {
@@ -111,7 +111,7 @@ export const colorSchema = Schema.Union(
 )
 
 // Permissive by design (compactParamsSchema namespaces): must stay as
-// permissive as z.record(z.any()) or compact namespaces start rejecting
+// permissive as z.record(z.string(), z.any()) or compact namespaces start rejecting
 // valid params (report §6 risk).
 export const recordSchemaEffect = Schema.Record({ key: Schema.String, value: Schema.Unknown })
 

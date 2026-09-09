@@ -98,15 +98,30 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   registrations, truncation snapshot on a stubbed large payload in
   `scripts/__snapshots__/bounded-reads.snapshot.json` via `scripts/stub-bounded-reads.py`,
   synthetic N=2000 byte proxy).
-- Emit target is ES2022 (`tsconfig.json` owns it; `scripts/build.mjs` passes no overrides), proven on Node 18.
-- Phase 7 dependency cleanup: zod KEPT, no `package.json` change. Evidence: the SDK accepts
-  only Zod at the call-site (`getZodSchemaObject` throws otherwise — installed
-  `@modelcontextprotocol/sdk/dist/esm/server/mcp.js`); dispatch itself builds
-  `z.literal`/`z.enum`/`z.object`/`z.union` registered inputSchemas
-  (`server/registration-context-dispatch.ts`); every registrar/fragments file holds frozen Zod
-  paramsSchema and no file imports zod without using it. Do not attempt removal without an
-  SDK upgrade (separate change with its own surface-snapshot run). Postbuild README/catalog
-  regen verified diff-free; the surface/parity/envelope/session harnesses wired into
+- Emit target is ES2022 (`tsconfig.json` owns it; `scripts/build.mjs` passes no overrides). Engines are `node >= 20` (SDK v2 floor; was >=18).
+- Phase 7 dependency cleanup (pre-v2 note, kept for history): zod was KEPT with no `package.json`
+  change because SDK v1 accepted only Zod at the call-site. That constraint died with the
+  MCP 2026-07-28 upgrade below — do not re-apply the v1 evidence here.
+- MCP 2026-07-28 (SDK v2, `fm/ohd-mcp-upgrade-1`): protocol revision 2026-07-28 is served
+  via the v2 packages — `@modelcontextprotocol/server@2.0.0` (runtime) +
+  `@modelcontextprotocol/client@2.0.0` (dev, test scripts) replace the monolithic
+  `@modelcontextprotocol/sdk`; `zod@^4.2.0` replaces v3 (v2 rejects v3 schemas at
+  `tools/list` time, quietly). `server/index.ts` serves both eras through
+  `serveStdio(() => server)` (default `legacy: 'serve'`; a hand-wired `connect()` would
+  serve 2025-only) with an `acquireRelease` stdio-handle close + `Effect.never` park so
+  scope finalizers still run on signal interrupt. The removed variadic `server.tool()` /
+  `server.resource()` became `registerTool` (raw shapes wrapped with `z.object()` explicitly)
+  / `registerResource` with a metadata config. `server.json` `$schema` stays
+  `.../2025-12-11/server.schema.json` — newest published (no 2026-07-28 schema exists).
+  Zod v4 sharp edges: shape-spreading helpers must take a generic `<S extends z.ZodRawShape>`
+  param (a widened `ZodRawShape` spread drops extended keys from the inferred output, so
+  chained `superRefine` callbacks lose them); `z.record` needs both args
+  (`z.record(z.string(), z.any())`); `z.ZodArray` no longer takes two generics (annotate
+  `z.ZodTypeAny`); `superRefine` still returns `this`. The listTools snapshot was
+  re-baselined to the v4 2020-12 dialect (`$schema` stamp, `prefixItems` tuples,
+  `additionalProperties: {}` records) — descriptions/requiredness unchanged. Postbuild
+  README/catalog regen verified diff-free; the surface/parity/envelope/session harnesses
+  wired into
   `test:no-unreal` stay as permanent regression tests.
 
 ## TypeScript 7 toolchain

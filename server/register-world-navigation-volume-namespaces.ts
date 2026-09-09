@@ -55,7 +55,7 @@ export function worldNavigationVolumeDescriptors(
 			class_name: z.string().optional(),
 			...actorNameShape,
 			...vector3TransformShape,
-			properties: z.record(z.any()).optional(),
+			properties: z.record(z.string(), z.any()).optional(),
 		})
 		.strict()
 
