@@ -55,19 +55,23 @@ export function contentWidgetDescriptors(
 		widgetBlueprintParam,
 	} = ctx
 
-	const requireWidgetBlueprintSelection = (shape: z.ZodRawShape) =>
+	const requireWidgetBlueprintSelection = <S extends z.ZodRawShape>(shape: S) =>
 		requireValueGroups(strictObject({ ...widgetBlueprintShape, ...shape }), [
 			{ keys: widgetBlueprintKeys, message: widgetBlueprintMessage },
 		])
 
-	const requireNamedWidgetBlueprintSelection = (shape: z.ZodRawShape, nameKeys: string[], nameMessage: string) =>
+	const requireNamedWidgetBlueprintSelection = <S extends z.ZodRawShape>(
+		shape: S,
+		nameKeys: string[],
+		nameMessage: string,
+	) =>
 		requireValueGroups(strictObject({ ...widgetBlueprintShape, ...shape }), [
 			{ keys: widgetBlueprintKeys, message: widgetBlueprintMessage },
 			{ keys: nameKeys, message: nameMessage },
 		])
 
-	const requireWidgetAssetAndName = (
-		shape: z.ZodRawShape,
+	const requireWidgetAssetAndName = <S extends z.ZodRawShape>(
+		shape: S,
 		nameKeys = widgetNameKeys,
 		nameMessage = widgetNameMessage,
 	) =>

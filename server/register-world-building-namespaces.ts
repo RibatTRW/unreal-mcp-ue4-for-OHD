@@ -46,7 +46,7 @@ export function worldBuildingDescriptors(
 	const { editorTools, pythonDispatch, worldBuildBaseSchema, worldBuildCommand } = ctx
 	const shared = sharedReadOnlyActions(ctx)
 
-	const worldSchema = (shape: z.ZodRawShape) =>
+	const worldSchema = <S extends z.ZodRawShape>(shape: S) =>
 		z
 			.object({
 				...worldBuildBaseSchema,

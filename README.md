@@ -1,7 +1,7 @@
 # unreal-mcp-ue4-for-OHD
 > UE4.25.4-first MCP server for Operation Harsh Doorstop modding via Unreal Python Remote Execution (stdio transport)
 
-<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4-for-ohd?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node 18+" src="https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"><a href="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml"><img alt="Tests" src="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml/badge.svg"></a></div>
+<div align="center"><img alt="npm version" src="https://img.shields.io/npm/v/unreal-mcp-ue4-for-ohd?label=npm"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"><img alt="Node 20+" src="https://img.shields.io/badge/Node-%3E%3D20-339933?logo=node.js"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-published-2ea44f"><a href="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml"><img alt="Tests" src="https://github.com/RibatTRW/unreal-mcp-ue4-for-OHD/actions/workflows/ci.yml/badge.svg"></a></div>
 
 Fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), heavily refactored UE4-first (via a UE4.27.2 stage) and retargeted here to UE4.25.4 for the OHDCore Mod Kit: same transport and tool surface, with version pins, docs links, and Python-dialect constraints adjusted for the kit's embedded Python 2.7.14. Port, tool, docs, and smoke-test work were developed with assistance from OpenAI Codex.
 
@@ -21,7 +21,7 @@ Fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), heavily ref
 | Need | Pin |
 |------|-----|
 | Unreal Engine | `4.25.4` via OHDCore Mod Kit: engine tree `HDEngine/`, project `HDGame/HarshDoorstop/HarshDoorstop.uproject`, launched with `LaunchEditor.bat` |
-| Runtime | Node.js `18+`, `npm` |
+| Runtime | Node.js `20+`, `npm` |
 | Client | Any MCP client (Codex, Claude Code, Claude Desktop, Cursor, Copilot in a supported IDE) |
 | Editor payloads | Python 2.7 only (kit embeds 2.7.14): no f-strings, single-argument `print()`, no `pathlib`-era idioms |
 
@@ -128,7 +128,7 @@ Caveats: non-DSH pages get no editor-driving loop (typing in them does nothing t
 
 ## Internals
 
-TypeScript 7 native toolchain (`tsc -p tsconfig.json`, ES2022, Node 18 proven), stdio transport, Effect-migrated dispatch/connection layers (Zod stays at the MCP SDK call-site — the SDK only accepts Zod). Recent performance work:
+TypeScript 7 native toolchain (`tsc -p tsconfig.json`, ES2022, Node 20 proven), stdio transport, Effect-migrated dispatch/connection layers (Zod stays at the MCP SDK call-site — the SDK only accepts Zod). Recent performance work:
 
 | Item | Shape |
 |------|-------|
@@ -162,7 +162,7 @@ Success = `[PASS]` on every step; actor tests visibly create then remove temp ac
 
 ## Publishing
 
-Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-12`) — bump it, then:
+Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-13`) — bump it, then:
 
 ```bash
 npm run publish:check                                  # typecheck + rebuild + tarball dry-run

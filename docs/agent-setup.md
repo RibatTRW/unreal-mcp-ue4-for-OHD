@@ -13,7 +13,7 @@ authoritative definition lives in `package.json` `scripts`.
 Check each item resolves to a working binary:
 
 ```bash
-node --version   # expect v18 or newer (package.json engines: node >= 18)
+node --version   # expect v20 or newer (package.json engines: node >= 20)
 npm --version    # expect npm 10+ (packageManager pins npm@10.8.1)
 ```
 
@@ -33,7 +33,7 @@ Unreal Editor state (needed from Step 6 on; Steps 1–5 run without it):
   and `Edit -> Project Settings -> Plugins -> Python -> Enable Remote
   Execution` on. Full editor walkthrough: README `Editor remote execution`.
 
-Done when: `node --version` reports 18+.
+Done when: `node --version` reports 20+.
 
 ## Step 1 — Get the source
 
@@ -217,7 +217,7 @@ pushing, run `npm run typecheck` + `npm run check:py27` (plus
 - `server/bin.ts` — process entry: `--version` handling, signal wiring,
   launching `MainLive` as a daemon fiber.
 - `server/index.ts` — composition root exporting `MainLive`; owns the stdio
-  transport connect.
+  serve (`serveStdio`).
 - `server/effect/` — Effect services: connection session, `Config` env
   readers, prelude loading, error channel.
 - `server/editor/` — pure payload renderers plus the Python 2.7 scripts sent

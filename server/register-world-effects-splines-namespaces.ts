@@ -71,7 +71,7 @@ export function worldEffectsSplineDescriptors(
 							class_name: z.string().optional(),
 							...actorNameShape,
 							...vector3TransformShape,
-							properties: z.record(z.any()).optional(),
+							properties: z.record(z.string(), z.any()).optional(),
 						})
 						.strict(),
 					// Phase 5c (report §5): handler returns Effect; param-helper
@@ -158,7 +158,7 @@ export function worldEffectsSplineDescriptors(
 							...actorNameShape,
 							material_path: z.string().optional(),
 							...vector3TransformShape,
-							properties: z.record(z.any()).optional(),
+							properties: z.record(z.string(), z.any()).optional(),
 						})
 						.strict(),
 					handler: (params) =>

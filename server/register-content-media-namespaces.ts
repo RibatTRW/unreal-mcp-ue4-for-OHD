@@ -43,13 +43,13 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 		path: z.string().optional(),
 		name: z.string().optional(),
 	}
-	const sequenceParamsSchema = (shape: z.ZodRawShape = {}) =>
+	const sequenceParamsSchema = <S extends z.ZodRawShape>(shape: S = {} as S) =>
 		requireAtLeastOneValue(
 			z.object({ ...sequenceAssetShape, ...shape }).strict(),
 			["sequence_path", "asset_path", "path", "name"],
 			"Provide sequence_path, asset_path, path, or name.",
 		)
-	const sequenceParamsWithOneValue = (shape: z.ZodRawShape, keys: string[], message: string) =>
+	const sequenceParamsWithOneValue = <S extends z.ZodRawShape>(shape: S, keys: string[], message: string) =>
 		requireAtLeastOneValue(sequenceParamsSchema(shape), keys, message)
 	const sequenceRangeShape = {
 		start_frame: z.number().optional(),
