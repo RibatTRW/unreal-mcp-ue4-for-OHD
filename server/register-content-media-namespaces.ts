@@ -1,6 +1,4 @@
-import { Effect } from "effect"
 import { z } from "zod"
-import type { ToolError } from "./effect/errors.js"
 
 import {
 	assetLookupSchema,
@@ -35,7 +33,7 @@ export const contentMediaEntries: ToolCatalogEntry[] = [
 const describeTool = createToolDescriptionLookup(contentMediaEntries)
 
 export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDispatch): ToolNamespaceDescriptor[] {
-	const { editorTools, optionalStringParam, pythonDispatch, requiredStringParam, searchAssetsCommand } = ctx
+	const { editorTools, optionalStringParam, pythonAction, requiredStringParam, searchAssetsCommand } = ctx
 
 	const sequenceAssetShape = {
 		sequence_path: z.string().optional(),
@@ -87,15 +85,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 					description:
 						"Report whether the UE4.25 SequencerScripting APIs needed by advanced sequence actions are available (the plugin ships disabled in the OHD kit; enable it first).",
 					paramsSchema: z.object({}).strict(),
-					// Phase 5d (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: () =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("sequence_support")),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction(() => editorTools.UESequenceTool("sequence_support")),
 				},
 				create_sequence: {
 					description: "Create a LevelSequence asset.",
@@ -110,36 +100,24 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						["name", "asset_name"],
 						"Provide name or asset_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEContentFactoryTool("create_level_sequence", {
-										name: requiredStringParam(params, ["name", "asset_name"]),
-										path: optionalStringParam(params, ["path"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEContentFactoryTool("create_level_sequence", {
+							name: requiredStringParam(params, ["name", "asset_name"]),
+							path: optionalStringParam(params, ["path"]),
 						}),
+					),
 				},
 				search_sequences: {
 					description: "Search LevelSequence assets.",
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(searchAssetsCommand(params, "LevelSequence")),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => searchAssetsCommand(params, "LevelSequence")),
 				},
 				sequence_info: {
 					description: "Read basic LevelSequence asset metadata.",
 					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+					),
 				},
 				inspect_sequence: {
 					description:
@@ -152,20 +130,12 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						// change the surface. Stays inline; see limitParam.
 						key_limit: z.number().optional(),
 					}),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("inspect_sequence", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("inspect_sequence", params)),
 				},
 				set_playback_range: {
 					description: "Set the LevelSequence playback start or end in display frames or seconds.",
 					paramsSchema: sequenceParamsSchema(sequenceRangeShape),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("set_playback_range", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("set_playback_range", params)),
 				},
 				convert_time: {
 					description: "Convert between seconds, display frames, and tick-resolution frames for a LevelSequence.",
@@ -179,11 +149,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						["seconds", "display_frame", "tick_frame", "frame"],
 						"Provide seconds, display_frame, tick_frame, or frame.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("convert_time", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("convert_time", params)),
 				},
 				bind_actor: {
 					description: "Add an actor from the current level as a possessable binding in a LevelSequence.",
@@ -199,11 +165,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						["actor_name", "actor_path", "object_path"],
 						"Provide actor_name, actor_path, or object_path.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("bind_actor", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("bind_actor", params)),
 				},
 				add_track: {
 					description:
@@ -217,11 +179,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						property_path: z.string().optional(),
 						add_section: z.boolean().optional(),
 					}),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("add_track", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("add_track", params)),
 				},
 				add_section: {
 					description: "Add a section to an existing Sequencer track.",
@@ -229,11 +187,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						...sequenceTrackTargetShape,
 						...sequenceRangeShape,
 					}),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("add_section", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("add_section", params)),
 				},
 				add_key: {
 					description:
@@ -263,11 +217,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 							})
 						}
 					}),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("add_key", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("add_key", params)),
 				},
 				add_camera_cut: {
 					description:
@@ -280,11 +230,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						["binding_id", "binding_name", "actor_name", "actor_path", "object_path", "camera_actor_name"],
 						"Provide binding_id, binding_name, actor_name, actor_path, object_path, or camera_actor_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("add_camera_cut", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("add_camera_cut", params)),
 				},
 				analyze_playback_speed: {
 					description:
@@ -295,11 +241,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						start_seconds: z.number().optional(),
 						integration_mode: z.enum(["linear", "constant"]).optional(),
 					}),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("analyze_playback_speed", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("analyze_playback_speed", params)),
 				},
 				calculate_playback_time: {
 					description:
@@ -316,11 +258,7 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						["target_seconds", "target_frame", "end_seconds", "end_frame"],
 						"Provide target_seconds, target_frame, end_seconds, or end_frame.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UESequenceTool("calculate_playback_time", params)),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => editorTools.UESequenceTool("calculate_playback_time", params)),
 				},
 			},
 			options: { compactParamsSchema: true },
@@ -350,39 +288,27 @@ export function contentMediaDescriptors(ctx: RegistrationParams & RegistrationDi
 						["source_file", "file_path", "local_path"],
 						"Provide source_file, file_path, or local_path.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEContentFactoryTool("import_audio", {
-										source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
-										destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
-										asset_name: optionalStringParam(params, ["asset_name", "name"]),
-										replace_existing: typeof params.replace_existing === "boolean" ? params.replace_existing : true,
-										save: typeof params.save === "boolean" ? params.save : true,
-										auto_create_cue: typeof params.auto_create_cue === "boolean" ? params.auto_create_cue : true,
-										cue_suffix: optionalStringParam(params, ["cue_suffix"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEContentFactoryTool("import_audio", {
+							source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
+							destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
+							asset_name: optionalStringParam(params, ["asset_name", "name"]),
+							replace_existing: typeof params.replace_existing === "boolean" ? params.replace_existing : true,
+							save: typeof params.save === "boolean" ? params.save : true,
+							auto_create_cue: typeof params.auto_create_cue === "boolean" ? params.auto_create_cue : true,
+							cue_suffix: optionalStringParam(params, ["cue_suffix"]),
 						}),
+					),
 				},
 				search_audio_assets: {
 					paramsSchema: z.object(searchAssetsShape).strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(searchAssetsCommand(params, "SoundCue")),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => searchAssetsCommand(params, "SoundCue")),
 				},
 				audio_info: {
 					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+					),
 				},
 			},
 		},

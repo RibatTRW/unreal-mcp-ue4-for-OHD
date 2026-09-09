@@ -1,7 +1,5 @@
-import { Effect } from "effect"
 import { z } from "zod"
 
-import type { ToolError } from "./effect/errors.js"
 import {
 	actorNameSchema,
 	actorNameShape,
@@ -44,7 +42,8 @@ export function worldEffectsSplineDescriptors(
 		actorNameParam,
 		editorTools,
 		optionalStringParam,
-		pythonDispatch,
+		cacheablePythonAction,
+		pythonAction,
 		requiredStringParam,
 		toColorArray,
 		toRotatorArray,
@@ -74,42 +73,33 @@ export function worldEffectsSplineDescriptors(
 							properties: z.record(z.string(), z.any()).optional(),
 						})
 						.strict(),
-					// Phase 5c (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: (params) =>
-						Effect.try({
-							try: () => {
-								const blueprintName = optionalStringParam(params, ["blueprint_name", "asset_path"])
-								if (blueprintName) {
-									return pythonDispatch(
-										editorTools.UEActorTool("spawn_blueprint_actor", {
-											blueprint_name: blueprintName,
-											name: optionalStringParam(params, ["name", "actor_name"]),
-											location: toVector3Array(params.location),
-											rotation: toRotatorArray(params.rotation),
-											scale: toVector3Array(params.scale),
-											properties: params.properties,
-										}),
-									)
-								}
+					handler: cacheablePythonAction((params) => {
+						const blueprintName = optionalStringParam(params, ["blueprint_name", "asset_path"])
+						if (blueprintName) {
+							return editorTools.UEActorToolCommands("spawn_blueprint_actor", {
+								blueprint_name: blueprintName,
+								name: optionalStringParam(params, ["name", "actor_name"]),
+								location: toVector3Array(params.location),
+								rotation: toRotatorArray(params.rotation),
+								scale: toVector3Array(params.scale),
+								properties: params.properties,
+							})
+						}
 
-								return pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.Actor",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "SplineHostActor",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed;
-										// the cast recovers the static type, never changes values.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								)
-							},
-							catch: (cause) => cause as ToolError,
-						}),
+						// Non-actor-tool branch: unwired builders render full
+						// payloads, so cached and full are the same string.
+						const full = editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.Actor",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "SplineHostActor",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed;
+							// the cast recovers the static type, never changes values.
+							params.properties as Record<string, unknown> | undefined,
+						)
+						return { cached: full, full }
+					}),
 				},
 				transform_actor: {
 					paramsSchema: requireAtLeastOneValue(
@@ -117,32 +107,22 @@ export function worldEffectsSplineDescriptors(
 						["name", "actor_name"],
 						"Provide name or actor_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("set_actor_transform", {
-										name: actorNameParam(params),
-										location: toVector3Array(params.location),
-										rotation: toRotatorArray(params.rotation),
-										scale: toVector3Array(params.scale),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("set_actor_transform", {
+							name: actorNameParam(params),
+							location: toVector3Array(params.location),
+							rotation: toRotatorArray(params.rotation),
+							scale: toVector3Array(params.scale),
 						}),
+					),
 				},
 				delete_actor: {
 					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("delete_actor", {
-										name: actorNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("delete_actor", {
+							name: actorNameParam(params),
 						}),
+					),
 				},
 			},
 		},
@@ -161,31 +141,25 @@ export function worldEffectsSplineDescriptors(
 							properties: z.record(z.string(), z.any()).optional(),
 						})
 						.strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () => {
-								const shapeName = optionalStringParam(params, ["shape", "shape_type"]) ?? "cube"
-								const actorLabel = `${shapeName}_${optionalStringParam(params, ["name", "actor_name"]) ?? "DebugShape"}`
-								const properties = {
-									...(typeof params.properties === "object" && params.properties ? params.properties : {}),
-									...(optionalStringParam(params, ["material_path"])
-										? { Material: optionalStringParam(params, ["material_path"]) }
-										: {}),
-								}
+					handler: pythonAction((params) => {
+						const shapeName = optionalStringParam(params, ["shape", "shape_type"]) ?? "cube"
+						const actorLabel = `${shapeName}_${optionalStringParam(params, ["name", "actor_name"]) ?? "DebugShape"}`
+						const properties = {
+							...(typeof params.properties === "object" && params.properties ? params.properties : {}),
+							...(optionalStringParam(params, ["material_path"])
+								? { Material: optionalStringParam(params, ["material_path"]) }
+								: {}),
+						}
 
-								return pythonDispatch(
-									editorTools.UECreateObject(
-										"StaticMeshActor",
-										actorLabel,
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										properties,
-									),
-								)
-							},
-							catch: (cause) => cause as ToolError,
-						}),
+						return editorTools.UECreateObject(
+							"StaticMeshActor",
+							actorLabel,
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							properties,
+						)
+					}),
 				},
 				apply_material: {
 					paramsSchema: requireAtLeastOneValue(
@@ -200,19 +174,14 @@ export function worldEffectsSplineDescriptors(
 						["name", "actor_name"],
 						"Provide name or actor_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEMaterialTool("apply_material_to_actor", {
-										actor_name: actorNameParam(params),
-										component_name: optionalStringParam(params, ["component_name"]),
-										material_path: requiredStringParam(params, ["material_path"]),
-										slot_index: params.slot_index,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEMaterialTool("apply_material_to_actor", {
+							actor_name: actorNameParam(params),
+							component_name: optionalStringParam(params, ["component_name"]),
+							material_path: requiredStringParam(params, ["material_path"]),
+							slot_index: params.slot_index,
 						}),
+					),
 				},
 				tint_debug_shape: {
 					paramsSchema: requireAtLeastOneValue(
@@ -231,36 +200,26 @@ export function worldEffectsSplineDescriptors(
 						["name", "actor_name"],
 						"Provide name or actor_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEMaterialTool("set_mesh_material_color", {
-										actor_name: actorNameParam(params),
-										component_name: optionalStringParam(params, ["component_name"]),
-										material_path: optionalStringParam(params, ["material_path"]),
-										slot_index: params.slot_index,
-										color: toColorArray(params.color),
-										parameter_name: optionalStringParam(params, ["parameter_name"]),
-										instance_name: optionalStringParam(params, ["instance_name"]),
-										instance_path: optionalStringParam(params, ["instance_path"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEMaterialTool("set_mesh_material_color", {
+							actor_name: actorNameParam(params),
+							component_name: optionalStringParam(params, ["component_name"]),
+							material_path: optionalStringParam(params, ["material_path"]),
+							slot_index: params.slot_index,
+							color: toColorArray(params.color),
+							parameter_name: optionalStringParam(params, ["parameter_name"]),
+							instance_name: optionalStringParam(params, ["instance_name"]),
+							instance_path: optionalStringParam(params, ["instance_path"]),
 						}),
+					),
 				},
 				delete_debug_shape: {
 					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("delete_actor", {
-										name: actorNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("delete_actor", {
+							name: actorNameParam(params),
 						}),
+					),
 				},
 			},
 		},

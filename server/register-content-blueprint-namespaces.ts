@@ -1,7 +1,5 @@
-import { Effect } from "effect"
 import { z } from "zod"
 
-import type { ToolError } from "./effect/errors.js"
 import {
 	assetPathParam,
 	blueprintNameShape,
@@ -35,7 +33,7 @@ export function contentBlueprintDescriptors(
 		blueprintNameParam,
 		editorTools,
 		optionalStringParam,
-		pythonDispatch,
+		pythonAction,
 		requiredStringParam,
 		toRotatorArray,
 		toVector3Array,
@@ -64,22 +62,13 @@ export function contentBlueprintDescriptors(
 						["name", "blueprint_name"],
 						"Provide name or blueprint_name.",
 					),
-					// Phase 5c (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("create_blueprint", {
-										name: requiredStringParam(params, ["name", "blueprint_name"]),
-										parent_class: optionalStringParam(params, ["parent_class"]),
-										path: optionalStringParam(params, ["path"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("create_blueprint", {
+							name: requiredStringParam(params, ["name", "blueprint_name"]),
+							parent_class: optionalStringParam(params, ["parent_class"]),
+							path: optionalStringParam(params, ["path"]),
 						}),
+					),
 				},
 				add_component: {
 					paramsSchema: requireAtLeastOneValue(
@@ -106,23 +95,18 @@ export function contentBlueprintDescriptors(
 						["component_name", "name"],
 						"Provide component_name or name for the new component.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("add_component_to_blueprint", {
-										blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
-										component_type: requiredStringParam(params, ["component_type", "class_name"]),
-										component_name: requiredStringParam(params, ["component_name", "name"]),
-										location: toVector3Array(params.location),
-										rotation: toRotatorArray(params.rotation),
-										scale: toVector3Array(params.scale),
-										component_properties: params.component_properties,
-										parent_component_name: optionalStringParam(params, ["parent_component_name"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("add_component_to_blueprint", {
+							blueprint_name: requiredStringParam(params, ["blueprint_name", "asset_path"]),
+							component_type: requiredStringParam(params, ["component_type", "class_name"]),
+							component_name: requiredStringParam(params, ["component_name", "name"]),
+							location: toVector3Array(params.location),
+							rotation: toRotatorArray(params.rotation),
+							scale: toVector3Array(params.scale),
+							component_properties: params.component_properties,
+							parent_component_name: optionalStringParam(params, ["parent_component_name"]),
 						}),
+					),
 				},
 				set_static_mesh: {
 					paramsSchema: requireAtLeastOneValue(
@@ -141,18 +125,13 @@ export function contentBlueprintDescriptors(
 						["static_mesh", "mesh_path"],
 						"Provide static_mesh or mesh_path.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("set_static_mesh_properties", {
-										blueprint_name: blueprintNameParam(params),
-										component_name: requiredStringParam(params, ["component_name"]),
-										static_mesh: requiredStringParam(params, ["static_mesh", "mesh_path"]),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("set_static_mesh_properties", {
+							blueprint_name: blueprintNameParam(params),
+							component_name: requiredStringParam(params, ["component_name"]),
+							static_mesh: requiredStringParam(params, ["static_mesh", "mesh_path"]),
 						}),
+					),
 				},
 				set_component_property: {
 					paramsSchema: requireAtLeastOneValue(
@@ -167,19 +146,14 @@ export function contentBlueprintDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("set_component_property", {
-										blueprint_name: blueprintNameParam(params),
-										component_name: requiredStringParam(params, ["component_name"]),
-										property_name: requiredStringParam(params, ["property_name"]),
-										property_value: params.property_value,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("set_component_property", {
+							blueprint_name: blueprintNameParam(params),
+							component_name: requiredStringParam(params, ["component_name"]),
+							property_name: requiredStringParam(params, ["property_name"]),
+							property_value: params.property_value,
 						}),
+					),
 				},
 				set_physics_properties: {
 					paramsSchema: requireAtLeastOneValue(
@@ -197,22 +171,17 @@ export function contentBlueprintDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("set_physics_properties", {
-										blueprint_name: blueprintNameParam(params),
-										component_name: requiredStringParam(params, ["component_name"]),
-										simulate_physics: params.simulate_physics,
-										gravity_enabled: params.gravity_enabled,
-										mass: params.mass,
-										linear_damping: params.linear_damping,
-										angular_damping: params.angular_damping,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("set_physics_properties", {
+							blueprint_name: blueprintNameParam(params),
+							component_name: requiredStringParam(params, ["component_name"]),
+							simulate_physics: params.simulate_physics,
+							gravity_enabled: params.gravity_enabled,
+							mass: params.mass,
+							linear_damping: params.linear_damping,
+							angular_damping: params.angular_damping,
 						}),
+					),
 				},
 				set_blueprint_property: {
 					paramsSchema: requireAtLeastOneValue(
@@ -226,18 +195,13 @@ export function contentBlueprintDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("set_blueprint_property", {
-										blueprint_name: blueprintNameParam(params),
-										property_name: requiredStringParam(params, ["property_name"]),
-										property_value: params.property_value,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("set_blueprint_property", {
+							blueprint_name: blueprintNameParam(params),
+							property_name: requiredStringParam(params, ["property_name"]),
+							property_value: params.property_value,
 						}),
+					),
 				},
 				compile: {
 					paramsSchema: requireAtLeastOneValue(
@@ -245,16 +209,11 @@ export function contentBlueprintDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintTool("compile_blueprint", {
-										blueprint_name: blueprintNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintTool("compile_blueprint", {
+							blueprint_name: blueprintNameParam(params),
 						}),
+					),
 				},
 				read: {
 					paramsSchema: requireAtLeastOneValue(
@@ -267,17 +226,12 @@ export function contentBlueprintDescriptors(
 						["blueprint_name", "asset_path", "name"],
 						"Provide blueprint_name, asset_path, or name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
-										blueprint_name: blueprintNameParam(params),
-										include_nodes: Boolean(params.include_nodes),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
+							blueprint_name: blueprintNameParam(params),
+							include_nodes: Boolean(params.include_nodes),
 						}),
+					),
 				},
 			},
 			options: { compactParamsSchema: true },

@@ -1,13 +1,6 @@
-import { Effect } from "effect"
-import { z } from "zod"
+import { Schema } from "effect"
 
-import type { ToolError } from "./effect/errors.js"
-import {
-	actorNameSchema,
-	assetLookupSchema,
-	blueprintNameShape,
-	requireAtLeastOneValue,
-} from "./namespace-action-schema-fragments.js"
+import { atLeastOneValue } from "./effect/schema-patterns.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolCatalogEntry } from "./tool-catalog-types.js"
@@ -28,10 +21,49 @@ export const coreInspectionEntries: ToolCatalogEntry[] = [
 
 const describeTool = createToolDescriptionLookup(coreInspectionEntries)
 
+// Schema pilot: the first namespace migrated end-to-end from frozen Zod to
+// effect/Schema paramsSchemas. Behavior contract: same accepted inputs, same
+// `.strict()` excess rejection (via dispatch's strict decode options), same
+// verbatim custom messages (via atLeastOneValue filter annotations), same
+// identical invalid-params envelope. The SDK call-site inputSchema for these
+// actions becomes a permissive record (the SDK pre-validates before our
+// callback; strict validation runs inside) — that is the one expected
+// listTools surface move, scoped to manage_inspection.
+const assetLookupSchemaEffect = atLeastOneValue(
+	Schema.Struct({
+		asset_path: Schema.optional(Schema.String),
+		path: Schema.optional(Schema.String),
+		name: Schema.optional(Schema.String),
+	}),
+	["asset_path", "path", "name"],
+	"Provide asset_path, path, or name.",
+)
+
+const actorNameSchemaEffect = atLeastOneValue(
+	Schema.Struct({
+		name: Schema.optional(Schema.String),
+		actor_name: Schema.optional(Schema.String),
+	}),
+	["name", "actor_name"],
+	"Provide name or actor_name.",
+)
+
+const blueprintNameSchemaEffect = atLeastOneValue(
+	Schema.Struct({
+		blueprint_name: Schema.optional(Schema.String),
+		asset_path: Schema.optional(Schema.String),
+		name: Schema.optional(Schema.String),
+		include_nodes: Schema.optional(Schema.Boolean),
+	}),
+	["blueprint_name", "asset_path", "name"],
+	"Provide blueprint_name, asset_path, or name.",
+)
+
 export function coreInspectionDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
 ): ToolNamespaceDescriptor[] {
-	const { actorNameParam, blueprintNameParam, editorTools, pythonDispatch, requiredStringParam } = ctx
+	const { actorNameParam, blueprintNameParam, editorTools, cacheablePythonAction, pythonAction, requiredStringParam } =
+		ctx
 	const shared = sharedReadOnlyActions(ctx)
 
 	return [
@@ -40,77 +72,41 @@ export function coreInspectionDescriptors(
 			description: describeTool("manage_inspection"),
 			actions: {
 				asset: {
-					paramsSchema: assetLookupSchema,
-					// Phase 5a (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"]))),
-							catch: (cause) => cause as ToolError,
-						}),
+					paramsSchema: assetLookupSchemaEffect,
+					handler: pythonAction((params) =>
+						editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+					),
 				},
 				asset_references: {
-					paramsSchema: assetLookupSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					paramsSchema: assetLookupSchemaEffect,
+					handler: pythonAction((params) =>
+						editorTools.UEGetAssetReferences(requiredStringParam(params, ["asset_path", "path", "name"])),
+					),
 				},
 				actor: {
-					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("get_actor_properties", {
-										name: actorNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					paramsSchema: actorNameSchemaEffect,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("get_actor_properties", {
+							name: actorNameParam(params),
 						}),
+					),
 				},
 				actor_materials: {
-					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("get_actor_material_info", {
-										name: actorNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					paramsSchema: actorNameSchemaEffect,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("get_actor_material_info", {
+							name: actorNameParam(params),
 						}),
+					),
 				},
 				blueprint: {
-					paramsSchema: requireAtLeastOneValue(
-						z
-							.object({
-								...blueprintNameShape,
-								include_nodes: z.boolean().optional(),
-							})
-							.strict(),
-						["blueprint_name", "asset_path", "name"],
-						"Provide blueprint_name, asset_path, or name.",
-					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
-										blueprint_name: blueprintNameParam(params),
-										include_nodes: Boolean(params.include_nodes),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					paramsSchema: blueprintNameSchemaEffect,
+					handler: pythonAction((params) =>
+						editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
+							blueprint_name: blueprintNameParam(params),
+							include_nodes: Boolean(params.include_nodes),
 						}),
+					),
 				},
 				map: shared.map_info,
 			},

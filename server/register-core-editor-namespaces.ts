@@ -1,7 +1,5 @@
-import { Effect } from "effect"
 import { z } from "zod"
 
-import type { ToolError } from "./effect/errors.js"
 import { vector3TransformShape } from "./namespace-action-schema-fragments.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
@@ -27,7 +25,7 @@ const describeTool = createToolDescriptionLookup(coreEditorEntries)
 export function coreEditorDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
 ): ToolNamespaceDescriptor[] {
-	const { editorTools, pythonDispatch, requiredStringParam, toRotatorRecord, toVector3Record } = ctx
+	const { editorTools, pythonAction, requiredStringParam, toRotatorRecord, toVector3Record } = ctx
 	const shared = sharedReadOnlyActions(ctx)
 
 	return [
@@ -41,23 +39,11 @@ export function coreEditorDescriptors(
 							code: z.string(),
 						})
 						.strict(),
-					// Phase 5b (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: (params) =>
-						Effect.try({
-							try: () => pythonDispatch(requiredStringParam(params, ["code"])),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) => requiredStringParam(params, ["code"])),
 				},
 				console_command: shared.console_command,
 				project_info: {
-					handler: () =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UEGetProjectInfo()),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction(() => editorTools.UEGetProjectInfo()),
 				},
 				map_info: shared.map_info,
 				world_outliner: shared.world_outliner,
@@ -68,17 +54,12 @@ export function coreEditorDescriptors(
 							poll_interval: z.number().optional(),
 						})
 						.strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEPIETool("get_pie_status", {
-										timeout_seconds: params.timeout_seconds,
-										poll_interval: params.poll_interval,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEPIETool("get_pie_status", {
+							timeout_seconds: params.timeout_seconds,
+							poll_interval: params.poll_interval,
 						}),
+					),
 				},
 				start_pie: {
 					paramsSchema: z
@@ -87,17 +68,12 @@ export function coreEditorDescriptors(
 							poll_interval: z.number().optional(),
 						})
 						.strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEPIETool("start_pie", {
-										timeout_seconds: params.timeout_seconds,
-										poll_interval: params.poll_interval,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEPIETool("start_pie", {
+							timeout_seconds: params.timeout_seconds,
+							poll_interval: params.poll_interval,
 						}),
+					),
 				},
 				stop_pie: {
 					paramsSchema: z
@@ -106,39 +82,25 @@ export function coreEditorDescriptors(
 							poll_interval: z.number().optional(),
 						})
 						.strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEPIETool("stop_pie", {
-										timeout_seconds: params.timeout_seconds,
-										poll_interval: params.poll_interval,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: pythonAction((params) =>
+						editorTools.UEPIETool("stop_pie", {
+							timeout_seconds: params.timeout_seconds,
+							poll_interval: params.poll_interval,
 						}),
+					),
 				},
 				get_console_variable: shared.get_console_variable,
 				screenshot: {
-					handler: () =>
-						Effect.try({
-							try: () => pythonDispatch(editorTools.UETakeScreenshot()),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction(() => editorTools.UETakeScreenshot()),
 				},
 				move_camera: {
 					paramsSchema: z.object(vector3TransformShape).strict(),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEMoveCamera(
-										toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
-										toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UEMoveCamera(
+							toVector3Record(params.location) ?? { x: 0, y: 0, z: 0 },
+							toRotatorRecord(params.rotation) ?? { pitch: 0, yaw: 0, roll: 0 },
+						),
+					),
 				},
 			},
 		},

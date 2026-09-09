@@ -1,7 +1,5 @@
-import { Effect } from "effect"
 import { z } from "zod"
 
-import type { ToolError } from "./effect/errors.js"
 import {
 	actorNameSchema,
 	actorNameShape,
@@ -41,7 +39,8 @@ export function worldNavigationVolumeDescriptors(
 		actorNameParam,
 		editorTools,
 		optionalStringParam,
-		pythonDispatch,
+		cacheablePythonAction,
+		pythonAction,
 		toRotatorArray,
 		toRotatorRecord,
 		toVector3Array,
@@ -66,96 +65,67 @@ export function worldNavigationVolumeDescriptors(
 			actions: {
 				spawn_trigger_volume: {
 					paramsSchema: volumeSpawnSchema,
-					// Phase 5c (report §5): handler returns Effect; param-helper
-					// and builder throws become channel failures via Effect.try
-					// (Effect.sync would defect past dispatch's catchAll and break
-					// the identical envelope), rendered verbatim downstream.
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.TriggerVolume",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "TriggerVolume",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.TriggerVolume",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "TriggerVolume",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				spawn_blocking_volume: {
 					paramsSchema: volumeSpawnSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.BlockingVolume",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "BlockingVolume",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.BlockingVolume",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "BlockingVolume",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				spawn_physics_volume: {
 					paramsSchema: volumeSpawnSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.PhysicsVolume",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "PhysicsVolume",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.PhysicsVolume",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "PhysicsVolume",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				spawn_audio_volume: {
 					paramsSchema: volumeSpawnSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.AudioVolume",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "AudioVolume",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.AudioVolume",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "AudioVolume",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				delete_volume: {
 					paramsSchema: actorNameSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("delete_actor", {
-										name: actorNameParam(params),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("delete_actor", {
+							name: actorNameParam(params),
 						}),
+					),
 				},
 				transform_volume: {
 					paramsSchema: requireAtLeastOneValue(
@@ -163,19 +133,14 @@ export function worldNavigationVolumeDescriptors(
 						["name", "actor_name"],
 						"Provide name or actor_name.",
 					),
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("set_actor_transform", {
-										name: actorNameParam(params),
-										location: toVector3Array(params.location),
-										rotation: toRotatorArray(params.rotation),
-										scale: toVector3Array(params.scale),
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("set_actor_transform", {
+							name: actorNameParam(params),
+							location: toVector3Array(params.location),
+							rotation: toRotatorArray(params.rotation),
+							scale: toVector3Array(params.scale),
 						}),
+					),
 				},
 			},
 			options: { compactParamsSchema: true },
@@ -186,62 +151,47 @@ export function worldNavigationVolumeDescriptors(
 			actions: {
 				spawn_nav_mesh_bounds_volume: {
 					paramsSchema: volumeSpawnSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ??
-											"/Script/NavigationSystem.NavMeshBoundsVolume",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "NavMeshBoundsVolume",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ??
+								"/Script/NavigationSystem.NavMeshBoundsVolume",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "NavMeshBoundsVolume",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				spawn_nav_modifier_volume: {
 					paramsSchema: volumeSpawnSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ??
-											"/Script/NavigationSystem.NavModifierVolume",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "NavModifierVolume",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ??
+								"/Script/NavigationSystem.NavModifierVolume",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "NavModifierVolume",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				spawn_nav_link_proxy: {
 					paramsSchema: volumeSpawnSchema,
-					handler: (params) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UECreateObject(
-										optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/AIModule.NavLinkProxy",
-										optionalStringParam(params, ["name", "actor_name"]) ?? "NavLinkProxy",
-										toVector3Record(params.location),
-										toRotatorRecord(params.rotation),
-										toVector3Record(params.scale),
-										// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
-										params.properties as Record<string, unknown> | undefined,
-									),
-								),
-							catch: (cause) => cause as ToolError,
-						}),
+					handler: pythonAction((params) =>
+						editorTools.UECreateObject(
+							optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/AIModule.NavLinkProxy",
+							optionalStringParam(params, ["name", "actor_name"]) ?? "NavLinkProxy",
+							toVector3Record(params.location),
+							toRotatorRecord(params.rotation),
+							toVector3Record(params.scale),
+							// Phase-4 retype: validated params are unknown-typed; cast recovers the static type.
+							params.properties as Record<string, unknown> | undefined,
+						),
+					),
 				},
 				inspect_navigation: shared.map_info,
 			},

@@ -237,14 +237,12 @@ export const sourceControlPackagesSchema = requireAtLeastOneValue(
 )
 
 // ---------------------------------------------------------------------------
-// effect/Schema forward path (report §4.1). Migrated registrars (Phase 5)
-// compose Schema.Struct validation with these filters instead of the Zod
-// helpers above; dispatch validates both forms and renders failures into
-// the identical `Invalid params for <tool>.<action>: ...` envelope.
+// effect/Schema validation lives in server/effect/schema-patterns.ts
+// (atLeastOneValue/valueGroups/strictDecodeSync) and is consumed directly
+// from there by dispatch (registration-context-dispatch.ts) and by
+// Schema-migrated registrars. This file stays Zod-only: no Schema
+// re-exports, so there is exactly one import path for the Schema helpers.
 // Excess-property rejection comes from dispatch's strict decode options
 // (Schema.Struct strips unknown keys by default), not from the schema
 // itself — see strictDecodeSync in server/effect/schema-patterns.ts.
 // ---------------------------------------------------------------------------
-
-export { atLeastOneValue, hasMeaningfulValue, valueGroups } from "./effect/schema-patterns.js"
-export type { ValueGroup } from "./effect/schema-patterns.js"

@@ -1,7 +1,5 @@
-import { Effect } from "effect"
 import { z } from "zod"
 
-import type { ToolError } from "./effect/errors.js"
 import type { RegistrationDispatch, RegistrationParams, RegistrationSchemas } from "./registration-context.js"
 import { sharedReadOnlyActions } from "./shared-read-only-actions.js"
 import type { ToolCatalogEntry } from "./tool-catalog-types.js"
@@ -43,7 +41,7 @@ const describeTool = createToolDescriptionLookup(worldBuildingEntries)
 export function worldBuildingDescriptors(
 	ctx: RegistrationParams & RegistrationSchemas & RegistrationDispatch,
 ): ToolNamespaceDescriptor[] {
-	const { editorTools, pythonDispatch, worldBuildBaseSchema, worldBuildCommand } = ctx
+	const { editorTools, cacheablePythonAction, pythonAction, worldBuildBaseSchema, worldBuildCommand } = ctx
 	const shared = sharedReadOnlyActions(ctx)
 
 	const worldSchema = <S extends z.ZodRawShape>(shape: S) =>
@@ -137,15 +135,7 @@ export function worldBuildingDescriptors(
 	})
 	const worldAction = (operation: string, paramsSchema: z.ZodTypeAny) => ({
 		paramsSchema,
-		// Phase 5c (report §5): handler returns Effect; param-helper
-		// and builder throws become channel failures via Effect.try
-		// (Effect.sync would defect past dispatch's catchAll and break
-		// the identical envelope), rendered verbatim downstream.
-		handler: (params: Record<string, any>) =>
-			Effect.try({
-				try: () => pythonDispatch(worldBuildCommand(operation, params)),
-				catch: (cause) => cause as ToolError,
-			}),
+		handler: pythonAction((params) => worldBuildCommand(operation, params)),
 	})
 
 	return [
@@ -162,17 +152,12 @@ export function worldBuildingDescriptors(
 							offset: z.number().int().min(0).optional(),
 						})
 						.strict(),
-					handler: (params: Record<string, any>) =>
-						Effect.try({
-							try: () =>
-								pythonDispatch(
-									editorTools.UEActorTool("get_actors_in_level", {
-										limit: typeof params.limit === "number" ? params.limit : undefined,
-										offset: typeof params.offset === "number" ? params.offset : undefined,
-									}),
-								),
-							catch: (cause) => cause as ToolError,
+					handler: cacheablePythonAction((params) =>
+						editorTools.UEActorToolCommands("get_actors_in_level", {
+							limit: typeof params.limit === "number" ? params.limit : undefined,
+							offset: typeof params.offset === "number" ? params.offset : undefined,
 						}),
+					),
 				},
 				create_wall: worldAction("create_wall", createWallSchema),
 				create_maze: worldAction("create_maze", createMazeSchema),
