@@ -162,7 +162,7 @@ Success = `[PASS]` on every step; actor tests visibly create then remove temp ac
 
 ## Publishing
 
-Version format `YYYY.M.D-N`, unified everywhere (current `2026.5.12-13`) — bump it, then:
+Version format `YYYY.M.D-N`, unified everywhere (current `2026.9.9-1`) — bump it, then:
 
 ```bash
 npm run publish:check                                  # typecheck + rebuild + tarball dry-run
